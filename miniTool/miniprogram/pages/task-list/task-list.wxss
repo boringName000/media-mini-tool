@@ -1,0 +1,284 @@
+/* 任务列表页面样式 */
+.task-list-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding-bottom: 40rpx;
+}
+
+/* 状态显示 */
+.status-display {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 20rpx 30rpx;
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+.status-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+/* 任务列表 */
+.task-list {
+  padding: 24rpx 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.task-item {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10rpx);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.task-item:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.12);
+}
+
+/* 任务头部 */
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.06);
+}
+
+.task-platform {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.platform-icon {
+  font-size: 36rpx;
+  line-height: 1;
+}
+
+.platform-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.task-status {
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.task-status.pending {
+  background: rgba(255, 193, 7, 0.1);
+  color: #ffc107;
+}
+
+.task-status.completed {
+  background: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
+
+.task-status.rejected {
+  background: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* 任务内容 */
+.task-content {
+  margin-bottom: 24rpx;
+}
+
+.task-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 12rpx;
+  line-height: 1.4;
+}
+
+.task-description {
+  font-size: 26rpx;
+  color: #6c757d;
+  line-height: 1.5;
+  margin-bottom: 20rpx;
+}
+
+.task-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.info-label {
+  font-size: 24rpx;
+  color: #7f8c8d;
+  font-weight: 500;
+  min-width: 80rpx;
+}
+
+.info-value {
+  font-size: 24rpx;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+/* 任务底部 */
+.task-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-top: 20rpx;
+  padding-left: 0;
+  padding-right: 0;
+  border-top: 1rpx solid rgba(0, 0, 0, 0.06);
+}
+
+.task-actions {
+  display: flex;
+  gap: 20rpx;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  margin-right: -30rpx;
+  padding-right: 30rpx;
+}
+
+.action-btn {
+  padding: 14rpx 22rpx;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+  min-width: 70rpx;
+  max-width: 110rpx;
+  text-align: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+  height: 68rpx;
+  line-height: 40rpx;
+}
+
+.download-btn {
+  background: linear-gradient(135deg, #007aff 0%, #0056cc 100%);
+  color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(0, 122, 255, 0.3);
+}
+
+.upload-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: #fff;
+  box-shadow: 0 2rpx 8rpx rgba(40, 167, 69, 0.3);
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+/* 已完成任务状态 */
+.task-completed {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.completed-text {
+  font-size: 26rpx;
+  color: #28a745;
+  font-weight: 600;
+  background: rgba(40, 167, 69, 0.1);
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(40, 167, 69, 0.2);
+}
+
+/* 已拒绝任务状态 */
+.task-rejected {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.rejected-text {
+  font-size: 26rpx;
+  color: #dc3545;
+  font-weight: 600;
+  background: rgba(220, 53, 69, 0.1);
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(220, 53, 69, 0.2);
+}
+
+/* 空状态 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 40rpx;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 24rpx;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 12rpx;
+}
+
+.empty-desc {
+  font-size: 26rpx;
+  color: #7f8c8d;
+  line-height: 1.5;
+}
+
+/* 加载更多 */
+.load-more {
+  text-align: center;
+  padding: 40rpx 30rpx;
+}
+
+.load-text {
+  font-size: 26rpx;
+  color: #7f8c8d;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+}
+
+.loading-text {
+  font-size: 26rpx;
+  color: #7f8c8d;
+}

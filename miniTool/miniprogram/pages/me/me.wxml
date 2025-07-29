@@ -1,0 +1,57 @@
+<!-- 我的页面 -->
+<view class="me-container">
+  <!-- 已登录状态 -->
+  <view wx:if="{{isLoggedIn}}">
+    <!-- 用户信息区域 -->
+    <view class="user-info">
+      <view class="user-avatar">{{userInfo.avatar}}</view>
+      <view class="user-details">
+        <text class="user-nickname">{{userInfo.nickname}}</text>
+        <text class="user-desc">签约达人</text>
+        <view class="user-uid">
+          <text class="uid-label">UID:</text>
+          <text class="uid-value">{{userInfo.uid}}</text>
+        </view>
+        <view class="user-register-time">
+          <text class="register-label">注册时间:</text>
+          <text class="register-value">{{userInfo.registerTime}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 菜单列表区域 -->
+    <view class="menu-list">
+      <view 
+        class="menu-item" 
+        wx:for="{{menuList}}" 
+        wx:key="index"
+        data-index="{{index}}"
+        bind:tap="onMenuTap"
+      >
+        <view class="menu-icon">{{item.icon}}</view>
+        <view class="menu-content">
+          <text class="menu-title">{{item.title}}</text>
+          <text class="menu-desc">{{item.desc}}</text>
+        </view>
+        <view class="menu-arrow">›</view>
+      </view>
+    </view>
+    
+    <!-- 版本信息 -->
+    <view class="version-info">
+      <text class="version-text">版本 1.0.0</text>
+    </view>
+  </view>
+
+  <!-- 未登录状态 -->
+  <view wx:else class="login-container">
+    <view class="login-content">
+      <view class="login-icon">🔐</view>
+      <view class="login-title">请先登录</view>
+      <view class="login-desc">登录后即可使用完整功能</view>
+      <button class="login-btn" bindtap="onLoginTap">
+        <text class="login-btn-text">立即登录</text>
+      </button>
+    </view>
+  </view>
+</view> 

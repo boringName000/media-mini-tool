@@ -1,0 +1,438 @@
+/* 提交结算页面样式 */
+.submit-settlement-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 40rpx 30rpx 130rpx 30rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+/* 卡片样式 */
+.section-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10rpx);
+}
+
+/* 卡片头部 */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.06);
+}
+
+.section-icon {
+  font-size: 32rpx;
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12rpx;
+  color: white;
+  font-size: 24rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #2c3e50;
+  letter-spacing: 0.5rpx;
+}
+
+/* 选择账号 */
+.account-selection {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 8rpx 0;
+}
+
+.selection-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #34495e;
+}
+
+.account-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #495057;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  border: 1rpx solid #dee2e6;
+}
+
+/* 结算方式 */
+.settlement-method {
+  padding: 8rpx 0;
+}
+
+.method-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.option-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx 16rpx;
+  border-radius: 12rpx;
+  transition: all 0.2s ease;
+  border: 1rpx solid transparent;
+}
+
+.option-item:hover {
+  background: rgba(0, 122, 255, 0.05);
+  border-color: rgba(0, 122, 255, 0.1);
+}
+
+.radio-button {
+  width: 40rpx;
+  height: 40rpx;
+  border: 2rpx solid #ddd;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.radio-button.selected {
+  border-color: #007aff;
+  background: linear-gradient(135deg, #007aff 0%, #0056cc 100%);
+  box-shadow: 0 4rpx 12rpx rgba(0, 122, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.radio-inner {
+  width: 20rpx;
+  height: 20rpx;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+}
+
+.option-text {
+  font-size: 30rpx;
+  color: #2c3e50;
+  font-weight: 500;
+  flex: 1;
+}
+
+/* 转账订单 */
+.order-input-section {
+  padding: 8rpx 0;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.input-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #34495e;
+}
+
+.order-input {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2rpx solid #dee2e6;
+  border-radius: 12rpx;
+  padding: 20rpx 24rpx;
+  font-size: 28rpx;
+  color: #2c3e50;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+.order-input:focus {
+  border-color: #007aff;
+  background: #fff;
+  box-shadow: 0 0 0 4rpx rgba(0, 122, 255, 0.1),
+    inset 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  outline: none;
+}
+
+.order-input::placeholder {
+  color: #adb5bd;
+  font-weight: 400;
+}
+
+/* 结算收益 */
+.earnings-section {
+  padding: 8rpx 0;
+}
+
+.earnings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24rpx 0;
+}
+
+.earnings-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  flex: 1;
+}
+
+.earnings-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 240rpx;
+  margin-left: 20rpx;
+}
+
+.label-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.label-desc {
+  font-size: 22rpx;
+  color: #7f8c8d;
+  font-weight: 400;
+}
+
+.earnings-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2rpx solid #dee2e6;
+  border-radius: 12rpx;
+  padding: 16rpx 20rpx;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+.earnings-input-group:focus-within {
+  border-color: #007aff;
+  background: #fff;
+  box-shadow: 0 0 0 4rpx rgba(0, 122, 255, 0.1),
+    inset 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+}
+
+.currency {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #e74c3c;
+}
+
+.earnings-input {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #2c3e50;
+  background: transparent;
+  border: none;
+  outline: none;
+  flex: 1;
+  min-width: 120rpx;
+  font-family: "Arial", sans-serif;
+}
+
+.earnings-input::placeholder {
+  color: #adb5bd;
+  font-weight: 400;
+}
+
+.error-message {
+  font-size: 22rpx;
+  color: #e74c3c;
+  font-weight: 500;
+  margin-top: 8rpx;
+  display: block;
+  animation: fadeIn 0.3s ease;
+  text-align: left;
+  max-width: 240rpx;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.earnings-divider {
+  height: 1rpx;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 50%,
+    transparent 100%
+  );
+  margin: 8rpx 0;
+}
+
+/* 上传文件 */
+.upload-section {
+  padding: 8rpx 0;
+}
+
+.upload-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24rpx 0;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  flex: 1;
+  margin-right: 20rpx;
+}
+
+.upload-area {
+  width: 160rpx;
+  height: 160rpx;
+  border: 2rpx dashed #dee2e6;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-area:hover {
+  border-color: #007aff;
+  background: rgba(0, 122, 255, 0.05);
+  transform: scale(1.02);
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.upload-icon {
+  font-size: 48rpx;
+  opacity: 0.7;
+}
+
+.upload-text {
+  font-size: 24rpx;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.uploaded-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 10rpx;
+  object-fit: cover;
+}
+
+.upload-divider {
+  height: 1rpx;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 50%,
+    transparent 100%
+  );
+  margin: 8rpx 0;
+}
+
+/* 提交按钮 */
+.submit-button-container {
+  margin-top: 40rpx;
+  padding: 0 30rpx;
+}
+
+.submit-button {
+  width: 100%;
+  height: 88rpx;
+  background: linear-gradient(135deg, #007aff 0%, #0056cc 100%);
+  border: none;
+  border-radius: 12rpx;
+  box-shadow: 0 6rpx 20rpx rgba(0, 122, 255, 0.25);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.submit-button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.submit-button:active::before {
+  left: 100%;
+}
+
+.submit-button:active {
+  transform: translateY(1rpx);
+  box-shadow: 0 3rpx 12rpx rgba(0, 122, 255, 0.35);
+  background: linear-gradient(135deg, #0056cc 0%, #004499 100%);
+}
+
+.button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  height: 100%;
+  z-index: 1;
+  position: relative;
+}
+
+.button-icon {
+  font-size: 28rpx;
+  opacity: 0.9;
+}
+
+.button-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.5rpx;
+}

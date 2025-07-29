@@ -1,0 +1,214 @@
+<!-- 添加账号页面 -->
+<view class="add-account-container">
+
+  <!-- 表单区域 -->
+  <view class="form-section">
+    <view class="form-card">
+      
+      <!-- 赛道选择 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-text">选择赛道</text>
+          <text class="required">*</text>
+        </view>
+        <view class="form-input-wrapper">
+          <picker 
+            mode="selector" 
+            range="{{trackTypeList}}" 
+            range-key="name"
+            bindchange="onTrackTypeChange"
+            class="picker-button"
+          >
+            <view class="picker-display">
+              <text class="picker-text">{{selectedTrackType ? selectedTrackType.name : '请选择赛道'}}</text>
+              <text class="picker-arrow">›</text>
+            </view>
+          </picker>
+        </view>
+        <view class="error-message" wx:if="{{errors.trackType}}">
+          <text class="error-text">{{errors.trackType}}</text>
+        </view>
+      </view>
+
+      <!-- 平台选择 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-text">选择平台</text>
+          <text class="required">*</text>
+        </view>
+        <view class="form-input-wrapper">
+          <picker 
+            mode="selector" 
+            range="{{platformList}}" 
+            range-key="name"
+            bindchange="onPlatformChange"
+            class="picker-button"
+          >
+            <view class="picker-display">
+              <text class="picker-text">{{selectedPlatform ? selectedPlatform.name : '请选择平台'}}</text>
+              <text class="picker-arrow">›</text>
+            </view>
+          </picker>
+        </view>
+        <view class="error-message" wx:if="{{errors.platform}}">
+          <text class="error-text">{{errors.platform}}</text>
+        </view>
+      </view>
+
+      <!-- 注册手机号 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-text">注册手机号</text>
+          <text class="required">*</text>
+        </view>
+        <view class="form-input-wrapper">
+          <input 
+            class="form-input {{errors.phoneNumber ? 'error' : ''}}"
+            type="number"
+            placeholder="请输入注册手机号"
+            value="{{phoneNumber}}"
+            bindinput="onPhoneInput"
+            maxlength="11"
+          />
+        </view>
+        <view class="error-message" wx:if="{{errors.phoneNumber}}">
+          <text class="error-text">{{errors.phoneNumber}}</text>
+        </view>
+      </view>
+
+      <!-- 账号昵称 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-text">账号昵称</text>
+          <text class="required">*</text>
+        </view>
+        <view class="form-input-wrapper">
+          <input 
+            class="form-input {{errors.accountNickname ? 'error' : ''}}"
+            placeholder="请输入账号昵称"
+            value="{{accountNickname}}"
+            bindinput="onNicknameInput"
+            maxlength="50"
+          />
+        </view>
+        <view class="error-message" wx:if="{{errors.accountNickname}}">
+          <text class="error-text">{{errors.accountNickname}}</text>
+        </view>
+      </view>
+
+      <!-- 账号ID -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-text">账号ID</text>
+          <text class="required">*</text>
+        </view>
+        <view class="form-input-wrapper">
+          <input 
+            class="form-input {{errors.accountId ? 'error' : ''}}"
+            placeholder="请输入账号ID"
+            value="{{accountId}}"
+            bindinput="onAccountIdInput"
+            maxlength="50"
+          />
+        </view>
+        <view class="error-message" wx:if="{{errors.accountId}}">
+          <text class="error-text">{{errors.accountId}}</text>
+        </view>
+      </view>
+
+      <!-- 注册日期 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-text">注册日期</text>
+        </view>
+        <view class="form-input-wrapper">
+          <picker 
+            mode="date" 
+            value="{{registerDate}}" 
+            bindchange="onDateChange"
+            class="date-picker"
+          >
+            <view class="picker-display">
+              <text class="picker-text">{{registerDate}}</text>
+              <text class="picker-arrow">📅</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+
+      <!-- 是否违规 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-text">是否违规</text>
+        </view>
+        <view class="switch-wrapper">
+          <switch 
+            checked="{{isViolation}}" 
+            bindchange="onViolationChange"
+            color="#007aff"
+          />
+          <text class="switch-label">{{isViolation ? '是' : '否'}}</text>
+        </view>
+      </view>
+
+      <!-- 资料页截图 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-text">资料页截图</text>
+        </view>
+        <view class="upload-section">
+          <view class="upload-area" wx:if="{{!screenshotUrl}}" bindtap="uploadScreenshot">
+            <text class="upload-icon">📷</text>
+            <text class="upload-text">点击上传截图</text>
+            <text class="upload-hint">支持jpg、png格式</text>
+          </view>
+          <view class="image-preview" wx:if="{{screenshotUrl}}">
+            <image 
+              class="preview-image" 
+              src="{{screenshotUrl}}" 
+              mode="aspectFit"
+              bindtap="previewScreenshot"
+            />
+            <view class="image-actions">
+              <button class="action-btn delete-btn" bindtap="deleteScreenshot">
+                <text class="btn-icon">🗑️</text>
+              </button>
+              <button class="action-btn preview-btn" bindtap="previewScreenshot">
+                <text class="btn-icon">👁️</text>
+              </button>
+            </view>
+          </view>
+        </view>
+      </view>
+
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <button 
+      class="submit-btn" 
+      bindtap="submitForm"
+      disabled="{{isUploading}}"
+    >
+      <text class="btn-text">{{isUploading ? '上传中...' : '提交'}}</text>
+    </button>
+  </view>
+
+  <!-- 提示信息 -->
+  <view class="tips-section">
+    <view class="tips-card">
+      <view class="tips-header">
+        <text class="tips-icon">💡</text>
+        <text class="tips-title">温馨提示</text>
+      </view>
+      <view class="tips-content">
+        <text class="tips-text">• 请确保所有必填项都已填写</text>
+        <text class="tips-text">• 手机号格式为11位数字</text>
+        <text class="tips-text">• 截图请确保清晰可见</text>
+        <text class="tips-text">• 提交后将无法修改，请仔细核对</text>
+      </view>
+    </view>
+  </view>
+
+</view> 

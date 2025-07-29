@@ -1,0 +1,232 @@
+/* 登录页面样式 */
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding-bottom: 40rpx;
+}
+
+/* 顶部固定banner */
+.top-banner {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  padding: 60rpx 40rpx 40rpx 40rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 20rpx rgba(238, 90, 36, 0.3);
+}
+
+.banner-title {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 16rpx;
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.3);
+}
+
+.banner-subtitle {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+/* 登录/注册切换按钮 */
+.mode-switch {
+  padding: 40rpx 40rpx 20rpx 40rpx;
+}
+
+.switch-container {
+  display: flex;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16rpx;
+  padding: 8rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+}
+
+.switch-btn {
+  flex: 1;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12rpx;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.switch-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 0 4rpx 20rpx rgba(102, 126, 234, 0.3);
+}
+
+.switch-text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #666;
+  transition: color 0.3s ease;
+}
+
+.switch-btn.active .switch-text {
+  color: #fff;
+}
+
+/* 表单容器 */
+.form-container {
+  margin: 20rpx 40rpx 0 40rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 40rpx;
+  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.1);
+}
+
+.form-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+/* 表单组 */
+.form-group {
+  margin-bottom: 32rpx;
+}
+
+.input-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #34495e;
+  margin-bottom: 16rpx;
+}
+
+.form-input {
+  width: 100%;
+  height: 88rpx;
+  border: 2rpx solid #e9ecef;
+  border-radius: 12rpx;
+  padding: 0 24rpx;
+  font-size: 30rpx;
+  color: #2c3e50;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: #667eea;
+  background: #fff;
+  box-shadow: 0 0 0 4rpx rgba(102, 126, 234, 0.1);
+}
+
+.form-input.error {
+  border-color: #e74c3c;
+  background: #fff5f5;
+}
+
+.form-input::placeholder {
+  color: #95a5a6;
+}
+
+.error-text {
+  font-size: 24rpx;
+  color: #e74c3c;
+  margin-top: 8rpx;
+  padding-left: 8rpx;
+}
+
+/* 协议确认区域 */
+.agreement-section {
+  margin: 40rpx 0 32rpx 0;
+  padding: 24rpx;
+  background: #f8f9fa;
+  border-radius: 12rpx;
+}
+
+.agreement-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.agreement-item:last-child {
+  margin-bottom: 0;
+}
+
+.checkbox {
+  width: 32rpx;
+  height: 32rpx;
+  border: 2rpx solid #bdc3c7;
+  border-radius: 6rpx;
+  margin-right: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.checkbox.checked {
+  background: #667eea;
+  border-color: #667eea;
+}
+
+.checkbox-icon {
+  color: #fff;
+  font-size: 20rpx;
+  font-weight: bold;
+}
+
+.agreement-text {
+  font-size: 26rpx;
+  color: #34495e;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.link-text {
+  color: #667eea;
+  text-decoration: underline;
+}
+
+/* 提交按钮 */
+.submit-btn {
+  width: 100%;
+  height: 88rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 30rpx rgba(102, 126, 234, 0.4);
+  transition: all 0.3s ease;
+  margin-top: 20rpx;
+}
+
+.submit-btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 20rpx rgba(102, 126, 234, 0.3);
+}
+
+.submit-text {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .form-container {
+    margin: 20rpx 30rpx 0 30rpx;
+    padding: 30rpx;
+  }
+
+  .top-banner {
+    padding: 50rpx 30rpx 30rpx 30rpx;
+  }
+
+  .banner-title {
+    font-size: 42rpx;
+  }
+
+  .banner-subtitle {
+    font-size: 26rpx;
+  }
+}

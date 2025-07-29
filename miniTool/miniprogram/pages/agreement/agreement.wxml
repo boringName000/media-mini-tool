@@ -1,0 +1,78 @@
+<!-- 协议页面 -->
+<view class="agreement-container">
+  <view class="agreement-content">
+    <view class="agreement-title">{{agreementTitle}}</view>
+    
+    <view class="agreement-text">
+      <text class="paragraph">
+        欢迎使用本工具。在使用本工具之前，请您仔细阅读并理解以下免责声明。通过使用本工具，您表示已充分理解并同意接受本声明的所有条款。
+      </text>
+      
+      <text class="paragraph">
+        1. 工具性质说明
+        本工具仅作为辅助工具提供，旨在帮助用户提高工作效率。工具的所有功能和建议仅供参考，不构成任何专业建议或承诺。
+      </text>
+      
+      <text class="paragraph">
+        2. 使用风险
+        用户在使用本工具过程中可能面临的风险包括但不限于：数据丢失、操作错误、时间延误等。用户应自行承担使用本工具的所有风险。
+      </text>
+      
+      <text class="paragraph">
+        3. 数据安全
+        我们承诺保护用户隐私和数据安全，但无法保证数据传输和存储的绝对安全。用户应妥善保管自己的账号信息和重要数据。
+      </text>
+      
+      <text class="paragraph">
+        4. 功能限制
+        本工具的功能可能因技术、政策或其他原因而发生变化或暂停。我们保留随时修改、暂停或终止工具服务的权利。
+      </text>
+      
+      <text class="paragraph">
+        5. 第三方内容
+        本工具可能包含第三方提供的内容或链接。我们不对第三方内容的准确性、完整性或适用性承担责任。
+      </text>
+      
+      <text class="paragraph">
+        6. 知识产权
+        本工具及其相关内容的知识产权归我们所有。用户不得未经授权复制、传播或商业使用相关内容。
+      </text>
+      
+      <text class="paragraph">
+        7. 责任限制
+        在法律允许的最大范围内，我们不对因使用本工具而产生的任何直接、间接、偶然或特殊损失承担责任。
+      </text>
+      
+      <text class="paragraph">
+        8. 协议修改
+        我们保留随时修改本免责声明的权利。修改后的声明将在工具中公布，继续使用工具即表示接受修改后的条款。
+      </text>
+      
+      <text class="paragraph">
+        9. 适用法律
+        本免责声明受中华人民共和国法律管辖。如发生争议，应通过友好协商解决；协商不成的，可向有管辖权的人民法院提起诉讼。
+      </text>
+      
+      <text class="paragraph">
+        10. 联系方式
+        如您对本免责声明有任何疑问，请联系我们的客服团队。我们将尽力为您解答相关问题。
+      </text>
+      
+      <text class="paragraph">
+        最后更新日期：2024年7月
+      </text>
+    </view>
+  </view>
+
+  <!-- 底部按钮区域 - 仅从登录入口进入且需要显示按钮时显示 -->
+  <view wx:if="{{showButtons}}" class="button-section">
+    <view class="button-container">
+      <button class="disagree-btn" bindtap="onDisagree">
+        <text class="btn-text">不同意</text>
+      </button>
+      <button class="agree-btn" bindtap="onAgree">
+        <text class="btn-text">同意</text>
+      </button>
+    </view>
+  </view>
+</view> 

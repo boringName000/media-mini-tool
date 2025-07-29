@@ -1,0 +1,389 @@
+/* 结算页面样式 */
+.settlement-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 40rpx 30rpx 130rpx 30rpx;
+}
+
+/* 页面标题 */
+.page-header {
+  text-align: center;
+  margin-bottom: 40rpx;
+}
+
+.page-title {
+  display: block;
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 12rpx;
+}
+
+.settlement-period {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+}
+
+/* 统计区域 */
+.stats-area {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.stats-row:last-child {
+  margin-bottom: 0;
+}
+
+.stat-item {
+  flex: 1;
+  text-align: center;
+  padding: 20rpx 10rpx;
+  border-radius: 12rpx;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  margin: 0 8rpx;
+}
+
+.stat-item.pending {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.stat-item.settled {
+  background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);
+}
+
+.stat-number {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  display: block;
+  font-size: 24rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+/* 本期已结算收益 */
+.earnings-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 2rpx solid #f0f0f0;
+}
+
+.earnings-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.earnings-number {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #155724;
+}
+
+.earnings-label {
+  font-size: 26rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+/* 账号列表 */
+.account-list {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #f0f0f0;
+}
+
+.list-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #333;
+}
+
+.list-count {
+  font-size: 24rpx;
+  color: #666;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid #e3ebf7;
+}
+
+/* 账号项 */
+.account-item {
+  position: relative;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  border: 2rpx solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.account-item:last-child {
+  margin-bottom: 0;
+}
+
+.account-item:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 账号信息 */
+.account-info {
+  margin-bottom: 20rpx;
+}
+
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12rpx;
+}
+
+.platform-info {
+  display: flex;
+  align-items: center;
+}
+
+.platform-icon {
+  width: 60rpx;
+  height: 60rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  margin-right: 16rpx;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.platform-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-name {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 6rpx;
+}
+
+.platform-name {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.status-badge {
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.status-badge.pending {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  color: #d46b08;
+}
+
+.status-badge.settled {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+}
+
+.account-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.track-info {
+  display: flex;
+  align-items: center;
+}
+
+.track-icon {
+  width: 40rpx;
+  height: 40rpx;
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  margin-right: 12rpx;
+}
+
+.track-type {
+  font-size: 26rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.articles-info {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid #dee2e6;
+}
+
+.articles-count {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #495057;
+  margin-right: 4rpx;
+}
+
+.articles-label {
+  font-size: 22rpx;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* 结算信息 */
+.settlement-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding: 12rpx 16rpx;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
+  border-radius: 10rpx;
+  border: 1rpx solid #e3ebf7;
+}
+
+.settlement-period-text {
+  font-size: 26rpx;
+  color: #4a90e2;
+  font-weight: 600;
+}
+
+.last-settlement {
+  font-size: 22rpx;
+  color: #666;
+}
+
+/* 操作区域 */
+.action-area {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* 收益显示区域 */
+.earnings-display {
+  position: absolute;
+  left: 24rpx;
+  bottom: 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.earnings-item-small {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.earnings-label-small {
+  font-size: 20rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.earnings-number-small {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #155724;
+}
+
+.settlement-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12rpx;
+  padding: 16rpx 32rpx;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  transition: all 0.3s ease;
+}
+
+.settlement-button.disabled {
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  box-shadow: none;
+}
+
+.settlement-button:active:not(.disabled) {
+  transform: scale(0.95);
+}
+
+.button-text {
+  font-size: 28rpx;
+  color: white;
+  font-weight: 600;
+}
+
+.settlement-button.disabled .button-text {
+  color: #999;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 80rpx 40rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.empty-icon {
+  display: block;
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.empty-text {
+  display: block;
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.empty-desc {
+  display: block;
+  font-size: 26rpx;
+  color: #666;
+}

@@ -1,0 +1,159 @@
+<!-- 登录页面 -->
+<view class="login-container">
+  <!-- 顶部固定banner -->
+  <view class="top-banner">
+    <view class="banner-content">
+      <view class="banner-title">创作矩阵系统</view>
+      <view class="banner-subtitle">仅供签约达人使用，非对外开放</view>
+    </view>
+  </view>
+
+  <!-- 登录/注册切换按钮 -->
+  <view class="mode-switch">
+    <view class="switch-container">
+      <view 
+        class="switch-btn {{isLoginMode ? 'active' : ''}}" 
+        bindtap="switchMode" 
+        data-mode="login"
+      >
+        <text class="switch-text">欢迎登录</text>
+      </view>
+      <view 
+        class="switch-btn {{!isLoginMode ? 'active' : ''}}" 
+        bindtap="switchMode" 
+        data-mode="register"
+      >
+        <text class="switch-text">账号注册</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 登录表单 -->
+  <view class="form-container" wx:if="{{isLoginMode}}">
+    <view class="form-title">用户登录</view>
+    
+    <view class="form-group">
+      <view class="input-label">手机号</view>
+      <input 
+        class="form-input {{loginPhoneError ? 'error' : ''}}"
+        type="number"
+        placeholder="请输入手机号"
+        value="{{loginPhone}}"
+        bindinput="onLoginPhoneInput"
+        maxlength="11"
+      />
+      <view class="error-text" wx:if="{{loginPhoneError}}">{{loginPhoneError}}</view>
+    </view>
+
+    <view class="form-group">
+      <view class="input-label">密码</view>
+      <input 
+        class="form-input {{loginPasswordError ? 'error' : ''}}"
+        type="password"
+        placeholder="请输入密码"
+        value="{{loginPassword}}"
+        bindinput="onLoginPasswordInput"
+      />
+      <view class="error-text" wx:if="{{loginPasswordError}}">{{loginPasswordError}}</view>
+    </view>
+
+    <button class="submit-btn" bindtap="submitForm">
+      <text class="submit-text">登录</text>
+    </button>
+  </view>
+
+  <!-- 注册表单 -->
+  <view class="form-container" wx:else>
+    <view class="form-title">用户注册</view>
+    
+    <view class="form-group">
+      <view class="input-label">昵称</view>
+      <input 
+        class="form-input {{registerNicknameError ? 'error' : ''}}"
+        type="text"
+        placeholder="请输入昵称"
+        value="{{registerNickname}}"
+        bindinput="onRegisterNicknameInput"
+        maxlength="20"
+      />
+      <view class="error-text" wx:if="{{registerNicknameError}}">{{registerNicknameError}}</view>
+    </view>
+
+    <view class="form-group">
+      <view class="input-label">手机号</view>
+      <input 
+        class="form-input {{registerPhoneError ? 'error' : ''}}"
+        type="number"
+        placeholder="请输入手机号"
+        value="{{registerPhone}}"
+        bindinput="onRegisterPhoneInput"
+        maxlength="11"
+      />
+      <view class="error-text" wx:if="{{registerPhoneError}}">{{registerPhoneError}}</view>
+    </view>
+
+    <view class="form-group">
+      <view class="input-label">密码</view>
+      <input 
+        class="form-input {{registerPasswordError ? 'error' : ''}}"
+        type="password"
+        placeholder="请输入密码（不少于6位）"
+        value="{{registerPassword}}"
+        bindinput="onRegisterPasswordInput"
+      />
+      <view class="error-text" wx:if="{{registerPasswordError}}">{{registerPasswordError}}</view>
+    </view>
+
+    <view class="form-group">
+      <view class="input-label">确认密码</view>
+      <input 
+        class="form-input {{confirmPasswordError ? 'error' : ''}}"
+        type="password"
+        placeholder="请再次输入密码"
+        value="{{confirmPassword}}"
+        bindinput="onConfirmPasswordInput"
+      />
+      <view class="error-text" wx:if="{{confirmPasswordError}}">{{confirmPasswordError}}</view>
+    </view>
+
+    <view class="form-group">
+      <view class="input-label">邀请码</view>
+      <input 
+        class="form-input {{inviteCodeError ? 'error' : ''}}"
+        type="text"
+        placeholder="请输入邀请码"
+        value="{{inviteCode}}"
+        bindinput="onInviteCodeInput"
+        maxlength="20"
+      />
+      <view class="error-text" wx:if="{{inviteCodeError}}">{{inviteCodeError}}</view>
+    </view>
+
+    <!-- 协议确认 -->
+    <view class="agreement-section">
+      <view class="agreement-item">
+        <view class="checkbox {{agreedToTerms ? 'checked' : ''}}" bindtap="onTermsToggle">
+          <text class="checkbox-icon" wx:if="{{agreedToTerms}}">✓</text>
+        </view>
+        <text class="agreement-text">
+          我已阅读并同意
+          <text class="link-text" bindtap="viewTerms">《用户服务协议》</text>
+        </text>
+      </view>
+      
+      <view class="agreement-item">
+        <view class="checkbox {{agreedToPrivacy ? 'checked' : ''}}" bindtap="onPrivacyToggle">
+          <text class="checkbox-icon" wx:if="{{agreedToPrivacy}}">✓</text>
+        </view>
+        <text class="agreement-text">
+          我已阅读并同意
+          <text class="link-text" bindtap="viewPrivacy">《隐私权政策》</text>
+        </text>
+      </view>
+    </view>
+
+    <button class="submit-btn" bindtap="submitForm">
+      <text class="submit-text">注册</text>
+    </button>
+  </view>
+</view> 

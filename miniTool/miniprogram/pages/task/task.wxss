@@ -1,0 +1,301 @@
+/* 任务页面样式 */
+.task-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 40rpx 30rpx 130rpx 30rpx; /* 底部增加130rpx为自定义tabBar留空间 */
+}
+
+/* 我的任务区域样式 */
+.my-task-area {
+  margin: 0 0 30rpx 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 25rpx 30rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.my-task-header {
+  display: flex;
+  align-items: center;
+}
+
+.my-task-icon {
+  width: 60rpx;
+  height: 60rpx;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  margin-right: 20rpx;
+  box-shadow: 0 2px 10px rgba(79, 172, 254, 0.25);
+}
+
+.my-task-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.my-task-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.my-task-desc {
+  font-size: 24rpx;
+  color: #666;
+  opacity: 0.8;
+}
+
+/* 任务数据统计样式 */
+.task-stats {
+  margin-top: 30rpx;
+  display: flex;
+  gap: 16rpx;
+}
+
+.task-stat-item {
+  flex: 1;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12rpx;
+  padding: 20rpx 16rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.task-stat-item:active {
+  transform: translateY(1rpx);
+  background: linear-gradient(135deg, #f0f1f2 0%, #f8f9fa 100%);
+}
+
+.task-stat-number {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #4facfe;
+  margin-bottom: 8rpx;
+  line-height: 1;
+}
+
+.task-stat-label {
+  font-size: 22rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+/* 账号列表区域样式 */
+.account-list-area {
+  margin: 0 0 30rpx 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20rpx;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+.account-list-header {
+  display: flex;
+  align-items: center;
+  padding: 25rpx 30rpx 20rpx 30rpx;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.account-list-icon {
+  width: 60rpx;
+  height: 60rpx;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  margin-right: 20rpx;
+  box-shadow: 0 2px 10px rgba(79, 172, 254, 0.25);
+}
+
+.account-list-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.account-list-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.account-list-desc {
+  font-size: 24rpx;
+  color: #666;
+  opacity: 0.8;
+}
+
+.account-items {
+  padding: 0;
+}
+
+.account-item {
+  display: flex;
+  align-items: center;
+  padding: 25rpx 30rpx;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.3s ease;
+}
+
+.account-item:last-child {
+  border-bottom: none;
+}
+
+.account-item:active {
+  background-color: #f8f9fa;
+}
+
+.account-platform {
+  width: 80rpx;
+  height: 80rpx;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-radius: 12rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  border: 1px solid #e9ecef;
+  padding: 8rpx;
+}
+
+.platform-icon {
+  font-size: 24rpx;
+  margin-bottom: 4rpx;
+}
+
+.platform-text {
+  font-size: 20rpx;
+  color: #666;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.account-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.account-main-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.account-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.account-status {
+  font-size: 22rpx;
+  color: #666;
+  opacity: 0.8;
+}
+
+.account-track-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.track-type {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e8f2ff 100%);
+  border-radius: 8rpx;
+  padding: 6rpx 12rpx;
+  border: 1px solid #e3ebf7;
+}
+
+.track-icon {
+  font-size: 20rpx;
+}
+
+.track-text {
+  font-size: 20rpx;
+  color: #4a90e2;
+  font-weight: 500;
+}
+
+.today-articles {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  background: linear-gradient(135deg, #fff7e6 0%, #fef3e2 100%);
+  border-radius: 8rpx;
+  padding: 6rpx 12rpx;
+  border: 1px solid #f0e6d2;
+}
+
+.articles-count {
+  font-size: 24rpx;
+  color: #ff8c00;
+  font-weight: 700;
+}
+
+.articles-label {
+  font-size: 20rpx;
+  color: #cc7000;
+  font-weight: 500;
+}
+
+.account-arrow {
+  font-size: 40rpx;
+  color: #ccc;
+  margin-left: 20rpx;
+}
+
+.task-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400rpx;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80rpx 40rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 40rpx;
+  opacity: 0.3;
+}
+
+.empty-text {
+  display: block;
+  font-size: 32rpx;
+  color: #666;
+  margin-bottom: 20rpx;
+  font-weight: 600;
+}
+
+.empty-desc {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+  line-height: 1.6;
+}

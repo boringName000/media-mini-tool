@@ -1,0 +1,63 @@
+<!-- 收益结算页面 -->
+<view class="earnings-settlement-container">
+  <!-- 收益概览模块 -->
+  <view class="earnings-overview-area">
+    <view class="overview-header">
+      <view class="overview-icon">💰</view>
+      <view class="overview-info">
+        <text class="overview-title">收益概览</text>
+        <text class="overview-desc">查看您的收益统计信息</text>
+      </view>
+    </view>
+    
+    <!-- 收益统计卡片 -->
+    <view class="earnings-stats">
+      <view class="stat-card">
+        <view class="stat-icon">📊</view>
+        <view class="stat-content">
+          <text class="stat-number">¥{{totalEarnings}}</text>
+          <text class="stat-label">总收益</text>
+        </view>
+      </view>
+      <view class="stat-card">
+        <view class="stat-icon">📈</view>
+        <view class="stat-content">
+          <text class="stat-number">¥{{monthlyEarnings}}</text>
+          <text class="stat-label">本月收益</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 结算列表 -->
+  <view class="settlement-records-area">
+    <view class="records-header">
+      <view class="records-icon">📋</view>
+      <view class="records-info">
+        <text class="records-title">结算列表</text>
+        <text class="records-desc">查看历史结算明细</text>
+      </view>
+    </view>
+    
+    <!-- 结算列表 -->
+    <view class="settlement-list">
+      <view 
+        class="settlement-item" 
+        wx:for="{{monthlyEarningsList}}" 
+        wx:key="id"
+      >
+        <!-- 月度收益条目 -->
+        <view class="monthly-earnings-item">
+          <view class="earnings-info">
+            <text class="earnings-title">{{item.title}}</text>
+          </view>
+          <view class="earnings-actions">
+            <view class="settle-button" data-index="{{index}}" catchtap="onSettleTap">
+              <text class="button-text">点击结算</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view> 

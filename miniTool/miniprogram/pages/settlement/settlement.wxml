@@ -1,0 +1,116 @@
+<!-- 结算页面 -->
+<view class="settlement-container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">本期结算</text>
+    <text class="settlement-period">{{currentSettlementPeriod}}</text>
+  </view>
+
+  <!-- 结算统计区域 -->
+  <view class="stats-area">
+    <view class="stats-row">
+      <view class="stat-item">
+        <text class="stat-number">{{settlementStats.totalAccounts}}</text>
+        <text class="stat-label">总账号</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-number">{{settlementStats.pendingAccounts}}</text>
+        <text class="stat-label">待结算</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-number">{{settlementStats.settledAccounts}}</text>
+        <text class="stat-label">已结算</text>
+      </view>
+    </view>
+    
+    <!-- 本期已结算收益 -->
+    <view class="earnings-row">
+      <view class="earnings-item">
+        <text class="earnings-label">本期已结算收益：</text>
+        <text class="earnings-number">¥{{settlementStats.settledEarnings}}</text>
+      </view>
+    </view>
+  </view>
+
+
+
+  <!-- 结算账号列表 -->
+  <view class="account-list">
+    <view class="list-header">
+      <text class="list-title">结算账号列表</text>
+      <text class="list-count">共{{settlementStats.totalAccounts}}个账号</text>
+    </view>
+    
+    <view 
+      class="account-item" 
+      wx:for="{{settlementAccountList}}" 
+      wx:key="accountId"
+      bindtap="onAccountTap"
+      data-index="{{index}}"
+    >
+      <!-- 账号基本信息 -->
+      <view class="account-info">
+        <view class="account-header">
+          <view class="platform-info">
+            <view class="platform-icon">{{item.platformIcon}}</view>
+            <view class="platform-details">
+              <text class="account-name">{{item.accountName}}</text>
+              <text class="platform-name">{{item.platform}}</text>
+            </view>
+          </view>
+          <view class="status-badge {{item.status === 2 ? 'settled' : 'pending'}}">
+            <text class="status-text">{{item.status === 1 ? '待结算' : '已结算'}}</text>
+          </view>
+        </view>
+        
+        <view class="account-details">
+          <view class="track-info">
+            <view class="track-icon">{{item.trackIcon}}</view>
+            <text class="track-type">{{item.trackType}}</text>
+          </view>
+          
+          <view class="articles-info">
+            <text class="articles-count">{{item.articlesCount}}</text>
+            <text class="articles-label">篇</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 结算时间信息 -->
+      <view class="settlement-info">
+        <text class="settlement-period-text">{{item.settlementPeriod}}</text>
+        <text class="last-settlement">上次结算：{{item.lastSettlementTime}}</text>
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="action-area">
+        <view 
+          class="settlement-button {{item.status === 2 ? 'disabled' : ''}}" 
+          catchtap="onSettlementTap"
+          data-index="{{index}}"
+        >
+          <text class="button-text">{{item.status === 2 ? '已结算' : '点击结算'}}</text>
+        </view>
+      </view>
+      
+      <!-- 已结算状态下的收益显示 -->
+      <view class="earnings-display" wx:if="{{item.status === 2}}">
+        <view class="earnings-item-small">
+          <text class="earnings-label-small">本期账号收益</text>
+          <text class="earnings-number-small">¥{{item.accountEarnings}}</text>
+        </view>
+        <view class="earnings-item-small">
+          <text class="earnings-label-small">本期结算收益</text>
+          <text class="earnings-number-small">¥{{item.settlementEarnings}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{settlementStats.totalAccounts === 0}}">
+    <text class="empty-icon">📋</text>
+    <text class="empty-text">暂无结算账号</text>
+    <text class="empty-desc">本期没有需要结算的账号</text>
+  </view>
+</view> 

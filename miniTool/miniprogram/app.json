@@ -1,11 +1,22 @@
 {
-  "pages": ["pages/index/index", "pages/chatBot/chatBot", "pages/foodBuy/foodBuy"],
-  "usingComponents": {
-    "custom-map": "/components/toolCard/map/index",
-    "custom-weather": "/components/toolCard/weather/index",
-    "custom-food-list": "/components/toolCard/food-list/index",
-    "custom-business-list": "/components/toolCard/business-list/index"
-  },
+  "pages": [
+    "pages/index/index",
+    "pages/task/task",
+    "pages/me/me",
+    "pages/article-list/article-list",
+    "pages/data-center/data-center",
+    "pages/earnings-settlement/earnings-settlement",
+    "pages/settlement/settlement",
+    "pages/submit-settlement/submit-settlement",
+    "pages/task-list/task-list",
+    "pages/upload-info/upload-info",
+    "pages/add-account/add-account",
+    "pages/account-list/account-list",
+    "pages/account-detail/account-detail",
+    "pages/agreement/agreement",
+    "pages/login/login"
+  ],
+  "usingComponents": {},
   "window": {
     "navigationBarBackgroundColor": "#ffffff",
     "navigationBarTextStyle": "black",
@@ -13,6 +24,27 @@
     "backgroundColor": "#eeeeee",
     "backgroundTextStyle": "light",
     "enablePullDownRefresh": true
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#667eea",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/task/task",
+        "text": "任务"
+      },
+      {
+        "pagePath": "pages/me/me",
+        "text": "我的"
+      }
+    ]
   },
   "sitemapLocation": "sitemap.json",
   "style": "v2",

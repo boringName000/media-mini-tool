@@ -1,0 +1,84 @@
+<!-- 任务页面 -->
+<view class="task-container">
+  <!-- 我的任务区域 -->
+  <view class="my-task-area">
+    <view class="my-task-header">
+      <view class="my-task-icon">📝</view>
+      <view class="my-task-info">
+        <text class="my-task-title">我的任务</text>
+        <text class="my-task-desc">查看和管理您的任务</text>
+      </view>
+    </view>
+    
+    <!-- 任务数据统计 -->
+    <view class="task-stats">
+      <view class="task-stat-item" bind:tap="onStatTap" data-type="pending">
+        <text class="task-stat-number">{{taskStats.pending}}</text>
+        <text class="task-stat-label">待发表</text>
+      </view>
+      <view class="task-stat-item" bind:tap="onStatTap" data-type="completed">
+        <text class="task-stat-number">{{taskStats.completed}}</text>
+        <text class="task-stat-label">已完成</text>
+      </view>
+      <view class="task-stat-item" bind:tap="onStatTap" data-type="rejected">
+        <text class="task-stat-number">{{taskStats.rejected}}</text>
+        <text class="task-stat-label">已拒绝</text>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 账号列表区域 -->
+  <view class="account-list-area">
+    <view class="account-list-header">
+      <view class="account-list-icon">👥</view>
+      <view class="account-list-info">
+        <text class="account-list-title">账号列表</text>
+        <text class="account-list-desc">管理您的创作账号</text>
+      </view>
+    </view>
+    
+    <view class="account-items">
+      <view 
+        class="account-item" 
+        wx:for="{{accountList}}" 
+        wx:key="index"
+        data-index="{{index}}"
+        bind:tap="onAccountTap"
+      >
+        <!-- 平台图标和类型 -->
+        <view class="account-platform">
+          <view class="platform-icon">{{item.platformIcon}}</view>
+          <view class="platform-text">{{item.platform}}</view>
+        </view>
+        
+        <!-- 账号详情 -->
+        <view class="account-details">
+          <view class="account-main-info">
+            <text class="account-name">{{item.accountName}}</text>
+            <text class="account-status">{{item.status}}</text>
+          </view>
+          <view class="account-track-info">
+            <view class="track-type" catchtap="onTrackTypeTap" data-index="{{index}}">
+              <text class="track-icon">{{item.trackIcon}}</text>
+              <text class="track-text">{{item.trackType}}</text>
+            </view>
+            <view class="today-articles">
+              <text class="articles-count">{{item.todayArticles}}</text>
+              <text class="articles-label">篇/今日</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="account-arrow">›</view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="task-content">
+    <view class="empty-state">
+      <view class="empty-icon">📋</view>
+      <text class="empty-text">暂无任务</text>
+      <text class="empty-desc">敬请期待更多任务</text>
+    </view>
+  </view>
+</view> 

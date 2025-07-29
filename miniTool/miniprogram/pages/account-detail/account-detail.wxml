@@ -1,0 +1,185 @@
+<!-- 账号详情页面 -->
+<view class="account-detail-container">
+  
+  <!-- 账号基本信息 -->
+  <view class="account-header">
+    <view class="account-info">
+      <view class="account-name">{{accountInfo.accountName}}</view>
+      <view class="account-id">ID: {{accountInfo.accountId}}</view>
+    </view>
+  </view>
+
+  <!-- 账号详细信息 -->
+  <view class="detail-section">
+    <view class="detail-card">
+      
+      <!-- 赛道选择 -->
+      <view class="detail-item">
+        <view class="detail-label">
+          <text class="label-text">赛道</text>
+        </view>
+        <view class="detail-content">
+          <view class="form-input-wrapper">
+            <picker 
+              mode="selector" 
+              range="{{trackTypeList}}" 
+              range-key="name"
+              bindchange="onTrackTypeChange"
+              class="picker-button"
+            >
+              <view class="picker-display">
+                <text class="picker-text">{{selectedTrackType ? selectedTrackType.name : '请选择赛道'}}</text>
+                <text class="picker-arrow">›</text>
+              </view>
+            </picker>
+          </view>
+        </view>
+        <view class="error-message" wx:if="{{errors.trackType}}">
+          <text class="error-text">{{errors.trackType}}</text>
+        </view>
+      </view>
+
+      <!-- 平台信息 -->
+      <view class="detail-item">
+        <view class="detail-label">
+          <text class="label-text">平台</text>
+        </view>
+        <view class="detail-content">
+          <view class="display-value">
+            <text class="platform-icon">{{accountInfo.platformIcon}}</text>
+            <text class="platform-name">{{accountInfo.platform}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 注册手机号 -->
+      <view class="detail-item">
+        <view class="detail-label">
+          <text class="label-text">注册手机号</text>
+        </view>
+        <view class="detail-content">
+          <view class="form-input-wrapper">
+            <input 
+              class="form-input {{errors.phoneNumber ? 'error' : ''}}"
+              type="number"
+              placeholder="请输入注册手机号"
+              value="{{phoneNumber}}"
+              bindinput="onPhoneInput"
+              maxlength="11"
+            />
+          </view>
+        </view>
+        <view class="error-message" wx:if="{{errors.phoneNumber}}">
+          <text class="error-text">{{errors.phoneNumber}}</text>
+        </view>
+      </view>
+
+      <!-- 账号昵称 -->
+      <view class="detail-item">
+        <view class="detail-label">
+          <text class="label-text">账号昵称</text>
+        </view>
+        <view class="detail-content">
+          <view class="form-input-wrapper">
+            <input 
+              class="form-input {{errors.accountNickname ? 'error' : ''}}"
+              placeholder="请输入账号昵称"
+              value="{{accountNickname}}"
+              bindinput="onNicknameInput"
+              maxlength="50"
+            />
+          </view>
+        </view>
+        <view class="error-message" wx:if="{{errors.accountNickname}}">
+          <text class="error-text">{{errors.accountNickname}}</text>
+        </view>
+      </view>
+
+      <!-- 账号ID -->
+      <view class="detail-item">
+        <view class="detail-label">
+          <text class="label-text">账号ID</text>
+        </view>
+        <view class="detail-content">
+          <view class="display-value">
+            <text class="account-id-value">{{accountInfo.accountId}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 注册日期 -->
+      <view class="detail-item">
+        <view class="detail-label">
+          <text class="label-text">注册日期</text>
+        </view>
+        <view class="detail-content">
+          <view class="display-value">
+            <text class="register-date">{{accountInfo.registerTime}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 是否违规 -->
+      <view class="detail-item">
+        <view class="detail-label">
+          <text class="label-text">是否违规</text>
+        </view>
+        <view class="detail-content">
+          <view class="switch-wrapper">
+            <switch 
+              checked="{{isViolation}}" 
+              bindchange="onViolationChange"
+              color="#007aff"
+            />
+            <text class="switch-label">{{isViolation ? '是' : '否'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 资料页截图 -->
+      <view class="detail-item">
+        <view class="detail-label">
+          <text class="label-text">资料页截图</text>
+        </view>
+        <view class="detail-content">
+          <view class="screenshot-section">
+            <view class="screenshot-display" wx:if="{{screenshotUrl && screenshotUrl.length > 0}}">
+              <image 
+                class="screenshot-image" 
+                src="{{screenshotUrl}}" 
+                mode="aspectFit"
+                bindtap="previewScreenshot"
+                binderror="onImageError"
+              />
+              <view class="screenshot-actions">
+                <button class="action-btn delete-btn" bindtap="deleteScreenshot">
+                  <text class="btn-icon">🗑️</text>
+                </button>
+                <button class="action-btn preview-btn" bindtap="previewScreenshot">
+                  <text class="btn-icon">👁️</text>
+                </button>
+              </view>
+            </view>
+            <view class="upload-area" wx:if="{{!screenshotUrl || screenshotUrl.length === 0}}" bindtap="uploadScreenshot">
+              <text class="upload-icon">📷</text>
+              <text class="upload-text">点击上传截图</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <button 
+      class="submit-btn" 
+      bindtap="submitAudit"
+      disabled="{{isUploading}}"
+    >
+      <text class="btn-text">{{isUploading ? '上传中...' : '提交审核'}}</text>
+    </button>
+  </view>
+
+</view> 

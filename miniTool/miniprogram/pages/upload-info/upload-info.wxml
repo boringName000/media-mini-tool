@@ -1,0 +1,78 @@
+<!-- 回传信息页面 -->
+<view class="upload-info-container">
+
+  <!-- 任务信息 -->
+  <view class="task-info-section">
+    <view class="section-title">
+      <text class="title-text">任务信息</text>
+    </view>
+    <view class="task-info-card">
+      <view class="info-row">
+        <text class="info-label">任务ID：</text>
+        <text class="info-value">{{taskId}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">任务标题：</text>
+        <text class="info-value">{{taskTitle}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">账号：</text>
+        <text class="info-value">{{accountName}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 回传信息表单 -->
+  <view class="upload-form-section">
+    <view class="section-title">
+      <text class="title-text">回传信息</text>
+    </view>
+    <view class="form-card">
+      <!-- 发表后的链接 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-text">发表后的链接</text>
+          <text class="required">*</text>
+        </view>
+        <view class="form-input-wrapper">
+          <input 
+            class="form-input {{linkError ? 'error' : ''}}"
+            placeholder="请填写链接"
+            value="{{publishedLink}}"
+            bindinput="onLinkInput"
+            bindblur="onLinkBlur"
+          />
+        </view>
+        <view class="error-message" wx:if="{{linkError}}">
+          <text class="error-text">{{linkError}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <button 
+      class="submit-btn" 
+      bindtap="submitUploadInfo"
+      disabled="{{!publishedLink}}"
+    >
+      <text class="btn-text">提交回传</text>
+    </button>
+  </view>
+
+  <!-- 提示信息 -->
+  <view class="tips-section">
+    <view class="tips-card">
+      <view class="tips-header">
+        <text class="tips-icon">💡</text>
+        <text class="tips-title">温馨提示</text>
+      </view>
+      <view class="tips-content">
+        <text class="tips-text">• 请确保链接可以正常访问</text>
+        <text class="tips-text">• 链接格式应为：https://xxx.xxx</text>
+        <text class="tips-text">• 提交后将无法修改，请仔细核对</text>
+      </view>
+    </view>
+  </view>
+</view> 

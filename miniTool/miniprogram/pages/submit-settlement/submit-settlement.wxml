@@ -1,0 +1,156 @@
+<!-- 提交结算页面 -->
+<view class="submit-settlement-container">
+  <!-- 选择账号 -->
+  <view class="section-card">
+    <view class="section-header">
+      <view class="section-icon">👤</view>
+      <text class="section-title">账号信息</text>
+    </view>
+    <view class="account-selection">
+      <text class="selection-label">选择账号：</text>
+      <text class="account-name">{{accountName}}</text>
+    </view>
+  </view>
+  
+  <!-- 结算方式 -->
+  <view class="section-card">
+    <view class="section-header">
+      <view class="section-icon">💳</view>
+      <text class="section-title">结算方式</text>
+    </view>
+    <view class="settlement-method">
+      <view class="method-options">
+        <view class="option-item" wx:for="{{settlementMethods}}" wx:key="value" bindtap="selectMethod" data-value="{{item.value}}">
+          <view class="radio-button {{selectedMethod === item.value ? 'selected' : ''}}">
+            <view class="radio-inner" wx:if="{{selectedMethod === item.value}}"></view>
+          </view>
+          <text class="option-text">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 转账订单 -->
+  <view class="section-card">
+    <view class="section-header">
+      <view class="section-icon">📋</view>
+      <text class="section-title">转账订单</text>
+    </view>
+    <view class="order-input-section">
+      <view class="input-group">
+        <text class="input-label">请输入订单号：</text>
+        <input 
+          class="order-input" 
+          placeholder="请输入转账订单号" 
+          value="{{orderNumber}}"
+          bindinput="onOrderInput"
+          maxlength="50"
+        />
+      </view>
+    </view>
+  </view>
+  
+  <!-- 结算收益 -->
+  <view class="section-card">
+    <view class="section-header">
+      <view class="section-icon">💰</view>
+      <text class="section-title">结算收益</text>
+    </view>
+    <view class="earnings-section">
+      <view class="earnings-item">
+        <view class="earnings-label">
+          <text class="label-text">本期结算收益：</text>
+          <text class="label-desc">即你转给我们的金额</text>
+        </view>
+        <view class="earnings-input-wrapper">
+          <view class="earnings-input-group">
+            <text class="currency">¥</text>
+            <input 
+              class="earnings-input" 
+              placeholder="0.00" 
+              value="{{settlementEarnings}}"
+              bindinput="onSettlementEarningsInput"
+              bindfocus="onSettlementEarningsFocus"
+              type="digit"
+              maxlength="10"
+            />
+          </view>
+          <text wx:if="{{settlementEarningsError}}" class="error-message">{{settlementEarningsError}}</text>
+        </view>
+      </view>
+      
+      <view class="earnings-divider"></view>
+      
+      <view class="earnings-item">
+        <view class="earnings-label">
+          <text class="label-text">本期账号收益：</text>
+          <text class="label-desc">即收到结算金额</text>
+        </view>
+        <view class="earnings-input-wrapper">
+          <view class="earnings-input-group">
+            <text class="currency">¥</text>
+            <input 
+              class="earnings-input" 
+              placeholder="0.00" 
+              value="{{accountEarnings}}"
+              bindinput="onAccountEarningsInput"
+              bindfocus="onAccountEarningsFocus"
+              type="digit"
+              maxlength="10"
+            />
+          </view>
+          <text wx:if="{{accountEarningsError}}" class="error-message">{{accountEarningsError}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 上传文件 -->
+  <view class="section-card">
+    <view class="section-header">
+      <view class="section-icon">📎</view>
+      <text class="section-title">上传文件</text>
+    </view>
+    <view class="upload-section">
+      <view class="upload-item">
+        <view class="upload-label">
+          <text class="label-text">上传结算单：</text>
+          <text class="label-desc">请上传结算单图片</text>
+        </view>
+        <view class="upload-area" bindtap="uploadSettlementDoc">
+          <view class="upload-content" wx:if="{{!settlementDocImage}}">
+            <view class="upload-icon">📄</view>
+            <text class="upload-text">点击上传</text>
+          </view>
+          <image wx:else class="uploaded-image" src="{{settlementDocImage}}" mode="aspectFit" bindtap="previewSettlementDoc"></image>
+        </view>
+      </view>
+      
+      <view class="upload-divider"></view>
+      
+      <view class="upload-item">
+        <view class="upload-label">
+          <text class="label-text">上传转账截图：</text>
+          <text class="label-desc">含订单号的转账截图</text>
+        </view>
+        <view class="upload-area" bindtap="uploadTransferScreenshot">
+          <view class="upload-content" wx:if="{{!transferScreenshotImage}}">
+            <view class="upload-icon">📱</view>
+            <text class="upload-text">点击上传</text>
+          </view>
+          <image wx:else class="uploaded-image" src="{{transferScreenshotImage}}" mode="aspectFit" bindtap="previewTransferScreenshot"></image>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 提交按钮 -->
+  <view class="submit-button-container">
+    <button class="submit-button" bindtap="submitSettlementData">
+      <view class="button-content">
+        <view class="button-icon">✅</view>
+        <text class="button-text">已结算提交数据</text>
+      </view>
+    </button>
+  </view>
+</view> 

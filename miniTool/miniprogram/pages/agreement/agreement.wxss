@@ -1,0 +1,103 @@
+/* 协议页面样式 */
+.agreement-container {
+  min-height: 100vh;
+  background: #f8f9fa;
+  padding: 30rpx 30rpx 0 30rpx; /* 移除底部padding，为固定按钮留空间 */
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.agreement-content {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 40rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  flex: 1;
+  margin-bottom: 140rpx; /* 为固定按钮留出空间 */
+}
+
+.agreement-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 40rpx;
+  line-height: 1.4;
+}
+
+.agreement-text {
+  line-height: 1.8;
+}
+
+.paragraph {
+  display: block;
+  font-size: 28rpx;
+  color: #34495e;
+  margin-bottom: 24rpx;
+  text-align: justify;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+/* 底部按钮区域样式 */
+.button-section {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 20rpx 30rpx 40rpx 30rpx; /* 增加底部padding，为安全区域留空间 */
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.button-container {
+  display: flex;
+  gap: 20rpx;
+}
+
+.disagree-btn,
+.agree-btn {
+  flex: 1;
+  height: 88rpx;
+  border: none;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.disagree-btn {
+  background: #f8f9fa;
+  border: 2rpx solid #dee2e6;
+}
+
+.disagree-btn:active {
+  background: #e9ecef;
+  transform: scale(0.98);
+}
+
+.agree-btn {
+  background: linear-gradient(135deg, #007aff 0%, #0056cc 100%);
+  box-shadow: 0 4rpx 20rpx rgba(0, 122, 255, 0.3);
+}
+
+.agree-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 10rpx rgba(0, 122, 255, 0.4);
+}
+
+.btn-text {
+  font-size: 32rpx;
+  font-weight: 600;
+}
+
+.disagree-btn .btn-text {
+  color: #6c757d;
+}
+
+.agree-btn .btn-text {
+  color: #fff;
+}

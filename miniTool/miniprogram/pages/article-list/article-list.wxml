@@ -1,0 +1,72 @@
+<!-- 文章列表页面 -->
+<view class="article-list-container">
+  <!-- 搜索输入框 -->
+  <view class="search-container">
+    <view class="search-box">
+      <view class="search-icon">🔍</view>
+      <input 
+        class="search-input" 
+        type="text" 
+        placeholder="搜索文章标题或内容..."
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+        confirm-type="search"
+      />
+      <view class="clear-button {{searchKeyword ? 'show' : ''}}" bind:tap="onClearSearch">✕</view>
+    </view>
+  </view>
+  
+  <!-- 赛道类型标题 -->
+  <view class="track-type-header" wx:if="{{currentTrackName}}">
+    <view class="track-type-title">{{currentTrackName}}</view>
+  </view>
+  
+  <!-- 文章列表内容 -->
+  <view class="article-list-content">
+    <view class="article-list">
+      <view 
+        class="article-item"
+        wx:for="{{filteredArticleList}}"
+        wx:key="id"
+        data-index="{{index}}"
+        bind:tap="onArticleTap"
+      >
+        <!-- 文章主要信息 -->
+        <view class="article-main">
+          <view class="article-title">{{item.title}}</view>
+        </view>
+        
+        <!-- 文章元信息 -->
+        <view class="article-meta">
+          <view class="article-platform">
+            <view class="platform-badge">{{item.platform}}</view>
+            <view class="track-badge">{{item.trackType}}</view>
+          </view>
+        </view>
+        
+        <!-- 发布时间和下载操作 -->
+        <view class="article-footer">
+          <view class="publish-time">{{item.publishTime}}</view>
+          <view class="download-actions">
+            <view class="download-btn" data-index="{{index}}" data-type="title" catchtap="onDownloadTap">
+              <text class="download-icon">📄</text>
+              <text class="download-text">复制标题</text>
+            </view>
+            <view class="download-btn" data-index="{{index}}" data-type="article" catchtap="onDownloadTap">
+              <text class="download-icon">📱</text>
+              <text class="download-text">下载文章</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 搜索结果为空时的提示 -->
+    <view class="empty-search-result" wx:if="{{searchKeyword && filteredArticleList.length === 0}}">
+      <view class="empty-icon">🔍</view>
+      <text class="empty-text">未找到相关文章</text>
+      <text class="empty-desc">请尝试其他关键词</text>
+    </view>
+  </view>
+</view> 

@@ -1,4 +1,5 @@
 // app.js
+const userTime = require("./utils/userTime.js");
 
 App({
   onLaunch: function () {
@@ -14,5 +15,8 @@ App({
         traceUser: true,
       });
     }
+
+    // 初始化用户注册时间
+    userTime.initUserRegisterTime();
   },
 });

@@ -1,0 +1,306 @@
+/* 账号详情页面样式 */
+.account-detail-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding-top: 30rpx;
+  padding-bottom: 40rpx;
+}
+
+/* 账号头部信息 */
+.account-header {
+  margin: 0 30rpx 30rpx;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.account-info {
+  text-align: center;
+}
+
+.account-name {
+  font-size: 36rpx;
+  color: #2c3e50;
+  font-weight: 700;
+  margin-bottom: 8rpx;
+}
+
+.account-id {
+  font-size: 26rpx;
+  color: #7f8c8d;
+}
+
+/* 详细信息区域 */
+.detail-section {
+  margin: 0 30rpx;
+}
+
+.detail-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.detail-item {
+  margin-bottom: 30rpx;
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  margin-bottom: 16rpx;
+}
+
+.label-text {
+  font-size: 28rpx;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.detail-content {
+  min-height: 60rpx;
+}
+
+/* 显示值样式 */
+.display-value {
+  display: flex;
+  align-items: center;
+  min-height: 60rpx;
+  padding: 16rpx 0;
+}
+
+.platform-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+}
+
+.platform-name {
+  font-size: 28rpx;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.account-id-value,
+.register-date {
+  font-size: 28rpx;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+/* 表单输入样式 */
+.form-input-wrapper {
+  position: relative;
+}
+
+.form-input {
+  width: 100%;
+  height: 80rpx;
+  padding: 0 24rpx;
+  border: 2rpx solid #e1e8ed;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  color: #2c3e50;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: #007aff;
+  background: #fff;
+  box-shadow: 0 0 0 4rpx rgba(0, 122, 255, 0.1);
+}
+
+.form-input.error {
+  border-color: #e74c3c;
+  background: #fff5f5;
+}
+
+.form-input::placeholder {
+  color: #bdc3c7;
+}
+
+/* 选择器按钮样式 */
+.picker-button {
+  width: 100%;
+}
+
+.picker-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 80rpx;
+  padding: 0 24rpx;
+  border: 2rpx solid #e1e8ed;
+  border-radius: 12rpx;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.picker-display:active {
+  border-color: #007aff;
+  background: #fff;
+  box-shadow: 0 0 0 4rpx rgba(0, 122, 255, 0.1);
+}
+
+.picker-text {
+  font-size: 28rpx;
+  color: #2c3e50;
+}
+
+.picker-arrow {
+  font-size: 24rpx;
+  color: #7f8c8d;
+  font-weight: bold;
+}
+
+/* 开关样式 */
+.switch-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  min-height: 60rpx;
+}
+
+.switch-label {
+  font-size: 28rpx;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+/* 截图区域样式 */
+.screenshot-section {
+  width: 100%;
+}
+
+.screenshot-display {
+  position: relative;
+  width: 100%;
+  height: 200rpx;
+  border-radius: 12rpx;
+  overflow: hidden;
+  border: 2rpx solid #e1e8ed;
+  background: #f8f9fa;
+}
+
+.screenshot-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.screenshot-actions {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  display: flex;
+  gap: 8rpx;
+}
+
+.action-btn {
+  width: 60rpx;
+  height: 60rpx;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10rpx);
+  transition: all 0.3s ease;
+}
+
+.action-btn:active {
+  transform: scale(0.9);
+}
+
+.delete-btn {
+  background: rgba(231, 76, 60, 0.8);
+}
+
+.preview-btn {
+  background: rgba(52, 152, 219, 0.8);
+}
+
+.btn-icon {
+  font-size: 24rpx;
+  color: #fff;
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200rpx;
+  border: 2rpx dashed #bdc3c7;
+  border-radius: 12rpx;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.upload-area:active {
+  border-color: #007aff;
+  background: #f0f8ff;
+}
+
+.upload-icon {
+  font-size: 48rpx;
+  margin-bottom: 12rpx;
+}
+
+.upload-text {
+  font-size: 28rpx;
+  color: #2c3e50;
+}
+
+/* 错误信息样式 */
+.error-message {
+  margin-top: 12rpx;
+}
+
+.error-text {
+  font-size: 24rpx;
+  color: #e74c3c;
+}
+
+/* 提交按钮区域 */
+.submit-section {
+  margin: 40rpx 30rpx;
+}
+
+.submit-btn {
+  width: 100%;
+  height: 88rpx;
+  background: linear-gradient(135deg, #007aff 0%, #0056cc 100%);
+  border: none;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 122, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.submit-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 10rpx rgba(0, 122, 255, 0.4);
+}
+
+.submit-btn[disabled] {
+  background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+  box-shadow: none;
+  transform: none;
+}
+
+.btn-text {
+  font-size: 32rpx;
+  color: #fff;
+  font-weight: 700;
+}

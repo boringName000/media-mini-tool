@@ -1,0 +1,175 @@
+/* 收益结算页面样式 */
+.earnings-settlement-container {
+  padding: 20rpx;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 收益概览区域 */
+.earnings-overview-area {
+  margin-bottom: 20rpx;
+}
+
+.overview-header {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.overview-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+}
+
+.overview-info {
+  flex: 1;
+}
+
+.overview-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.overview-desc {
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 收益统计卡片 */
+.earnings-stats {
+  display: flex;
+  gap: 20rpx;
+  justify-content: space-between;
+}
+
+.stat-card {
+  background-color: #fff;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-icon {
+  font-size: 40rpx;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-number {
+  display: block;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #1890ff;
+  margin-bottom: 4rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 结算列表区域 */
+.settlement-records-area {
+  margin-bottom: 20rpx;
+}
+
+.records-header {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.records-icon {
+  font-size: 48rpx;
+  margin-right: 20rpx;
+}
+
+.records-info {
+  flex: 1;
+}
+
+.records-title {
+  display: block;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.records-desc {
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 结算列表 */
+.settlement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.settlement-item {
+  background-color: #fff;
+  border-radius: 12rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+/* 月度收益条目 */
+.monthly-earnings-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.earnings-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.earnings-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.earnings-actions {
+  display: flex;
+  align-items: center;
+}
+
+.settle-button {
+  padding: 12rpx 24rpx;
+  background-color: #1890ff;
+  border-radius: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100rpx;
+}
+
+.button-text {
+  font-size: 24rpx;
+  color: #fff;
+  font-weight: bold;
+}

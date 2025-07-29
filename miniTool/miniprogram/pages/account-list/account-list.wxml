@@ -1,0 +1,104 @@
+<!-- 账号列表页面 -->
+<view class="account-list-container">
+  
+  <!-- 统计信息 -->
+  <view class="stats-section" wx:if="{{accountList.length > 0}}">
+    <view class="stats-card">
+      <view class="stats-item">
+        <text class="stats-number">{{stats.totalCount}}</text>
+        <text class="stats-label">总账号数</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-number">{{stats.approvedCount}}</text>
+        <text class="stats-label">已通过</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-number">{{stats.pendingCount}}</text>
+        <text class="stats-label">待审核</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 账号列表 -->
+  <view class="account-list-section">
+    <!-- 加载状态 -->
+    <view class="loading-container" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-container" wx:elif="{{accountList.length === 0}}">
+      <text class="empty-icon">📝</text>
+      <text class="empty-title">暂无账号</text>
+      <text class="empty-desc">点击上方按钮添加您的第一个账号</text>
+    </view>
+
+    <!-- 账号列表 -->
+    <view class="account-list" wx:else>
+      <view 
+        class="account-item" 
+        wx:for="{{accountList}}" 
+        wx:key="accountId"
+        data-index="{{index}}"
+        bindtap="onAccountTap"
+      >
+        <!-- 账号基本信息 -->
+        <view class="account-header">
+          <view class="account-info">
+            <view class="account-name-row">
+              <text class="account-name">{{item.accountName}}</text>
+              <view class="audit-status" style="background-color: {{item.auditStatusColor}}">
+                <text class="audit-text">{{item.auditStatusText}}</text>
+              </view>
+            </view>
+            <view class="account-id-row">
+              <text class="account-id">ID: {{item.accountId}}</text>
+              <view class="violation-tag" wx:if="{{item.isViolation}}">
+                <text class="violation-text">违规</text>
+              </view>
+            </view>
+          </view>
+          <view class="platform-info">
+            <text class="platform-icon">{{item.platformIcon}}</text>
+            <text class="platform-name">{{item.platform}}</text>
+          </view>
+        </view>
+
+        <!-- 账号详细信息 -->
+        <view class="account-details">
+          <view class="detail-row">
+            <view class="detail-item">
+              <text class="detail-label">赛道：</text>
+              <text class="detail-value">{{item.trackType}}</text>
+            </view>
+            <view class="detail-item">
+              <text class="detail-label">每日发文：</text>
+              <text class="detail-value">{{item.dailyPostCount}}篇</text>
+            </view>
+          </view>
+          <view class="detail-row">
+            <view class="detail-item">
+              <text class="detail-label">注册时间：</text>
+              <text class="detail-value">{{item.registerTime}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 操作按钮 -->
+        <view class="account-actions">
+          <button 
+            class="action-btn edit-btn" 
+            data-index="{{index}}"
+            bindtap="onEditAccount"
+            catchtap="onEditAccount"
+          >
+            <text class="action-icon">✏️</text>
+            <text class="action-text">编辑</text>
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+</view> 
