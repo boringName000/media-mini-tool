@@ -1,0 +1,170 @@
+# 微信小程序项目 .gitignore 文件
+
+# ===== Node.js 相关 =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# ===== 微信开发者工具相关 =====
+# 微信开发者工具生成的临时文件
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 微信开发者工具项目配置（包含敏感信息）
+project.private.config.json
+
+# ===== 云函数相关 =====
+# 云函数依赖包
+cloudfunctions/*/node_modules/
+cloudfunctions/*/package-lock.json
+
+# 云函数上传临时文件
+cloudfunctions/*/.upload/
+
+# ===== 小程序构建相关 =====
+# 小程序构建输出目录
+dist/
+build/
+miniprogram_npm/
+
+# 小程序编译缓存
+.tmp/
+.cache/
+
+# ===== 系统文件 =====
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ===== 日志文件 =====
+*.log
+logs/
+*.log.*
+
+# ===== 临时文件 =====
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+
+# ===== 环境配置文件 =====
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ===== IDE 配置文件 =====
+# WebStorm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ===== 其他 =====
+# 压缩文件
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# 图片文件（可选，根据项目需要调整）
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+# *.svg
+
+# 文档文件（可选，根据项目需要调整）
+# *.pdf
+# *.doc
+# *.docx
+
+# ===== 小程序特定文件 =====
+# 小程序上传时的临时文件
+.upload/
+.upload_temp/
+
+# 小程序预览文件
+preview/
+
+# 小程序真机调试文件
+debug/
+
+# ===== 云开发相关 =====
+# 云开发本地调试文件
+cloudbase/
+.tcb/
+
+# 云函数本地调试文件
+.local/
+
+# ===== 测试相关 =====
+# 测试覆盖率报告
+coverage/
+.nyc_output/
+
+# 测试结果
+test-results/
+test-report/
+
+# ===== 备份文件 =====
+# 各种备份文件
+*.bak
+*.backup
+*.orig
+*.rej
+
+# ===== 本地配置文件 =====
+# 本地开发配置
+config.local.js
+config.local.json
+
+# 本地数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# ===== 上传脚本相关 =====
+# 上传脚本生成的临时文件
+upload_temp/
+deploy_temp/
+
+# ===== 其他临时文件 =====
+# 各种临时文件
+temp/
+tmp/
+.temp/
+.tmp/ 

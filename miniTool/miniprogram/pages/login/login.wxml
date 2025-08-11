@@ -60,6 +60,11 @@
     <button class="submit-btn" bindtap="submitForm">
       <text class="submit-text">登录</text>
     </button>
+
+    <!-- 免密码微信直接登录按钮 -->
+    <button class="wechat-login-btn" bindtap="handleWeChatLogin">
+      <text class="wechat-login-text">免密码微信直接登录</text>
+    </button>
   </view>
 
   <!-- 注册表单 -->

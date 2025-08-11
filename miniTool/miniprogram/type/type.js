@@ -32,8 +32,8 @@ const TrackTypeEnum = {
 
 const PlatformEnum = {
   // 主流平台
-  XIAOHONGSHU: 1, // 小红书
-  WECHAT_MP: 2, // 微信公众号
+  WECHAT_MP: 1, // 微信公众号
+  XIAOHONGSHU: 2, // 小红书
   DOUYIN: 3, // 抖音
   KUAISHOU: 4, // 快手
   BILIBILI: 5, // B站

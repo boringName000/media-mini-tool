@@ -211,6 +211,32 @@
   color: #fff;
 }
 
+/* 免密码微信登录按钮样式 */
+.wechat-login-btn {
+  width: 100%;
+  height: 88rpx;
+  margin-top: 20rpx;
+  background: linear-gradient(135deg, #34c759 0%, #2ebf6d 100%);
+  border: none;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 30rpx rgba(46, 191, 109, 0.35);
+  transition: all 0.3s ease;
+}
+
+.wechat-login-btn:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 20rpx rgba(46, 191, 109, 0.28);
+}
+
+.wechat-login-text {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #fff;
+}
+
 /* 响应式设计 */
 @media (max-width: 750rpx) {
   .form-container {

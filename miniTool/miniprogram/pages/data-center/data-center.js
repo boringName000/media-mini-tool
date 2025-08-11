@@ -89,6 +89,12 @@ Page({
 
   onLoad: function (options) {
     // 页面加载时的初始化逻辑
+
+    // 检查登录状态
+    const authUtils = require("../../utils/authUtils");
+    if (!authUtils.requireLogin(this)) {
+      return;
+    }
   },
 
   onShow: function () {

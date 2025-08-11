@@ -25,6 +25,12 @@ Page({
   onLoad: function (options) {
     console.log("提交结算页面接收到的参数:", options);
 
+    // 检查登录状态
+    const authUtils = require("../../utils/authUtils");
+    if (!authUtils.requireLogin(this)) {
+      return;
+    }
+
     // 处理传递过来的参数
     if (options.accountId) {
       this.setData({

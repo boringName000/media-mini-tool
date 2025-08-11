@@ -41,6 +41,13 @@ Page({
 
   onLoad: function (options) {
     console.log("添加账号页面加载");
+
+    // 检查登录状态
+    const authUtils = require("../../utils/authUtils");
+    if (!authUtils.requireLogin(this)) {
+      return;
+    }
+
     this.initData();
   },
 

@@ -37,6 +37,11 @@ Page({
     // 页面显示时的逻辑
   },
 
+  // 免密码微信直接登录
+  handleWeChatLogin: async function () {
+    await this.performLogin({}, "登录中...");
+  },
+
   // 切换登录/注册模式
   switchMode: function (e) {
     const mode = e.currentTarget.dataset.mode;
@@ -242,38 +247,21 @@ Page({
   },
 
   // 处理登录
-  handleLogin: function () {
+  handleLogin: async function () {
     if (!this.validateLoginForm()) {
       return;
     }
-
-    wx.showLoading({
-      title: "登录中...",
-      mask: true,
-    });
-
-    // 模拟登录请求
-    setTimeout(() => {
-      wx.hideLoading();
-
-      // 模拟登录成功
-      wx.showToast({
-        title: "登录成功",
-        icon: "success",
-        duration: 2000,
-      });
-
-      // 跳转到我的页面
-      setTimeout(() => {
-        wx.switchTab({
-          url: "/pages/me/me",
-        });
-      }, 2000);
-    }, 1500);
+    await this.performLogin(
+      {
+        phone: this.data.loginPhone,
+        password: this.data.loginPassword,
+      },
+      "登录中..."
+    );
   },
 
   // 处理注册
-  handleRegister: function () {
+  handleRegister: async function () {
     if (!this.validateRegisterForm()) {
       return;
     }
@@ -283,25 +271,87 @@ Page({
       mask: true,
     });
 
-    // 模拟注册请求
-    setTimeout(() => {
-      wx.hideLoading();
-
-      // 模拟注册成功
-      wx.showToast({
-        title: "注册成功",
-        icon: "success",
-        duration: 2000,
+    try {
+      const res = await wx.cloud.callFunction({
+        name: "user-register",
+        data: {
+          nickname: this.data.registerNickname,
+          phone: this.data.registerPhone,
+          password: this.data.registerPassword,
+          inviteCode: this.data.inviteCode,
+        },
       });
 
-      // 注册成功后切换到登录模式
-      setTimeout(() => {
+      wx.hideLoading();
+
+      if (res && res.result && res.result.success) {
+        wx.showToast({
+          title: "注册成功",
+          icon: "success",
+          duration: 2000,
+        });
+
+        // 注册成功后切换到登录模式并预填手机号和密码
         this.setData({
           isLoginMode: true,
           loginPhone: this.data.registerPhone,
           loginPassword: this.data.registerPassword,
         });
-      }, 2000);
-    }, 1500);
+      } else {
+        const errMsg =
+          (res && res.result && res.result.error) || "注册失败，请稍后重试";
+        wx.showToast({
+          title: errMsg,
+          icon: "none",
+          duration: 2500,
+        });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({
+        title: e.message || "注册失败，请检查网络",
+        icon: "none",
+        duration: 2500,
+      });
+      console.error("调用用户注册云函数失败：", e);
+    }
+  },
+
+  // 通用登录流程
+  performLogin: async function (payload, loadingTitle) {
+    wx.showLoading({ title: loadingTitle || "登录中...", mask: true });
+    try {
+      const res = await wx.cloud.callFunction({
+        name: "user-login",
+        data: payload || {},
+      });
+
+      wx.hideLoading();
+
+      if (res && res.result && res.result.success) {
+        this.onLoginSuccess(res.result);
+      } else {
+        const errMsg =
+          (res && res.result && res.result.error) || "登录失败，请稍后重试";
+        wx.showToast({ title: errMsg, icon: "none", duration: 2500 });
+      }
+    } catch (e) {
+      wx.hideLoading();
+      wx.showToast({
+        title: e.message || "登录失败，请检查网络",
+        icon: "none",
+        duration: 2500,
+      });
+      console.error("调用用户登录云函数失败：", e);
+    }
+  },
+
+  // 登录成功统一处理
+  onLoginSuccess: function (result) {
+    wx.showToast({ title: "登录成功", icon: "success", duration: 1200 });
+
+    // 使用工具函数处理登录成功
+    const authUtils = require("../../utils/authUtils");
+    authUtils.handleLoginSuccess(result);
   },
 });

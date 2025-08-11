@@ -1,0 +1,176 @@
+<!--pages/test-db/test-db.wxml-->
+<view class="container">
+  <view class="title">数据库测试页面</view>
+  
+  <!-- 用户数据测试区域 -->
+  <view class="section">
+    <view class="section-title">用户数据测试</view>
+    <view class="input-section">
+      <view class="input-label">用户名：</view>
+      <input 
+        class="input-field" 
+        placeholder="请输入用户名" 
+        value="{{userName}}"
+        bindinput="onNameInput"
+      />
+    </view>
+    <view class="button-section">
+      <button class="add-btn" bindtap="addUserData">添加数据到数据库</button>
+    </view>
+  </view>
+
+  <!-- 邀请码创建区域 -->
+  <view class="section">
+    <view class="section-title">邀请码创建</view>
+    <view class="button-section">
+      <button class="invitation-btn" bindtap="createInvitationCode">创建邀请码</button>
+    </view>
+  </view>
+
+  <!-- 邀请码验证区域 -->
+  <view class="section">
+    <view class="section-title">邀请码验证</view>
+    <view class="input-section">
+      <view class="input-label">邀请码：</view>
+      <input 
+        class="input-field" 
+        placeholder="请输入要验证的邀请码" 
+        value="{{verifyCode}}"
+        bindinput="onVerifyCodeInput"
+      />
+    </view>
+    <view class="button-section">
+      <button class="verify-btn" bindtap="verifyInvitationCode">验证邀请码</button>
+    </view>
+  </view>
+
+  <!-- 邀请码删除区域 -->
+  <view class="section">
+    <view class="section-title">邀请码删除</view>
+    <view class="input-section">
+      <view class="input-label">邀请码：</view>
+      <input 
+        class="input-field" 
+        placeholder="请输入要删除的邀请码" 
+        value="{{deleteCode}}"
+        bindinput="onDeleteCodeInput"
+      />
+    </view>
+    <view class="button-section">
+      <button class="delete-btn" bindtap="deleteInvitationCode">删除邀请码</button>
+    </view>
+  </view>
+
+  <!-- 清空按钮 -->
+  <view class="button-section">
+    <button class="clear-btn" bindtap="clearResult">清空所有结果</button>
+  </view>
+  
+  <!-- 用户数据添加结果 -->
+  <view class="result-section" wx:if="{{result}}">
+    <view class="result-title">用户数据添加结果：</view>
+    <view class="result-content">
+      <view class="result-item">
+        <text class="label">成功状态：</text>
+        <text class="value">{{result.success ? '成功' : '失败'}}</text>
+      </view>
+      <view class="result-item" wx:if="{{result.insertedId}}">
+        <text class="label">文档ID：</text>
+        <text class="value">{{result.insertedId}}</text>
+      </view>
+      <view class="result-item" wx:if="{{result.userData}}">
+        <text class="label">用户名：</text>
+        <text class="value">{{result.userData.name}}</text>
+      </view>
+      <view class="result-item" wx:if="{{result.userData}}">
+        <text class="label">时间：</text>
+        <text class="value">{{result.userData.time}}</text>
+      </view>
+      <view class="result-item" wx:if="{{result.userData}}">
+        <text class="label">OpenID：</text>
+        <text class="value">{{result.userData.openid}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 邀请码创建结果 -->
+  <view class="result-section" wx:if="{{invitationResult}}">
+    <view class="result-title">邀请码创建结果：</view>
+    <view class="result-content">
+      <view class="result-item">
+        <text class="label">成功状态：</text>
+        <text class="value">{{invitationResult.success ? '成功' : '失败'}}</text>
+      </view>
+      <view class="result-item" wx:if="{{invitationResult.invitationCode}}">
+        <text class="label">邀请码：</text>
+        <text class="value invitation-code">{{invitationResult.invitationCode}}</text>
+      </view>
+      <view class="result-item" wx:if="{{invitationResult.insertedId}}">
+        <text class="label">文档ID：</text>
+        <text class="value">{{invitationResult.insertedId}}</text>
+      </view>
+      <view class="result-item" wx:if="{{invitationResult.creatorId}}">
+        <text class="label">创建人ID：</text>
+        <text class="value">{{invitationResult.creatorId}}</text>
+      </view>
+      <view class="result-item" wx:if="{{invitationResult.retryCount !== undefined}}">
+        <text class="label">重试次数：</text>
+        <text class="value">{{invitationResult.retryCount}}</text>
+      </view>
+      <view class="result-item" wx:if="{{invitationResult.error}}">
+        <text class="label">错误信息：</text>
+        <text class="value error-text">{{invitationResult.error}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 邀请码验证结果 -->
+  <view class="result-section" wx:if="{{verifyResult}}">
+    <view class="result-title">邀请码验证结果：</view>
+    <view class="result-content">
+      <view class="result-item">
+        <text class="label">成功状态：</text>
+        <text class="value">{{verifyResult.success ? '成功' : '失败'}}</text>
+      </view>
+      <view class="result-item" wx:if="{{verifyResult.invitationCode}}">
+        <text class="label">邀请码：</text>
+        <text class="value invitation-code">{{verifyResult.invitationCode}}</text>
+      </view>
+      <view class="result-item" wx:if="{{verifyResult.remainingDays !== undefined}}">
+        <text class="label">剩余天数：</text>
+        <text class="value">{{verifyResult.remainingDays}}</text>
+      </view>
+      <view class="result-item" wx:if="{{verifyResult.remainingHours !== undefined}}">
+        <text class="label">剩余小时：</text>
+        <text class="value">{{verifyResult.remainingHours}}</text>
+      </view>
+      <view class="result-item" wx:if="{{verifyResult.creatorId}}">
+        <text class="label">创建人ID：</text>
+        <text class="value">{{verifyResult.creatorId}}</text>
+      </view>
+      <view class="result-item" wx:if="{{verifyResult.error}}">
+        <text class="label">错误信息：</text>
+        <text class="value error-text">{{verifyResult.error}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 邀请码删除结果 -->
+  <view class="result-section" wx:if="{{deleteResult}}">
+    <view class="result-title">邀请码删除结果：</view>
+    <view class="result-content">
+      <view class="result-item">
+        <text class="label">成功状态：</text>
+        <text class="value">{{deleteResult.success ? '成功' : '失败'}}</text>
+      </view>
+      <view class="result-item" wx:if="{{deleteResult.invitationCode}}">
+        <text class="label">邀请码：</text>
+        <text class="value invitation-code">{{deleteResult.invitationCode}}</text>
+      </view>
+      <view class="result-item" wx:if="{{deleteResult.error}}">
+        <text class="label">错误信息：</text>
+        <text class="value error-text">{{deleteResult.error}}</text>
+      </view>
+    </view>
+  </view>
+</view> 

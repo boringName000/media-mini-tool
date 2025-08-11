@@ -1,6 +1,3 @@
-// 引入用户时间工具
-const userTime = require("../../utils/userTime.js");
-
 Page({
   data: {
     // 收益统计数据
@@ -12,6 +9,12 @@ Page({
   },
 
   onLoad: function (options) {
+    // 检查登录状态
+    const authUtils = require("../../utils/authUtils");
+    if (!authUtils.requireLogin(this)) {
+      return;
+    }
+
     this.generateMonthlyEarningsList();
     this.calculateEarningsStats();
   },
@@ -44,7 +47,7 @@ Page({
   // 根据用户注册时间生成月度收益列表
   generateMonthlyEarningsList: function () {
     // 从工具文件获取用户注册时间戳
-    const registerTimestamp = userTime.getUserRegisterTime();
+    const registerTimestamp = "1754742131987";
     const userRegisterDate = new Date(registerTimestamp);
     const currentDate = new Date();
 

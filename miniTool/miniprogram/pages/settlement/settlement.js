@@ -1,5 +1,3 @@
-// 引入用户时间工具
-const userTime = require("../../utils/userTime.js");
 // 引入赛道类型工具
 const {
   TrackTypeEnum,

@@ -1,5 +1,5 @@
 // 引入用户时间工具
-const userTime = require("../../utils/userTime.js");
+const timeUtils = require("../../utils/timeUtils.js");
 
 Page({
   data: {
@@ -39,6 +39,11 @@ Page({
         desc: "查看合作协议条款",
       },
       {
+        icon: "🗄️",
+        title: "数据库测试",
+        desc: "测试数据库连接和操作",
+      },
+      {
         icon: "🚪",
         title: "退出登录",
         desc: "安全退出当前账号",
@@ -46,12 +51,24 @@ Page({
     ],
   },
 
+  // 新增：接收登录结果并更新页面
+  applyLoginData: function (loginResult) {
+    const ts = loginResult && loginResult.registerTimestamp;
+    const timeLabel = timeUtils.formatTimestamp(ts, "YYYY-MM-DD HH:mm");
+    this.setData({
+      isLoggedIn: true,
+      "userInfo.nickname":
+        (loginResult && loginResult.nickname) || this.data.userInfo.nickname,
+      "userInfo.uid":
+        (loginResult && loginResult.userId) || this.data.userInfo.uid,
+      "userInfo.registerTime": timeLabel,
+    });
+  },
+
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad: function (options) {
-    this.loadUserInfo();
-  },
+  onLoad: function (options) {},
 
   /**
    * 生命周期函数--监听页面初次渲染完成
@@ -68,18 +85,35 @@ Page({
         selected: 2,
       });
     }
-    // 刷新用户信息
-    this.loadUserInfo();
-  },
 
-  // 加载用户信息
-  loadUserInfo: function () {
-    // 从工具文件获取用户注册时间字符串（用于显示）
-    const registerTime = userTime.getUserRegisterTimeString();
+    // 检查登录状态
+    const authUtils = require("../../utils/authUtils");
+    if (!authUtils.isLoggedIn()) {
+      // 未登录状态
+      this.setData({
+        isLoggedIn: false,
+      });
+      return;
+    }
 
+    // 已登录状态，更新用户信息
     this.setData({
-      "userInfo.registerTime": registerTime,
+      isLoggedIn: true,
     });
+
+    // 再从全局数据或本地存储获取登录结果并应用，避免被覆盖
+    try {
+      const app = getApp();
+      const loginResult = app && app.globalData && app.globalData.loginResult;
+      if (loginResult && loginResult.success) {
+        this.applyLoginData(loginResult);
+      } else {
+        const cached = wx.getStorageSync("loginResult");
+        if (cached && cached.success) {
+          this.applyLoginData(cached);
+        }
+      }
+    } catch (e) {}
   },
 
   /**
@@ -163,6 +197,21 @@ Page({
           });
         },
       });
+    } else if (menu.title === "数据库测试") {
+      // 跳转到数据库测试页面
+      wx.navigateTo({
+        url: "/pages/test-db/test-db",
+        success: function () {
+          console.log("跳转到数据库测试页面");
+        },
+        fail: function (err) {
+          console.error("跳转失败:", err);
+          wx.showToast({
+            title: "跳转失败，请重试",
+            icon: "none",
+          });
+        },
+      });
     } else if (menu.title === "退出登录") {
       // 显示退出登录确认框
       const that = this; // 保存this引用
@@ -183,7 +232,10 @@ Page({
               mask: true,
             });
 
-            // 模拟退出登录过程
+            // 清除登录状态
+            const authUtils = require("../../utils/authUtils");
+            authUtils.clearLoginStatus();
+
             setTimeout(() => {
               wx.hideLoading();
 
@@ -194,23 +246,16 @@ Page({
                 duration: 2000,
               });
 
-              // 设置登录状态为未登录
-              that.setData({
-                isLoggedIn: false,
+              // 跳转到登录页面
+              wx.redirectTo({
+                url: "/pages/login/login",
+                success: () => {
+                  console.log("退出登录成功，已跳转到登录页面");
+                },
+                fail: (err) => {
+                  console.error("跳转到登录页面失败:", err);
+                },
               });
-
-              // 这里可以添加实际的退出登录逻辑
-              // 比如清除本地存储的用户信息、跳转到登录页面等
-              console.log("退出登录成功");
-
-              // 示例：清除用户信息
-              // wx.removeStorageSync('userInfo');
-              // wx.removeStorageSync('token');
-
-              // 示例：跳转到登录页面
-              // wx.reLaunch({
-              //   url: '/pages/login/login'
-              // });
             }, 1500);
           } else {
             // 用户取消退出
