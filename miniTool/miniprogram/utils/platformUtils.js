@@ -12,8 +12,8 @@ const { PlatformEnum } = require("../type/type");
  */
 function getPlatformName(platformEnum) {
   const platformMap = {
-    [PlatformEnum.XIAOHONGSHU]: "小红书",
     [PlatformEnum.WECHAT_MP]: "公众号",
+    [PlatformEnum.XIAOHONGSHU]: "小红书",
     [PlatformEnum.DOUYIN]: "抖音",
     [PlatformEnum.KUAISHOU]: "快手",
     [PlatformEnum.BILIBILI]: "B站",
@@ -32,8 +32,8 @@ function getPlatformName(platformEnum) {
  */
 function getPlatformIcon(platformEnum) {
   const platformIconMap = {
-    [PlatformEnum.XIAOHONGSHU]: "📱",
     [PlatformEnum.WECHAT_MP]: "📰",
+    [PlatformEnum.XIAOHONGSHU]: "📱",
     [PlatformEnum.DOUYIN]: "🎵",
     [PlatformEnum.KUAISHOU]: "⚡",
     [PlatformEnum.BILIBILI]: "📺",
@@ -83,8 +83,8 @@ function getPlatformEnum(platformName) {
  */
 function getAllPlatforms() {
   return {
-    [PlatformEnum.XIAOHONGSHU]: "小红书",
     [PlatformEnum.WECHAT_MP]: "公众号",
+    [PlatformEnum.XIAOHONGSHU]: "小红书",
     [PlatformEnum.DOUYIN]: "抖音",
     [PlatformEnum.KUAISHOU]: "快手",
     [PlatformEnum.BILIBILI]: "B站",

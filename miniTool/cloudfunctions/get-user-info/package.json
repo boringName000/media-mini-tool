@@ -1,7 +1,7 @@
 {
-  "name": "delete-invitation-code",
+  "name": "get-user-info",
   "version": "1.0.0",
-  "description": "云函数：删除邀请码",
+  "description": "获取用户信息的云函数",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

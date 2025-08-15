@@ -101,7 +101,6 @@ exports.main = async (event, context) => {
       nickname: nickname,
       phone: phone,
       password: password, // 注意：实际项目中应该加密存储
-      inviteCode: inviteCode,
       userId: wxContext.OPENID,
       registerTimestamp: db.serverDate(),
       status: 1, // 用户状态：0-禁用，1-启用
@@ -151,7 +150,6 @@ exports.main = async (event, context) => {
       userId: wxContext.OPENID,
       nickname: nickname,
       phone: phone,
-      inviteCode: inviteCode,
       registerTimestamp: userData.registerTimestamp,
       userLevel: userData.userLevel,
       userType: userData.userType,

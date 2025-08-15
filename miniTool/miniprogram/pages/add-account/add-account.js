@@ -21,6 +21,7 @@ Page({
     registerDate: "",
     isViolation: false,
     screenshotUrl: "",
+    screenshotFile: null, // 存储截图文件信息，用于后续上传
 
     // 选择器数据
     trackTypeList: [],
@@ -114,14 +115,14 @@ Page({
     // 初始化平台列表
     const platformList = [
       {
-        type: PlatformEnum.XIAOHONGSHU,
-        name: getPlatformName(PlatformEnum.XIAOHONGSHU),
-        icon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
-      },
-      {
         type: PlatformEnum.WECHAT_MP,
         name: getPlatformName(PlatformEnum.WECHAT_MP),
         icon: getPlatformIcon(PlatformEnum.WECHAT_MP),
+      },
+      {
+        type: PlatformEnum.XIAOHONGSHU,
+        name: getPlatformName(PlatformEnum.XIAOHONGSHU),
+        icon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
       },
       {
         type: PlatformEnum.DOUYIN,
@@ -224,6 +225,7 @@ Page({
     const registerDate = e.detail.value;
     this.setData({
       registerDate,
+      "errors.registerDate": "", // 清除注册时间错误
     });
   },
 
@@ -235,7 +237,7 @@ Page({
     });
   },
 
-  // 上传截图
+  // 选择截图
   uploadScreenshot: function () {
     const that = this;
 
@@ -245,31 +247,29 @@ Page({
       sourceType: ["album", "camera"],
       success: function (res) {
         const tempFilePath = res.tempFiles[0].tempFilePath;
+        const fileSize = res.tempFiles[0].size;
 
-        that.setData({
-          isUploading: true,
-        });
-
-        // 显示上传进度
-        wx.showLoading({
-          title: "上传中...",
-          mask: true,
-        });
-
-        // 模拟上传到云存储
-        setTimeout(() => {
-          wx.hideLoading();
-          that.setData({
-            screenshotUrl: tempFilePath,
-            isUploading: false,
-          });
-
+        // 检查文件大小（限制为10MB）
+        if (fileSize > 10 * 1024 * 1024) {
           wx.showToast({
-            title: "上传成功",
-            icon: "success",
+            title: "图片大小不能超过10MB",
+            icon: "none",
             duration: 2000,
           });
-        }, 1500);
+          return;
+        }
+
+        // 直接存储临时文件路径，不立即上传到云存储
+        that.setData({
+          screenshotUrl: tempFilePath,
+          screenshotFile: res.tempFiles[0], // 保存文件信息用于后续上传
+        });
+
+        wx.showToast({
+          title: "图片已选择",
+          icon: "success",
+          duration: 1500,
+        });
       },
       fail: function (err) {
         console.error("选择图片失败:", err);
@@ -284,68 +284,65 @@ Page({
 
   // 删除截图
   deleteScreenshot: function () {
-    this.setData({
-      screenshotUrl: "",
+    const currentScreenshotUrl = this.data.screenshotUrl;
+
+    if (!currentScreenshotUrl) {
+      return;
+    }
+
+    wx.showModal({
+      title: "确认删除",
+      content: "确定要删除这张截图吗？",
+      success: (res) => {
+        if (res.confirm) {
+          // 直接清除本地临时文件
+          this.setData({
+            screenshotUrl: "",
+            screenshotFile: null,
+          });
+
+          wx.showToast({
+            title: "删除成功",
+            icon: "success",
+            duration: 1500,
+          });
+        }
+      },
     });
   },
 
   // 预览截图
   previewScreenshot: function () {
-    if (this.data.screenshotUrl) {
+    const screenshotUrl = this.data.screenshotUrl;
+    if (screenshotUrl) {
+      // 直接预览临时文件
       wx.previewImage({
-        urls: [this.data.screenshotUrl],
-        current: this.data.screenshotUrl,
+        urls: [screenshotUrl],
+        current: screenshotUrl,
       });
     }
   },
 
   // 验证表单
   validateForm: function () {
-    const errors = {};
-    let isValid = true;
+    const accountUtils = require("../../utils/accountUtils");
 
-    // 验证赛道选择
-    if (!this.data.selectedTrackType) {
-      errors.trackType = "请选择赛道";
-      isValid = false;
-    }
+    // 格式化数据用于验证
+    const accountData = accountUtils.formatAccountData(this.data);
 
-    // 验证平台选择
-    if (!this.data.selectedPlatform) {
-      errors.platform = "请选择平台";
-      isValid = false;
-    }
+    // 使用工具函数进行验证
+    const validation = accountUtils.validateAccountData(accountData);
 
-    // 验证手机号
-    if (!this.data.phoneNumber) {
-      errors.phoneNumber = "请输入注册手机号";
-      isValid = false;
-    } else if (!/^1[3-9]\d{9}$/.test(this.data.phoneNumber)) {
-      errors.phoneNumber = "请输入正确的手机号格式";
-      isValid = false;
-    }
-
-    // 验证账号昵称
-    if (!this.data.accountNickname) {
-      errors.accountNickname = "请输入账号昵称";
-      isValid = false;
-    }
-
-    // 验证账号ID
-    if (!this.data.accountId) {
-      errors.accountId = "请输入账号ID";
-      isValid = false;
-    }
-
+    // 设置错误信息到页面
     this.setData({
-      errors,
+      errors: validation.errors,
     });
 
-    return isValid;
+    return validation.isValid;
   },
 
   // 提交表单
-  submitForm: function () {
+  submitForm: async function () {
     if (!this.validateForm()) {
       wx.showToast({
         title: "请完善表单信息",
@@ -361,35 +358,82 @@ Page({
       mask: true,
     });
 
-    // 模拟提交数据到服务器
-    setTimeout(() => {
-      wx.hideLoading();
+    try {
+      let finalScreenshotUrl = this.data.screenshotUrl;
 
-      // 提交成功
-      wx.showToast({
-        title: "添加成功",
-        icon: "success",
-        duration: 2000,
+      // 如果有截图，先上传到云存储
+      if (this.data.screenshotFile) {
+        try {
+          // 生成文件名
+          const timestamp = Date.now();
+          const randomStr = Math.random().toString(36).substring(2, 8);
+          const fileName = `screenshot_${timestamp}_${randomStr}.jpg`;
+
+          // 上传到云存储
+          const uploadResult = await wx.cloud.uploadFile({
+            cloudPath: `userAccountScreenshots/${fileName}`,
+            filePath: this.data.screenshotFile.tempFilePath,
+          });
+
+          console.log("截图上传成功:", uploadResult);
+          finalScreenshotUrl = uploadResult.fileID;
+        } catch (uploadError) {
+          console.error("截图上传失败:", uploadError);
+          wx.hideLoading();
+          wx.showToast({
+            title: "截图上传失败，请重试",
+            icon: "none",
+            duration: 2000,
+          });
+          return;
+        }
+      }
+
+      // 格式化账号数据，使用最终的文件ID
+      const accountUtils = require("../../utils/accountUtils");
+      const accountData = accountUtils.formatAccountData({
+        ...this.data,
+        screenshotUrl: finalScreenshotUrl,
       });
 
-      // 延迟返回上一页
-      setTimeout(() => {
-        wx.navigateBack({
-          delta: 1,
-        });
-      }, 2000);
-    }, 1500);
+      // 调用云函数添加账号
+      const result = await accountUtils.addUserAccount(accountData);
 
-    // 实际项目中，这里应该调用API提交数据
-    console.log("提交账号信息:", {
-      trackType: this.data.selectedTrackType,
-      platform: this.data.selectedPlatform,
-      phoneNumber: this.data.phoneNumber,
-      accountNickname: this.data.accountNickname,
-      accountId: this.data.accountId,
-      registerDate: this.data.registerDate,
-      isViolation: this.data.isViolation,
-      screenshotUrl: this.data.screenshotUrl,
-    });
+      wx.hideLoading();
+
+      if (result.success) {
+        // 提交成功
+        wx.showToast({
+          title: "添加成功",
+          icon: "success",
+          duration: 2000,
+        });
+
+        console.log("账号添加成功:", result.accountData);
+        console.log("当前总账号数:", result.totalAccounts);
+
+        // 延迟返回上一页
+        setTimeout(() => {
+          wx.navigateBack({
+            delta: 1,
+          });
+        }, 2000);
+      } else {
+        // 提交失败
+        wx.showToast({
+          title: result.error || "添加失败",
+          icon: "none",
+          duration: 2500,
+        });
+      }
+    } catch (error) {
+      wx.hideLoading();
+      console.error("提交账号信息失败:", error);
+      wx.showToast({
+        title: "网络错误，请重试",
+        icon: "none",
+        duration: 2000,
+      });
+    }
   },
 });

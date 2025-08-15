@@ -209,10 +209,33 @@
   overflow: hidden;
 }
 
-.preview-image {
+.preview-image-container {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder-text {
+  color: #7f8c8d;
+  font-size: 28rpx;
 }
 
 .image-actions {
@@ -221,11 +244,14 @@
   right: 12rpx;
   display: flex;
   gap: 8rpx;
+  z-index: 10;
 }
 
 .action-btn {
   width: 60rpx;
   height: 60rpx;
+  padding: 0;
+  margin: 0;
   border: none;
   border-radius: 50%;
   display: flex;
@@ -234,6 +260,10 @@
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(10rpx);
   transition: all 0.3s ease;
+  box-sizing: border-box;
+  line-height: 1;
+  font-size: 0;
+  cursor: pointer;
 }
 
 .action-btn:active {
@@ -251,6 +281,12 @@
 .btn-icon {
   font-size: 24rpx;
   color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 1;
 }
 
 /* 错误信息样式 */
@@ -286,7 +322,7 @@
   box-shadow: 0 2rpx 10rpx rgba(0, 122, 255, 0.4);
 }
 
-.submit-btn[disabled] {
+.submit-btn-disabled {
   background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
   box-shadow: none;
   transform: none;

@@ -126,13 +126,16 @@
             mode="date" 
             value="{{registerDate}}" 
             bindchange="onDateChange"
-            class="date-picker"
+            class="date-picker {{errors.registerDate ? 'error' : ''}}"
           >
             <view class="picker-display">
               <text class="picker-text">{{registerDate}}</text>
               <text class="picker-arrow">📅</text>
             </view>
           </picker>
+        </view>
+        <view class="error-message" wx:if="{{errors.registerDate}}">
+          <text class="error-text">{{errors.registerDate}}</text>
         </view>
       </view>
 
@@ -163,19 +166,22 @@
             <text class="upload-hint">支持jpg、png格式</text>
           </view>
           <view class="image-preview" wx:if="{{screenshotUrl}}">
-            <image 
-              class="preview-image" 
-              src="{{screenshotUrl}}" 
-              mode="aspectFit"
+            <view 
+              class="preview-image-container"
+              style="background-image: url('{{screenshotUrl}}')"
               bindtap="previewScreenshot"
-            />
+            >
+              <view class="image-placeholder" wx:if="{{!screenshotUrl.startsWith('cloud://')}}">
+                <text class="placeholder-text">图片预览</text>
+              </view>
+            </view>
             <view class="image-actions">
-              <button class="action-btn delete-btn" bindtap="deleteScreenshot">
+              <view class="action-btn delete-btn" bindtap="deleteScreenshot">
                 <text class="btn-icon">🗑️</text>
-              </button>
-              <button class="action-btn preview-btn" bindtap="previewScreenshot">
+              </view>
+              <view class="action-btn preview-btn" bindtap="previewScreenshot">
                 <text class="btn-icon">👁️</text>
-              </button>
+              </view>
             </view>
           </view>
         </view>
@@ -187,7 +193,7 @@
   <!-- 提交按钮 -->
   <view class="submit-section">
     <button 
-      class="submit-btn" 
+      class="submit-btn {{isUploading ? 'submit-btn-disabled' : ''}}" 
       bindtap="submitForm"
       disabled="{{isUploading}}"
     >
