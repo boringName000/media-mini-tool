@@ -94,11 +94,62 @@ function getAllPlatforms() {
   };
 }
 
+/**
+ * 获取平台选择器列表
+ * 用于picker组件的range数据源
+ * @returns {Array} 平台选择器列表
+ */
+function getPlatformList() {
+  return [
+    {
+      type: PlatformEnum.WECHAT_MP,
+      name: getPlatformName(PlatformEnum.WECHAT_MP),
+      icon: getPlatformIcon(PlatformEnum.WECHAT_MP),
+    },
+    {
+      type: PlatformEnum.XIAOHONGSHU,
+      name: getPlatformName(PlatformEnum.XIAOHONGSHU),
+      icon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
+    },
+    {
+      type: PlatformEnum.DOUYIN,
+      name: getPlatformName(PlatformEnum.DOUYIN),
+      icon: getPlatformIcon(PlatformEnum.DOUYIN),
+    },
+    {
+      type: PlatformEnum.KUAISHOU,
+      name: getPlatformName(PlatformEnum.KUAISHOU),
+      icon: getPlatformIcon(PlatformEnum.KUAISHOU),
+    },
+    {
+      type: PlatformEnum.BILIBILI,
+      name: getPlatformName(PlatformEnum.BILIBILI),
+      icon: getPlatformIcon(PlatformEnum.BILIBILI),
+    },
+    {
+      type: PlatformEnum.WEIBO,
+      name: getPlatformName(PlatformEnum.WEIBO),
+      icon: getPlatformIcon(PlatformEnum.WEIBO),
+    },
+    {
+      type: PlatformEnum.ZHIHU,
+      name: getPlatformName(PlatformEnum.ZHIHU),
+      icon: getPlatformIcon(PlatformEnum.ZHIHU),
+    },
+    {
+      type: PlatformEnum.TIKTOK,
+      name: getPlatformName(PlatformEnum.TIKTOK),
+      icon: getPlatformIcon(PlatformEnum.TIKTOK),
+    },
+  ];
+}
+
 module.exports = {
   getPlatformName,
   getPlatformIcon,
   getPlatformIconPath,
   getPlatformEnum,
   getAllPlatforms,
+  getPlatformList,
   PlatformEnum,
 };

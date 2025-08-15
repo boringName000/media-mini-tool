@@ -1,9 +1,9 @@
 // 账号详情页面
-const { TrackTypeEnum } = require("../../type/type");
-const { PlatformEnum } = require("../../type/type");
+// 赛道类型和平台枚举已通过工具函数获取，无需直接导入
 const {
   getTrackTypeName,
   getTrackTypeIcon,
+  getTrackTypeList,
 } = require("../../utils/trackTypeUtils");
 const {
   getPlatformName,
@@ -85,59 +85,8 @@ Page({
 
   // 初始化数据
   initData: function () {
-    // 初始化赛道列表
-    const trackTypeList = [
-      {
-        type: TrackTypeEnum.FOOD_TRACK,
-        name: getTrackTypeName(TrackTypeEnum.FOOD_TRACK),
-        icon: getTrackTypeIcon(TrackTypeEnum.FOOD_TRACK),
-      },
-      {
-        type: TrackTypeEnum.ENTERTAINMENT,
-        name: getTrackTypeName(TrackTypeEnum.ENTERTAINMENT),
-        icon: getTrackTypeIcon(TrackTypeEnum.ENTERTAINMENT),
-      },
-      {
-        type: TrackTypeEnum.TRAVEL_TRACK,
-        name: getTrackTypeName(TrackTypeEnum.TRAVEL_TRACK),
-        icon: getTrackTypeIcon(TrackTypeEnum.TRAVEL_TRACK),
-      },
-      {
-        type: TrackTypeEnum.TRAVEL_ARTICLE,
-        name: getTrackTypeName(TrackTypeEnum.TRAVEL_ARTICLE),
-        icon: getTrackTypeIcon(TrackTypeEnum.TRAVEL_ARTICLE),
-      },
-      {
-        type: TrackTypeEnum.CALLIGRAPHY,
-        name: getTrackTypeName(TrackTypeEnum.CALLIGRAPHY),
-        icon: getTrackTypeIcon(TrackTypeEnum.CALLIGRAPHY),
-      },
-      {
-        type: TrackTypeEnum.FOOD_GIF,
-        name: getTrackTypeName(TrackTypeEnum.FOOD_GIF),
-        icon: getTrackTypeIcon(TrackTypeEnum.FOOD_GIF),
-      },
-      {
-        type: TrackTypeEnum.FOOD_GREEN,
-        name: getTrackTypeName(TrackTypeEnum.FOOD_GREEN),
-        icon: getTrackTypeIcon(TrackTypeEnum.FOOD_GREEN),
-      },
-      {
-        type: TrackTypeEnum.PHOTOGRAPHY,
-        name: getTrackTypeName(TrackTypeEnum.PHOTOGRAPHY),
-        icon: getTrackTypeIcon(TrackTypeEnum.PHOTOGRAPHY),
-      },
-      {
-        type: TrackTypeEnum.ANTIQUE,
-        name: getTrackTypeName(TrackTypeEnum.ANTIQUE),
-        icon: getTrackTypeIcon(TrackTypeEnum.ANTIQUE),
-      },
-      {
-        type: TrackTypeEnum.PET,
-        name: getTrackTypeName(TrackTypeEnum.PET),
-        icon: getTrackTypeIcon(TrackTypeEnum.PET),
-      },
-    ];
+    // 使用工具函数获取赛道列表
+    const trackTypeList = getTrackTypeList();
 
     this.setData({
       trackTypeList,
