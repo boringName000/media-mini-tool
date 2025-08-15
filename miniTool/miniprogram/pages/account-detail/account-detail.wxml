@@ -4,7 +4,7 @@
   <!-- 账号基本信息 -->
   <view class="account-header">
     <view class="account-info">
-      <view class="account-name">{{accountInfo.accountName}}</view>
+      <view class="account-name">{{accountInfo.accountNickname || accountInfo.accountName}}</view>
       <view class="account-id">ID: {{accountInfo.accountId}}</view>
     </view>
   </view>
@@ -24,6 +24,7 @@
               mode="selector" 
               range="{{trackTypeList}}" 
               range-key="name"
+              value="{{selectedTrackIndex}}"
               bindchange="onTrackTypeChange"
               class="picker-button"
             >
@@ -46,7 +47,7 @@
         </view>
         <view class="detail-content">
           <view class="display-value">
-            <text class="platform-icon">{{accountInfo.platformIcon}}</text>
+            <text class="platform-icon">{{accountInfo.platformIcon || '📱'}}</text>
             <text class="platform-name">{{accountInfo.platform}}</text>
           </view>
         </view>
@@ -114,7 +115,7 @@
         </view>
         <view class="detail-content">
           <view class="display-value">
-            <text class="register-date">{{accountInfo.registerTime}}</text>
+            <text class="register-date">{{accountInfo.registerDate ? (accountInfo.registerDate.split('T')[0]) : accountInfo.registerTime}}</text>
           </view>
         </view>
       </view>

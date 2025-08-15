@@ -70,6 +70,7 @@ exports.main = async (event, context) => {
         registerTimestamp: user.registerTimestamp,
         lastLoginTimestamp: user.lastLoginTimestamp,
         inviteCode: user.inviteCode,
+        accounts: user.accounts || [], // 添加账号信息
       },
       // 返回查询相关的上下文信息
       queryContext: {

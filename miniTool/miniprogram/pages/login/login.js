@@ -1,4 +1,5 @@
 // 登录页面
+const authUtils = require("../../utils/authUtils");
 Page({
   data: {
     // 页面状态
@@ -351,7 +352,6 @@ Page({
     wx.showToast({ title: "登录成功", icon: "success", duration: 1200 });
 
     // 使用工具函数处理登录成功
-    const authUtils = require("../../utils/authUtils");
     authUtils.handleLoginSuccess(result);
   },
 });

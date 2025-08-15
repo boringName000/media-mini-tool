@@ -9,6 +9,7 @@ const {
   getPlatformName,
   getPlatformIcon,
 } = require("../../utils/platformUtils");
+const authUtils = require("../../utils/authUtils");
 
 Page({
   data: {
@@ -17,6 +18,7 @@ Page({
 
     // 表单数据
     selectedTrackType: null,
+    selectedTrackIndex: 0, // 添加选中赛道的索引
     phoneNumber: "",
     accountNickname: "",
     isViolation: false,
@@ -40,7 +42,6 @@ Page({
     console.log("账号详情页面加载，参数:", options);
 
     // 检查登录状态
-    const authUtils = require("../../utils/authUtils");
     if (!authUtils.requireLogin(this)) {
       return;
     }
@@ -148,22 +149,65 @@ Page({
     console.log("初始化表单数据，账号数据:", accountData);
     console.log("当前trackTypeList:", this.data.trackTypeList);
 
-    // 根据账号数据初始化表单
-    const selectedTrack = this.data.trackTypeList.find(
-      (item) => item.type === accountData.trackTypeEnum
-    );
+    // 获取赛道类型
+    const trackTypeEnum = accountData.trackType;
+    console.log("账号的赛道枚举值:", trackTypeEnum);
+    console.log("赛道枚举值类型:", typeof trackTypeEnum);
 
+    // 根据账号数据初始化表单
+    const selectedTrackIndex = this.data.trackTypeList.findIndex(
+      (item) => item.type === trackTypeEnum
+    );
+    const selectedTrack =
+      selectedTrackIndex >= 0
+        ? this.data.trackTypeList[selectedTrackIndex]
+        : null;
+
+    console.log("找到的赛道索引:", selectedTrackIndex);
     console.log("找到的赛道:", selectedTrack);
-    console.log("账号的赛道枚举:", accountData.trackTypeEnum);
+
+    // 处理截图URL，如果是外部链接则替换为默认图片
+    let screenshotUrl = accountData.screenshotUrl || "";
+    if (
+      screenshotUrl &&
+      (screenshotUrl.startsWith("http") ||
+        screenshotUrl.includes("via.placeholder"))
+    ) {
+      screenshotUrl = "/imgs/default-platform.png";
+      console.log("检测到外部图片链接，已替换为默认图片");
+    }
+
+    // 获取平台信息
+    const platformEnum = accountData.platform;
+    console.log("账号的平台枚举值:", platformEnum);
+
+    // 获取平台名称和图标
+    const platformName = getPlatformName(platformEnum);
+    const platformIcon = getPlatformIcon(platformEnum);
+    console.log("平台名称:", platformName);
+    console.log("平台图标:", platformIcon);
 
     // 设置表单数据
     const formData = {
       selectedTrackType: selectedTrack || null,
+      selectedTrackIndex: selectedTrackIndex >= 0 ? selectedTrackIndex : 0,
       phoneNumber: accountData.phoneNumber || "",
-      accountNickname: accountData.accountName || "",
+      accountNickname:
+        accountData.accountNickname || accountData.accountName || "",
       isViolation: accountData.isViolation || false,
-      screenshotUrl: accountData.screenshotUrl || "",
+      screenshotUrl: screenshotUrl,
     };
+
+    // 更新账号信息，确保平台信息正确显示
+    const updatedAccountInfo = {
+      ...this.data.accountInfo,
+      platform: platformName,
+      platformIcon: platformIcon,
+    };
+
+    this.setData({
+      accountInfo: updatedAccountInfo,
+    });
 
     console.log("要设置的表单数据:", formData);
     console.log("截图URL:", accountData.screenshotUrl);
@@ -181,10 +225,12 @@ Page({
 
     this.setData({
       selectedTrackType: selectedTrack,
+      selectedTrackIndex: index,
       "errors.trackType": "",
     });
 
     console.log("选择的赛道:", selectedTrack);
+    console.log("选择的赛道索引:", index);
   },
 
   // 手机号输入
@@ -280,15 +326,28 @@ Page({
   // 图片加载错误处理
   onImageError: function (e) {
     console.error("图片加载失败:", e);
-    wx.showToast({
-      title: "图片加载失败",
-      icon: "none",
-      duration: 2000,
-    });
-    // 清除无效的图片URL
-    this.setData({
-      screenshotUrl: "",
-    });
+
+    // 如果当前图片URL是外部链接或无效路径，替换为默认图片
+    const currentUrl = this.data.screenshotUrl;
+    if (
+      currentUrl &&
+      (currentUrl.startsWith("http") || currentUrl.includes("via.placeholder"))
+    ) {
+      this.setData({
+        screenshotUrl: "/imgs/default-platform.png",
+      });
+      console.log("已替换为默认图片");
+    } else {
+      // 如果是本地图片也加载失败，则清除图片URL
+      this.setData({
+        screenshotUrl: "",
+      });
+      wx.showToast({
+        title: "图片加载失败",
+        icon: "none",
+        duration: 2000,
+      });
+    }
   },
 
   // 验证表单

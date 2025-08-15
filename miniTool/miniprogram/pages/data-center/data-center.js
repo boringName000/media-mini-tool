@@ -9,6 +9,7 @@ const {
   getPlatformName,
   getPlatformIcon,
 } = require("../../utils/platformUtils");
+const authUtils = require("../../utils/authUtils");
 
 Page({
   data: {
@@ -91,7 +92,6 @@ Page({
     // 页面加载时的初始化逻辑
 
     // 检查登录状态
-    const authUtils = require("../../utils/authUtils");
     if (!authUtils.requireLogin(this)) {
       return;
     }

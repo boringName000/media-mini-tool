@@ -1,4 +1,5 @@
 // 提交结算页面
+const authUtils = require("../../utils/authUtils");
 Page({
   data: {
     // 页面数据
@@ -26,7 +27,6 @@ Page({
     console.log("提交结算页面接收到的参数:", options);
 
     // 检查登录状态
-    const authUtils = require("../../utils/authUtils");
     if (!authUtils.requireLogin(this)) {
       return;
     }

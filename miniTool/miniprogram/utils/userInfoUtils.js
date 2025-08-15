@@ -3,12 +3,45 @@ const userInfoUtils = {
   // 获取当前用户信息
   getCurrentUserInfo: async function () {
     try {
-      const res = await wx.cloud.callFunction({
-        name: "get-user-info",
-        data: {}, // 不传 openid，默认获取当前用户信息
-      });
+      // 从全局登录信息中获取用户ID
+      const app = getApp();
+      const loginResult = app.globalData.loginResult;
+
+      if (!loginResult || !loginResult.success) {
+        return {
+          success: false,
+          error: "用户未登录",
+        };
+      }
+
+      const userId = loginResult.userId;
+      console.log("登录信息中的 userId:", userId);
+
+      let res;
+      if (userId) {
+        // 如果有 userId，传递给云函数
+        console.log("使用指定的用户ID:", userId);
+        res = await wx.cloud.callFunction({
+          name: "get-user-info",
+          data: { openid: userId },
+        });
+      } else {
+        // 如果没有 userId，不传递 data，让云函数使用默认的微信 openid
+        console.log("使用默认微信 openid");
+        res = await wx.cloud.callFunction({
+          name: "get-user-info",
+          data: {},
+        });
+      }
 
       if (res && res.result && res.result.success) {
+        // 更新全局状态
+        const app = getApp();
+        app.globalData.loginResult = {
+          success: true,
+          ...res.result.userInfo,
+        };
+
         return {
           success: true,
           userInfo: res.result.userInfo,
@@ -32,6 +65,15 @@ const userInfoUtils = {
   // 根据 openid 获取指定用户信息
   getUserInfoByOpenId: async function (openid) {
     try {
+      if (!openid) {
+        return {
+          success: false,
+          error: "openid 不能为空",
+        };
+      }
+
+      console.log("根据 openid 获取用户信息:", openid);
+
       const res = await wx.cloud.callFunction({
         name: "get-user-info",
         data: { openid: openid },

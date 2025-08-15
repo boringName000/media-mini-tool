@@ -1,4 +1,5 @@
 // pages/test-db/test-db.js
+const userInfoUtils = require("../../utils/userInfoUtils");
 Page({
   data: {
     userName: "",
@@ -8,6 +9,7 @@ Page({
     invitationResult: null,
     verifyResult: null,
     deleteResult: null,
+    userInfo: null,
   },
 
   // 输入用户名
@@ -232,6 +234,43 @@ Page({
     });
   },
 
+  // 获取当前用户信息
+  async getUserInfo() {
+    wx.showLoading({
+      title: "获取用户信息中...",
+    });
+
+    try {
+      const result = await userInfoUtils.getCurrentUserInfo();
+
+      console.log("获取用户信息结果：", result);
+
+      if (result.success) {
+        wx.showToast({
+          title: "获取用户信息成功",
+          icon: "success",
+        });
+
+        this.setData({
+          userInfo: result.userInfo,
+        });
+      } else {
+        wx.showToast({
+          title: result.error || "获取用户信息失败",
+          icon: "error",
+        });
+      }
+    } catch (error) {
+      console.error("获取用户信息失败：", error);
+      wx.showToast({
+        title: "获取失败",
+        icon: "error",
+      });
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
   // 清空结果
   clearResult() {
     this.setData({
@@ -239,6 +278,7 @@ Page({
       invitationResult: null,
       verifyResult: null,
       deleteResult: null,
+      userInfo: null,
       userName: "",
       verifyCode: "",
       deleteCode: "",

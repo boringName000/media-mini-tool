@@ -9,6 +9,7 @@ const {
   getPlatformName,
   getPlatformIcon,
 } = require("../../utils/platformUtils");
+const { TaskStatusEnum } = require("../../type/type");
 
 Page({
   data: {
@@ -112,7 +113,6 @@ Page({
     const type = e.currentTarget.dataset.type;
 
     // 跳转到任务列表页面，并传递状态参数
-    const { TaskStatusEnum } = require("../../type/type");
     let statusEnum = TaskStatusEnum.PENDING;
 
     switch (type) {

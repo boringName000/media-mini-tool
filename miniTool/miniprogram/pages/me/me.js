@@ -1,5 +1,6 @@
 // 引入用户时间工具
 const timeUtils = require("../../utils/timeUtils.js");
+const authUtils = require("../../utils/authUtils");
 
 Page({
   data: {
@@ -87,7 +88,6 @@ Page({
     }
 
     // 检查登录状态
-    const authUtils = require("../../utils/authUtils");
     if (!authUtils.isLoggedIn()) {
       // 未登录状态
       this.setData({
@@ -233,7 +233,6 @@ Page({
             });
 
             // 清除登录状态
-            const authUtils = require("../../utils/authUtils");
             authUtils.clearLoginStatus();
 
             setTimeout(() => {

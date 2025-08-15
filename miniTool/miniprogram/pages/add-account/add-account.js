@@ -9,6 +9,9 @@ const {
   getPlatformName,
   getPlatformIcon,
 } = require("../../utils/platformUtils");
+const userInfoUtils = require("../../utils/userInfoUtils");
+const accountUtils = require("../../utils/accountUtils");
+const authUtils = require("../../utils/authUtils");
 
 Page({
   data: {
@@ -44,7 +47,6 @@ Page({
     console.log("添加账号页面加载");
 
     // 检查登录状态
-    const authUtils = require("../../utils/authUtils");
     if (!authUtils.requireLogin(this)) {
       return;
     }
@@ -325,8 +327,6 @@ Page({
 
   // 验证表单
   validateForm: function () {
-    const accountUtils = require("../../utils/accountUtils");
-
     // 格式化数据用于验证
     const accountData = accountUtils.formatAccountData(this.data);
 
@@ -390,7 +390,6 @@ Page({
       }
 
       // 格式化账号数据，使用最终的文件ID
-      const accountUtils = require("../../utils/accountUtils");
       const accountData = accountUtils.formatAccountData({
         ...this.data,
         screenshotUrl: finalScreenshotUrl,
@@ -411,6 +410,19 @@ Page({
 
         console.log("账号添加成功:", result.accountData);
         console.log("当前总账号数:", result.totalAccounts);
+
+        // 刷新用户信息，更新全局数据
+        try {
+          const refreshResult = await userInfoUtils.refreshUserInfo();
+
+          if (refreshResult.success) {
+            console.log("用户信息刷新成功");
+          } else {
+            console.error("用户信息刷新失败:", refreshResult.error);
+          }
+        } catch (refreshError) {
+          console.error("刷新用户信息时出错:", refreshError);
+        }
 
         // 延迟返回上一页
         setTimeout(() => {

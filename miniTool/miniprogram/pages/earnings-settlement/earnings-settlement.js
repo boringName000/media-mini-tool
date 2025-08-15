@@ -1,3 +1,5 @@
+const authUtils = require("../../utils/authUtils");
+
 Page({
   data: {
     // 收益统计数据
@@ -10,7 +12,6 @@ Page({
 
   onLoad: function (options) {
     // 检查登录状态
-    const authUtils = require("../../utils/authUtils");
     if (!authUtils.requireLogin(this)) {
       return;
     }
