@@ -62,7 +62,7 @@ Page({
           // 截图URL（模拟，部分账号有截图）
           screenshotUrl:
             Math.random() > 0.3
-              ? "https://via.placeholder.com/300x200/007aff/ffffff?text=Screenshot"
+              ? "/imgs/default-platform.png"
               : "",
         };
       });
