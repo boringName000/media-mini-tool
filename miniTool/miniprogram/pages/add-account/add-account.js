@@ -13,7 +13,7 @@ const {
 const userInfoUtils = require("../../utils/userInfoUtils");
 const accountUtils = require("../../utils/accountUtils");
 const authUtils = require("../../utils/authUtils");
-const imageUtils = require("../../utils/imageUtils");
+
 const timeUtils = require("../../utils/timeUtils");
 
 Page({

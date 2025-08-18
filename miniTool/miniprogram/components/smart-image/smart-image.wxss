@@ -1,16 +1,6 @@
-/* 智能图片组件样式 */
+/* 智能图片组件样式 - 完全依赖外部样式 */
 
-/* 临时文件容器样式 */
-.temp-image-container {
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  width: 100%;
-  height: 100%;
-  border-radius: 8rpx;
-}
-.cloud-image-component {
-  display: block;
-  width: 100%;
-  height: 100%;
+/* 确保组件内的所有元素都完全依赖外部样式 */
+smart-image image {
+  /* 完全依赖外部样式，不设置任何默认样式 */
 }

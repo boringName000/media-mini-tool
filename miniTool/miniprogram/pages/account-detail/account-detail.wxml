@@ -155,7 +155,6 @@
                   src="{{screenshotUrl}}"
                   mode="aspectFill"
                   class="preview-image"
-                  bind:error="onImageError"
                 />
               </view>
               <view class="image-actions">

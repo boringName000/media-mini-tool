@@ -77,22 +77,20 @@ function getImageDisplayInfo(imageUrl) {
 function processImageUrl(imageUrl, needTempUrl = false) {
   const displayInfo = getImageDisplayInfo(imageUrl);
 
-  // 如果是云存储图片，根据需求返回fileID或临时URL
+  // 如果是云存储图片，微信原生支持，直接返回fileID
   if (displayInfo.isCloudImage) {
     if (needTempUrl) {
       // 对于背景图片等场景，需要临时URL
       return {
         url: imageUrl, // 这里需要异步获取临时URL
         isCloudImage: true,
-        shouldUseCloudImage: false, // 不使用cloud-image组件
         needTempUrl: true,
       };
     } else {
-      // 对于cloud-image组件，直接返回fileID
+      // 微信原生image组件支持云存储fileID，直接返回
       return {
         url: imageUrl,
         isCloudImage: true,
-        shouldUseCloudImage: true,
       };
     }
   }

@@ -1,4 +1,4 @@
-// 智能图片组件 - 自动处理云存储和普通图片
+// 智能图片组件 - 自动处理云存储、普通图片和临时文件
 const imageUtils = require("../../utils/imageUtils");
 
 Component({
@@ -39,7 +39,6 @@ Component({
   data: {
     displayUrl: "",
     isCloudImage: false,
-    shouldUseCloudImage: false,
     isTempFile: false,
     imageError: false,
   },
@@ -59,35 +58,33 @@ Component({
         this.setData({
           displayUrl: defaultSrc,
           isCloudImage: false,
-          shouldUseCloudImage: false,
           isTempFile: false,
         });
         return;
       }
 
-      // 检查是否为临时文件
+      // 检查是否为临时文件（现在也使用正常的image组件）
       const isTempFile = src.startsWith("http://tmp/");
 
       if (isTempFile) {
-        console.log("检测到临时文件，使用背景图片显示");
-        // 临时文件直接使用背景图片显示
+        console.log("检测到临时文件，使用正常image组件显示");
+        // 临时文件也使用正常的image组件显示
         this.setData({
           displayUrl: src,
           isCloudImage: false,
-          shouldUseCloudImage: false,
-          isTempFile: true,
+          isTempFile: false, // 不再标记为临时文件
           imageError: false,
         });
         return;
       }
 
+      // 微信原生支持云存储fileID，直接使用
       const imageInfo = imageUtils.processImageUrl(src);
       console.log("图片处理结果:", imageInfo);
 
       this.setData({
         displayUrl: imageInfo.url,
         isCloudImage: imageInfo.isCloudImage,
-        shouldUseCloudImage: imageInfo.shouldUseCloudImage,
         isTempFile: false,
         imageError: false,
       });
@@ -95,17 +92,15 @@ Component({
       console.log("组件状态设置完成:", {
         displayUrl: imageInfo.url,
         isCloudImage: imageInfo.isCloudImage,
-        shouldUseCloudImage: imageInfo.shouldUseCloudImage,
         isTempFile: false,
         imageError: false,
       });
 
-      // 如果是云存储图片，添加额外调试信息
+      // 如果是云存储图片，添加调试信息
       if (imageInfo.isCloudImage) {
         console.log("=== 云存储图片调试信息 ===");
         console.log("原始fileID:", src);
-        console.log("处理后的fileID:", imageInfo.url);
-        console.log("是否使用cloud-image组件:", imageInfo.shouldUseCloudImage);
+        console.log("使用微信原生image组件显示云存储图片");
         console.log("组件class:", this.properties.class);
         console.log("组件mode:", this.properties.mode);
       }
@@ -114,8 +109,20 @@ Component({
     // 图片加载错误处理
     onImageError(e) {
       console.error("图片加载失败:", e);
+      console.error("当前组件状态:", this.data);
+      console.error("组件属性:", this.properties);
 
       const { src } = this.properties;
+
+      // 如果是云存储图片加载失败，尝试使用临时URL
+      if (this.data.isCloudImage) {
+        console.log("云存储图片加载失败，尝试获取临时URL");
+        // 这里可以添加获取临时URL的逻辑
+        this.setData({
+          imageError: true,
+        });
+        return;
+      }
 
       // 使用工具方法处理错误
       imageUtils
@@ -123,8 +130,7 @@ Component({
         .then((result) => {
           this.setData({
             displayUrl: result.url,
-            isCloudImage: result.shouldUseCloudImage,
-            shouldUseCloudImage: result.shouldUseCloudImage,
+            isCloudImage: result.isCloudImage || false,
             imageError: true,
           });
         })
@@ -133,7 +139,6 @@ Component({
           this.setData({
             displayUrl: this.properties.defaultSrc,
             isCloudImage: false,
-            shouldUseCloudImage: false,
             imageError: true,
           });
         });

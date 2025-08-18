@@ -10,7 +10,7 @@ const {
   getPlatformIcon,
 } = require("../../utils/platformUtils");
 const authUtils = require("../../utils/authUtils");
-const imageUtils = require("../../utils/imageUtils");
+
 const timeUtils = require("../../utils/timeUtils");
 
 Page({
@@ -269,11 +269,6 @@ Page({
         current: this.data.screenshotUrl,
       });
     }
-  },
-
-  // 图片加载错误处理 - 使用通用组件后，错误处理在组件内部完成
-  onImageError: function (e) {
-    console.log("图片加载失败，通用组件已自动处理");
   },
 
   // 验证表单

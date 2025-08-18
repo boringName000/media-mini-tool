@@ -1,26 +1,26 @@
-<!-- 测试数据库页面 -->
+<!-- 云存储图片显示测试 -->
 <view class="test-container">
   <view class="test-section">
-    <view class="section-title">用户信息测试</view>
-    <button class="test-btn" bindtap="getUserInfo">获取用户信息</button>
+    <view class="section-title">云存储图片显示测试</view>
+    <button class="test-btn" bindtap="getRealAccountData">获取账户数据</button>
+    <button class="test-btn" bindtap="switchAccount">切换账户</button>
+    <button class="test-btn" bindtap="testRefactoredSmartImage">测试重构组件</button>
+    <button class="test-btn" bindtap="testCloudImageDirectLoad">测试云存储加载</button>
+    <button class="test-btn" bindtap="compareComponentStyles">比较样式差异</button>
+    <button class="test-btn" bindtap="analyzeComponentStyles">详细分析样式</button>
+    <button class="test-btn" bindtap="testForceStyles">测试强制样式</button>
     
-    <view class="result-display" wx:if="{{userInfo}}">
-      <view class="result-title">用户信息：</view>
-      <view class="result-content">
-        <text>用户ID: {{userInfo.userId}}</text>
-        <text>昵称: {{userInfo.nickname}}</text>
-        <text>手机: {{userInfo.phone}}</text>
-        <text>账号数量: {{userInfo.accounts ? userInfo.accounts.length : 0}}</text>
+    <!-- 账户信息 -->
+    <view class="account-info" wx:if="{{realAccountData}}">
+      <view class="account-item">
+        <text class="account-label">账号昵称:</text>
+        <text class="account-value">{{realAccountData.accountNickname}}</text>
+      </view>
+      <view class="account-item">
+        <text class="account-label">截图URL:</text>
+        <text class="account-value">{{realAccountData.screenshotUrl || '无截图'}}</text>
       </view>
     </view>
-  </view>
-
-  <!-- 真实账户截图URL智能图片组件测试 -->
-  <view class="test-section">
-    <view class="section-title">真实账户截图URL智能图片组件测试</view>
-    <button class="test-btn" bindtap="testAccountScreenshot">测试账户截图</button>
-    <button class="test-btn" bindtap="switchAccount">切换账户</button>
-    <button class="test-btn" bindtap="getRealAccountData">刷新账户数据</button>
     
     <!-- 真实账户数据展示 -->
     <view class="account-info" wx:if="{{realAccountData}}">
@@ -54,18 +54,41 @@
       </view>
     </view>
     
-    <!-- 账户截图展示 -->
-    <view class="account-screenshot" wx:if="{{realAccountData && realAccountData.screenshotUrl}}">
-      <view class="image-label">真实账户截图（使用智能图片组件）</view>
-      <smart-image 
-        class="test-image large-image"
-        src="{{realAccountData.screenshotUrl}}"
-        mode="aspectFit"
-        bindload="onImageLoad"
-        binderror="onImageError"
-        bindtap="onImageTap"
-      />
-      <view class="image-url">{{realAccountData.screenshotUrl}}</view>
+    <!-- 云存储图片对比测试 -->
+    <view class="image-comparison" wx:if="{{realAccountData && realAccountData.screenshotUrl}}">
+      <!-- 调试信息 -->
+      <view class="debug-info" style="background: #f0f0f0; padding: 10rpx; margin: 10rpx 0; font-size: 24rpx;">
+        <text>调试信息:</text>
+        <text>截图URL: {{realAccountData.screenshotUrl}}</text>
+        <text>URL长度: {{realAccountData.screenshotUrl.length}}</text>
+        <text>URL前10个字符: {{realAccountData.screenshotUrl.substring(0, 10)}}</text>
+      </view>
+      
+      <!-- 智能图片组件 -->
+      <view class="image-test-item">
+        <view class="image-label">智能图片组件 (smart-image)</view>
+        <smart-image 
+          class="test-image"
+          src="{{realAccountData.screenshotUrl}}"
+          mode="aspectFit"
+          bindload="onImageLoad"
+          binderror="onImageError"
+        />
+        <view class="image-status">状态: {{smartImageStatus || '加载中...'}}</view>
+      </view>
+      
+      <!-- 微信原生 image 组件 -->
+      <view class="image-test-item">
+        <view class="image-label">微信原生 image 组件</view>
+        <image 
+          class="test-image"
+          src="{{realAccountData.screenshotUrl}}"
+          mode="aspectFit"
+          bindload="onNormalImageLoad"
+          binderror="onNormalImageError"
+        />
+        <view class="image-status">状态: {{normalImageStatus || '加载中...'}}</view>
+      </view>
     </view>
     
     <!-- 无数据提示 -->
