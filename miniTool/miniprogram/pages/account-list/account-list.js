@@ -4,6 +4,7 @@ const userInfoUtils = require("../../utils/userInfoUtils");
 const authUtils = require("../../utils/authUtils");
 const platformUtils = require("../../utils/platformUtils");
 const trackTypeUtils = require("../../utils/trackTypeUtils");
+const timeUtils = require("../../utils/timeUtils");
 
 Page({
   data: {
@@ -97,9 +98,10 @@ Page({
 
           // 其他信息
           dailyPostCount: account.dailyPostCount || 0,
-          registerTime: account.registerDate
-            ? new Date(account.registerDate).toISOString().split("T")[0]
-            : "",
+          registerTime: timeUtils.formatTime(
+            account.registerDate,
+            "YYYY-MM-DD"
+          ),
           isViolation: account.isViolation || false,
           phoneNumber: account.phoneNumber || "",
           screenshotUrl: account.screenshotUrl || "",

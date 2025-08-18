@@ -1,287 +1,191 @@
-// pages/test-db/test-db.js
+// 测试数据库页面
 const userInfoUtils = require("../../utils/userInfoUtils");
+const timeUtils = require("../../utils/timeUtils");
+const imageUtils = require("../../utils/imageUtils");
+
 Page({
   data: {
-    userName: "",
-    verifyCode: "",
-    deleteCode: "",
-    result: null,
-    invitationResult: null,
-    verifyResult: null,
-    deleteResult: null,
     userInfo: null,
+    // 真实的账户数据（从全局数据获取）
+    realAccountData: null,
   },
 
-  // 输入用户名
-  onNameInput(e) {
-    this.setData({
-      userName: e.detail.value,
-    });
+  onLoad: function (options) {
+    console.log("测试数据库页面加载");
+    // 获取真实的账户数据
+    this.getRealAccountData();
   },
 
-  // 输入验证邀请码
-  onVerifyCodeInput(e) {
-    this.setData({
-      verifyCode: e.detail.value,
-    });
-  },
+  // 获取真实的账户数据
+  getRealAccountData: function () {
+    const app = getApp();
+    const globalData = app.globalData;
 
-  // 输入删除邀请码
-  onDeleteCodeInput(e) {
-    this.setData({
-      deleteCode: e.detail.value,
-    });
-  },
+    console.log("=== 获取真实账户数据 ===");
+    console.log("globalData:", globalData);
+    console.log("loginResult:", globalData.loginResult);
 
-  // 调用云函数添加数据
-  async addUserData() {
-    if (!this.data.userName.trim()) {
+    if (
+      globalData.loginResult &&
+      globalData.loginResult.accounts &&
+      globalData.loginResult.accounts.length > 0
+    ) {
+      // 获取第一个账户的数据
+      const firstAccount = globalData.loginResult.accounts[0];
+      console.log("第一个账户数据:", firstAccount);
+
+      this.setData({
+        realAccountData: firstAccount,
+      });
+
       wx.showToast({
-        title: "请输入用户名",
+        title: "获取真实数据成功",
+        icon: "success",
+        duration: 2000,
+      });
+    } else {
+      console.log("没有找到账户数据");
+      wx.showToast({
+        title: "没有找到账户数据",
         icon: "none",
+        duration: 2000,
       });
-      return;
-    }
-
-    wx.showLoading({
-      title: "添加数据中...",
-    });
-
-    try {
-      const result = await wx.cloud.callFunction({
-        name: "test",
-        data: {
-          name: this.data.userName,
-        },
-      });
-
-      console.log("云函数调用结果：", result);
-
-      if (result.result.success) {
-        wx.showToast({
-          title: "数据添加成功",
-          icon: "success",
-        });
-
-        this.setData({
-          result: result.result,
-        });
-      } else {
-        wx.showToast({
-          title: "数据添加失败",
-          icon: "error",
-        });
-      }
-    } catch (error) {
-      console.error("调用云函数失败：", error);
-      wx.showToast({
-        title: "调用失败",
-        icon: "error",
-      });
-    } finally {
-      wx.hideLoading();
     }
   },
 
-  // 创建邀请码
-  async createInvitationCode() {
-    wx.showLoading({
-      title: "创建邀请码中...",
-    });
-
+  // 获取用户信息
+  getUserInfo: async function () {
     try {
-      const result = await wx.cloud.callFunction({
-        name: "create-invitation-code",
-        data: {},
+      wx.showLoading({
+        title: "获取中...",
+        mask: true,
       });
 
-      console.log("邀请码创建结果：", result);
-
-      if (result.result.success) {
-        wx.showToast({
-          title: "邀请码创建成功",
-          icon: "success",
-        });
-
-        this.setData({
-          invitationResult: result.result,
-        });
-      } else {
-        wx.showToast({
-          title: result.result.error || "邀请码创建失败",
-          icon: "error",
-        });
-      }
-    } catch (error) {
-      console.error("调用邀请码创建云函数失败：", error);
-      wx.showToast({
-        title: "调用失败",
-        icon: "error",
-      });
-    } finally {
-      wx.hideLoading();
-    }
-  },
-
-  // 验证邀请码
-  async verifyInvitationCode() {
-    if (!this.data.verifyCode.trim()) {
-      wx.showToast({
-        title: "请输入邀请码",
-        icon: "none",
-      });
-      return;
-    }
-
-    wx.showLoading({
-      title: "验证邀请码中...",
-    });
-
-    try {
-      const result = await wx.cloud.callFunction({
-        name: "verify-invitation-code",
-        data: {
-          invitationCode: this.data.verifyCode,
-        },
-      });
-
-      console.log("邀请码验证结果：", result);
-
-      if (result.result.success) {
-        wx.showToast({
-          title: "邀请码有效",
-          icon: "success",
-        });
-
-        this.setData({
-          verifyResult: result.result,
-        });
-      } else {
-        wx.showToast({
-          title: result.result.error || "邀请码验证失败",
-          icon: "error",
-        });
-      }
-    } catch (error) {
-      console.error("调用邀请码验证云函数失败：", error);
-      wx.showToast({
-        title: "调用失败",
-        icon: "error",
-      });
-    } finally {
-      wx.hideLoading();
-    }
-  },
-
-  // 删除邀请码
-  async deleteInvitationCode() {
-    if (!this.data.deleteCode.trim()) {
-      wx.showToast({
-        title: "请输入邀请码",
-        icon: "none",
-      });
-      return;
-    }
-
-    wx.showModal({
-      title: "确认删除",
-      content: `确定要删除邀请码 "${this.data.deleteCode}" 吗？`,
-      confirmText: "确认删除",
-      cancelText: "取消",
-      confirmColor: "#ff4d4f",
-      success: async (res) => {
-        if (res.confirm) {
-          wx.showLoading({
-            title: "删除邀请码中...",
-          });
-
-          try {
-            const result = await wx.cloud.callFunction({
-              name: "delete-invitation-code",
-              data: {
-                invitationCode: this.data.deleteCode,
-              },
-            });
-
-            console.log("邀请码删除结果：", result);
-
-            if (result.result.success) {
-              wx.showToast({
-                title: "邀请码删除成功",
-                icon: "success",
-              });
-
-              this.setData({
-                deleteResult: result.result,
-              });
-            } else {
-              wx.showToast({
-                title: result.result.error || "邀请码删除失败",
-                icon: "error",
-              });
-            }
-          } catch (error) {
-            console.error("调用邀请码删除云函数失败：", error);
-            wx.showToast({
-              title: "调用失败",
-              icon: "error",
-            });
-          } finally {
-            wx.hideLoading();
-          }
-        }
-      },
-    });
-  },
-
-  // 获取当前用户信息
-  async getUserInfo() {
-    wx.showLoading({
-      title: "获取用户信息中...",
-    });
-
-    try {
       const result = await userInfoUtils.getCurrentUserInfo();
 
-      console.log("获取用户信息结果：", result);
+      wx.hideLoading();
 
       if (result.success) {
-        wx.showToast({
-          title: "获取用户信息成功",
-          icon: "success",
-        });
-
         this.setData({
           userInfo: result.userInfo,
         });
+
+        wx.showToast({
+          title: "获取成功",
+          icon: "success",
+          duration: 2000,
+        });
+
+        console.log("用户信息:", result.userInfo);
       } else {
         wx.showToast({
-          title: result.error || "获取用户信息失败",
-          icon: "error",
+          title: result.error || "获取失败",
+          icon: "none",
+          duration: 2000,
         });
       }
     } catch (error) {
-      console.error("获取用户信息失败：", error);
+      wx.hideLoading();
+      console.error("获取用户信息失败:", error);
       wx.showToast({
         title: "获取失败",
-        icon: "error",
+        icon: "none",
+        duration: 2000,
       });
-    } finally {
-      wx.hideLoading();
     }
   },
 
-  // 清空结果
-  clearResult() {
+  // 测试账户截图URL的智能图片组件
+  testAccountScreenshot: function () {
+    console.log("=== 测试账户截图URL的智能图片组件 ===");
+
+    if (!this.data.realAccountData) {
+      wx.showToast({
+        title: "没有真实账户数据",
+        icon: "none",
+        duration: 2000,
+      });
+      return;
+    }
+
+    const screenshotUrl = this.data.realAccountData.screenshotUrl;
+    console.log("真实账户截图URL:", screenshotUrl);
+
+    // 测试图片处理逻辑
+    const result = imageUtils.processImageUrl(screenshotUrl);
+    console.log("图片处理结果:", result);
+
+    // 测试图片显示信息
+    const displayInfo = imageUtils.getImageDisplayInfo(screenshotUrl);
+    console.log("图片显示信息:", displayInfo);
+
+    wx.showToast({
+      title: "查看控制台输出",
+      icon: "none",
+      duration: 2000,
+    });
+  },
+
+  // 切换不同的账户进行测试
+  switchAccount: function () {
+    const app = getApp();
+    const globalData = app.globalData;
+
+    if (
+      !globalData.loginResult ||
+      !globalData.loginResult.accounts ||
+      globalData.loginResult.accounts.length === 0
+    ) {
+      wx.showToast({
+        title: "没有账户数据",
+        icon: "none",
+        duration: 2000,
+      });
+      return;
+    }
+
+    const accounts = globalData.loginResult.accounts;
+    const currentIndex = this.data.realAccountData
+      ? accounts.findIndex(
+          (acc) => acc.accountId === this.data.realAccountData.accountId
+        )
+      : -1;
+
+    // 切换到下一个账户，如果没有当前账户或到达末尾，则选择第一个
+    const nextIndex = (currentIndex + 1) % accounts.length;
+    const nextAccount = accounts[nextIndex];
+
     this.setData({
-      result: null,
-      invitationResult: null,
-      verifyResult: null,
-      deleteResult: null,
-      userInfo: null,
-      userName: "",
-      verifyCode: "",
-      deleteCode: "",
+      realAccountData: nextAccount,
+    });
+
+    console.log("切换到账户:", nextAccount);
+    console.log("账户截图URL:", nextAccount.screenshotUrl);
+
+    wx.showToast({
+      title: `切换到账户 ${nextIndex + 1}`,
+      icon: "success",
+      duration: 1500,
+    });
+  },
+
+  // 图片加载成功事件
+  onImageLoad: function (e) {
+    console.log("图片加载成功:", e.detail);
+  },
+
+  // 图片加载错误事件
+  onImageError: function (e) {
+    console.error("图片加载失败:", e.detail);
+  },
+
+  // 图片点击事件
+  onImageTap: function (e) {
+    console.log("图片被点击:", e.detail);
+    wx.showToast({
+      title: "图片被点击",
+      icon: "none",
+      duration: 1000,
     });
   },
 });

@@ -55,7 +55,7 @@ Page({
   // 新增：接收登录结果并更新页面
   applyLoginData: function (loginResult) {
     const ts = loginResult && loginResult.registerTimestamp;
-    const timeLabel = timeUtils.formatTimestamp(ts, "YYYY-MM-DD HH:mm");
+    const timeLabel = timeUtils.formatTime(ts, "YYYY-MM-DD HH:mm");
     this.setData({
       isLoggedIn: true,
       "userInfo.nickname":

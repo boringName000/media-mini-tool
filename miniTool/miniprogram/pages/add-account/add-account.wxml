@@ -165,16 +165,15 @@
             <text class="upload-text">点击上传截图</text>
             <text class="upload-hint">支持jpg、png格式</text>
           </view>
-          <view class="image-preview" wx:if="{{screenshotUrl}}">
-            <view 
-              class="preview-image-container"
-              style="background-image: url('{{screenshotUrl}}')"
-              bindtap="previewScreenshot"
-            >
-              <view class="image-placeholder" wx:if="{{!screenshotUrl.startsWith('cloud://')}}">
-                <text class="placeholder-text">图片预览</text>
+                      <view class="image-preview" wx:if="{{screenshotUrl}}">
+              <view class="preview-image-container" bindtap="previewScreenshot">
+                <smart-image
+                  src="{{screenshotUrl}}"
+                  mode="aspectFill"
+                  class="preview-image"
+                  bind:error="onImageError"
+                />
               </view>
-            </view>
             <view class="image-actions">
               <view class="action-btn delete-btn" bindtap="deleteScreenshot">
                 <text class="btn-icon">🗑️</text>

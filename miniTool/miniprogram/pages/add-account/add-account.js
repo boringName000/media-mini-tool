@@ -13,6 +13,8 @@ const {
 const userInfoUtils = require("../../utils/userInfoUtils");
 const accountUtils = require("../../utils/accountUtils");
 const authUtils = require("../../utils/authUtils");
+const imageUtils = require("../../utils/imageUtils");
+const timeUtils = require("../../utils/timeUtils");
 
 Page({
   data: {
@@ -68,8 +70,7 @@ Page({
     const platformList = getPlatformList();
 
     // 设置当前日期
-    const today = new Date();
-    const registerDate = today.toISOString().split("T")[0];
+    const registerDate = timeUtils.formatTime(new Date(), "YYYY-MM-DD");
 
     this.setData({
       trackTypeList,

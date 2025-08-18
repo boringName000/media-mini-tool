@@ -115,7 +115,7 @@
         </view>
         <view class="detail-content">
           <view class="display-value">
-            <text class="register-date">{{accountInfo.registerDate ? (accountInfo.registerDate.split('T')[0]) : accountInfo.registerTime}}</text>
+            <text class="register-date">{{accountInfo.registerDateDisplay || '未设置'}}</text>
           </view>
         </view>
       </view>
@@ -143,27 +143,29 @@
           <text class="label-text">资料页截图</text>
         </view>
         <view class="detail-content">
-          <view class="screenshot-section">
-            <view class="screenshot-display" wx:if="{{screenshotUrl && screenshotUrl.length > 0}}">
-              <image 
-                class="screenshot-image" 
-                src="{{screenshotUrl}}" 
-                mode="aspectFit"
-                bindtap="previewScreenshot"
-                binderror="onImageError"
-              />
-              <view class="screenshot-actions">
-                <button class="action-btn delete-btn" bindtap="deleteScreenshot">
-                  <text class="btn-icon">🗑️</text>
-                </button>
-                <button class="action-btn preview-btn" bindtap="previewScreenshot">
-                  <text class="btn-icon">👁️</text>
-                </button>
-              </view>
-            </view>
+          <view class="upload-section">
             <view class="upload-area" wx:if="{{!screenshotUrl || screenshotUrl.length === 0}}" bindtap="uploadScreenshot">
               <text class="upload-icon">📷</text>
               <text class="upload-text">点击上传截图</text>
+              <text class="upload-hint">支持jpg、png格式</text>
+            </view>
+            <view class="image-preview" wx:if="{{screenshotUrl && screenshotUrl.length > 0}}">
+              <view class="preview-image-container" bindtap="previewScreenshot">
+                <smart-image
+                  src="{{screenshotUrl}}"
+                  mode="aspectFill"
+                  class="preview-image"
+                  bind:error="onImageError"
+                />
+              </view>
+              <view class="image-actions">
+                <view class="action-btn delete-btn" bindtap="deleteScreenshot">
+                  <text class="btn-icon">🗑️</text>
+                </view>
+                <view class="action-btn preview-btn" bindtap="previewScreenshot">
+                  <text class="btn-icon">👁️</text>
+                </view>
+              </view>
             </view>
           </view>
         </view>

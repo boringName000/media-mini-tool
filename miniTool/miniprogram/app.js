@@ -1,4 +1,6 @@
 // app.js
+const userInfoUtils = require("./utils/userInfoUtils");
+
 App({
   globalData: {
     loginResult: null,
@@ -31,6 +33,9 @@ App({
         // 有有效的登录数据，保存到全局数据
         this.globalData.loginResult = loginResult;
         console.log("检测到用户已登录:", loginResult.nickname);
+
+        // 冷启动时获取最新用户数据并更新
+        this.refreshUserData();
       } else {
         // 没有登录数据，跳转到登录页面
         console.log("未检测到登录状态，跳转到登录页面");
@@ -41,6 +46,38 @@ App({
       // 出错时也跳转到登录页面
       this.redirectToLogin();
     }
+  },
+
+  // 刷新用户数据
+  refreshUserData: function () {
+    console.log("开始刷新用户数据...");
+
+    // 使用 loginGetLatestUserInfo 函数获取最新用户数据
+    userInfoUtils
+      .loginGetLatestUserInfo()
+      .then((result) => {
+        if (result.success) {
+          // 更新全局数据
+          this.globalData.loginResult = {
+            success: true,
+            ...result.userInfo,
+          };
+          // 更新本地存储
+          try {
+            wx.setStorageSync("loginResult", this.globalData.loginResult);
+            console.log("本地存储已更新");
+          } catch (e) {
+            console.error("更新本地存储失败:", e);
+          }
+          console.log("用户数据刷新完成:", this.globalData.loginResult);
+        } else {
+          console.error("获取用户数据失败:", result.error);
+        }
+      })
+      .catch((error) => {
+        console.error("刷新用户数据失败:", error);
+        // 即使获取失败，也不影响用户继续使用，只是使用本地缓存的数据
+      });
   },
 
   // 跳转到登录页面

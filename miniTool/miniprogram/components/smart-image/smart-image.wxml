@@ -1,0 +1,31 @@
+<!-- 智能图片组件 - 自动处理云存储、普通图片和临时文件 -->
+<!-- 云存储图片 -->
+<cloud-image 
+  wx:if="{{shouldUseCloudImage}}"
+  class="{{class}}"
+  file-id="{{displayUrl}}" 
+  mode="{{mode}}"
+  lazy-load="{{lazyLoad}}"
+  bindtap="onImageTap"
+  bindload="onImageLoad"
+  binderror="onImageError"
+/>
+<!-- 临时文件 - 使用背景图片 -->
+<view 
+  wx:elif="{{isTempFile}}"
+  class="{{class}} temp-image-container"
+  style="background-image: url({{displayUrl}})"
+  bindtap="onImageTap"
+>
+</view>
+<!-- 普通图片 -->
+<image 
+  wx:else
+  class="{{class}}"
+  src="{{displayUrl}}" 
+  mode="{{mode}}"
+  lazy-load="{{lazyLoad}}"
+  bindtap="onImageTap"
+  bindload="onImageLoad"
+  binderror="onImageError"
+/>

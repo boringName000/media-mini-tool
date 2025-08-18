@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "数据库测试",
-  "usingComponents": {}
+  "usingComponents": {
+    "smart-image": "/components/smart-image/smart-image"
+  }
 }

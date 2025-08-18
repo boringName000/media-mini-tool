@@ -5,6 +5,16 @@ const userInfoUtils = {
     try {
       // 从全局登录信息中获取用户ID
       const app = getApp();
+
+      // 安全检查：确保 app 和 globalData 存在
+      if (!app || !app.globalData) {
+        console.warn("应用实例或全局数据未初始化");
+        return {
+          success: false,
+          error: "应用未初始化",
+        };
+      }
+
       const loginResult = app.globalData.loginResult;
 
       if (!loginResult || !loginResult.success) {
@@ -35,13 +45,19 @@ const userInfoUtils = {
       }
 
       if (res && res.result && res.result.success) {
-        // 更新全局状态
+        // 尝试更新全局状态（带安全检查）
         const app = getApp();
-        app.globalData.loginResult = {
-          success: true,
-          ...res.result.userInfo,
-        };
+        if (app && app.globalData) {
+          app.globalData.loginResult = {
+            success: true,
+            ...res.result.userInfo,
+          };
+          console.log("全局数据已更新");
+        } else {
+          console.warn("无法更新全局数据：应用实例未初始化");
+        }
 
+        // 返回数据供外部使用
         return {
           success: true,
           userInfo: res.result.userInfo,
@@ -100,22 +116,54 @@ const userInfoUtils = {
     }
   },
 
+  // 登录获取最新用户信息（不更新任何数据）
+  loginGetLatestUserInfo: async function () {
+    try {
+      console.log("开始获取最新用户信息...");
+
+      // 直接调用云函数获取最新用户信息
+      const res = await wx.cloud.callFunction({
+        name: "get-user-info",
+        data: {},
+      });
+
+      if (res && res.result && res.result.success) {
+        console.log("获取最新用户信息成功:", res.result.userInfo);
+        return {
+          success: true,
+          userInfo: res.result.userInfo,
+          queryContext: res.result.queryContext,
+        };
+      } else {
+        console.error("获取用户信息失败:", res.result);
+        return {
+          success: false,
+          error: res.result.error || "获取用户信息失败",
+        };
+      }
+    } catch (error) {
+      console.error("调用获取用户信息云函数失败：", error);
+      return {
+        success: false,
+        error: error.message || "网络错误",
+      };
+    }
+  },
+
   // 获取用户信息并更新本地状态
   refreshUserInfo: async function () {
     try {
       const result = await this.getCurrentUserInfo();
 
       if (result.success) {
-        // 更新全局状态
-        const app = getApp();
-        app.globalData.loginResult = {
-          success: true,
-          ...result.userInfo,
-        };
-
         // 更新本地存储
         try {
-          wx.setStorageSync("loginResult", app.globalData.loginResult);
+          const updatedLoginResult = {
+            success: true,
+            ...result.userInfo,
+          };
+          wx.setStorageSync("loginResult", updatedLoginResult);
+          console.log("本地存储已更新");
         } catch (e) {
           console.error("更新本地存储失败：", e);
         }

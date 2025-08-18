@@ -10,6 +10,8 @@ const {
   getPlatformIcon,
 } = require("../../utils/platformUtils");
 const authUtils = require("../../utils/authUtils");
+const imageUtils = require("../../utils/imageUtils");
+const timeUtils = require("../../utils/timeUtils");
 
 Page({
   data: {
@@ -115,16 +117,8 @@ Page({
     console.log("找到的赛道索引:", selectedTrackIndex);
     console.log("找到的赛道:", selectedTrack);
 
-    // 处理截图URL，如果是外部链接则替换为默认图片
-    let screenshotUrl = accountData.screenshotUrl || "";
-    if (
-      screenshotUrl &&
-      (screenshotUrl.startsWith("http") ||
-        screenshotUrl.includes("via.placeholder"))
-    ) {
-      screenshotUrl = "/imgs/default-platform.png";
-      console.log("检测到外部图片链接，已替换为默认图片");
-    }
+    // 处理截图URL - 直接使用原始URL，让smart-image组件处理
+    const screenshotUrl = accountData.screenshotUrl || "";
 
     // 获取平台信息
     const platformEnum = accountData.platform;
@@ -147,11 +141,16 @@ Page({
       screenshotUrl: screenshotUrl,
     };
 
-    // 更新账号信息，确保平台信息正确显示
+    // 更新账号信息，确保平台信息和注册日期正确显示
     const updatedAccountInfo = {
       ...this.data.accountInfo,
       platform: platformName,
       platformIcon: platformIcon,
+      // 格式化注册日期显示
+      registerDateDisplay: timeUtils.formatTime(
+        accountData.registerDate,
+        "YYYY-MM-DD"
+      ),
     };
 
     this.setData({
@@ -272,31 +271,9 @@ Page({
     }
   },
 
-  // 图片加载错误处理
+  // 图片加载错误处理 - 使用通用组件后，错误处理在组件内部完成
   onImageError: function (e) {
-    console.error("图片加载失败:", e);
-
-    // 如果当前图片URL是外部链接或无效路径，替换为默认图片
-    const currentUrl = this.data.screenshotUrl;
-    if (
-      currentUrl &&
-      (currentUrl.startsWith("http") || currentUrl.includes("via.placeholder"))
-    ) {
-      this.setData({
-        screenshotUrl: "/imgs/default-platform.png",
-      });
-      console.log("已替换为默认图片");
-    } else {
-      // 如果是本地图片也加载失败，则清除图片URL
-      this.setData({
-        screenshotUrl: "",
-      });
-      wx.showToast({
-        title: "图片加载失败",
-        icon: "none",
-        duration: 2000,
-      });
-    }
+    console.log("图片加载失败，通用组件已自动处理");
   },
 
   // 验证表单
