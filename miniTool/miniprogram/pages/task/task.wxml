@@ -38,13 +38,28 @@
     </view>
     
     <view class="account-items">
-      <view 
-        class="account-item" 
-        wx:for="{{accountList}}" 
-        wx:key="index"
-        data-index="{{index}}"
-        bind:tap="onAccountTap"
-      >
+      <!-- 加载状态 -->
+      <view class="loading-state" wx:if="{{isLoading}}">
+        <view class="loading-icon">⏳</view>
+        <text class="loading-text">加载中...</text>
+      </view>
+      
+      <!-- 空状态 -->
+      <view class="empty-accounts" wx:elif="{{!isLoading && accountList.length === 0}}">
+        <view class="empty-icon">👥</view>
+        <text class="empty-text">暂无账号</text>
+        <text class="empty-desc">请先添加您的创作账号</text>
+      </view>
+      
+      <!-- 账号列表 -->
+      <block wx:else>
+        <view 
+          class="account-item" 
+          wx:for="{{accountList}}" 
+          wx:key="accountId"
+          data-index="{{index}}"
+          bind:tap="onAccountTap"
+        >
         <!-- 平台图标和类型 -->
         <view class="account-platform">
           <view class="platform-icon">{{item.platformIcon}}</view>
@@ -54,13 +69,18 @@
         <!-- 账号详情 -->
         <view class="account-details">
           <view class="account-main-info">
-            <text class="account-name">{{item.accountName}}</text>
-            <text class="account-status">{{item.status}}</text>
+            <view class="account-name-row">
+              <text class="account-name">{{item.accountName}}</text>
+              <text class="account-id">{{item.accountId}}</text>
+            </view>
           </view>
           <view class="account-track-info">
-            <view class="track-type" catchtap="onTrackTypeTap" data-index="{{index}}">
-              <text class="track-icon">{{item.trackIcon}}</text>
-              <text class="track-text">{{item.trackType}}</text>
+            <view class="track-status-group">
+              <view class="track-type" catchtap="onTrackTypeTap" data-index="{{index}}">
+                <text class="track-icon">{{item.trackIcon}}</text>
+                <text class="track-text">{{item.trackType}}</text>
+              </view>
+              <text class="account-status">{{item.status}}</text>
             </view>
             <view class="today-articles">
               <text class="articles-count">{{item.todayArticles}}</text>
@@ -70,7 +90,8 @@
         </view>
         
         <view class="account-arrow">›</view>
-      </view>
+        </view>
+      </block>
     </view>
   </view>
   

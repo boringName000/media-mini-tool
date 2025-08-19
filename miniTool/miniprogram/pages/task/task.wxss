@@ -31,6 +31,9 @@
   font-size: 32rpx;
   margin-right: 20rpx;
   box-shadow: 0 2px 10px rgba(79, 172, 254, 0.25);
+  line-height: 1;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .my-task-info {
@@ -119,6 +122,9 @@
   font-size: 32rpx;
   margin-right: 20rpx;
   box-shadow: 0 2px 10px rgba(79, 172, 254, 0.25);
+  line-height: 1;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .account-list-info {
@@ -200,10 +206,22 @@
   gap: 4rpx;
 }
 
+.account-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .account-name {
   font-size: 28rpx;
   font-weight: 600;
   color: #333;
+}
+
+.account-id {
+  font-size: 20rpx;
+  color: #999;
+  font-weight: 400;
 }
 
 .account-status {
@@ -216,6 +234,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.track-status-group {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
 }
 
 .track-type {
@@ -298,4 +322,62 @@
   font-size: 24rpx;
   color: #999;
   line-height: 1.6;
+}
+
+/* 加载状态样式 */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+}
+
+.loading-icon {
+  font-size: 60rpx;
+  margin-bottom: 20rpx;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #666;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 空状态样式 */
+.empty-accounts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+}
+
+.empty-accounts .empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 30rpx;
+  opacity: 0.4;
+}
+
+.empty-accounts .empty-text {
+  font-size: 30rpx;
+  color: #666;
+  margin-bottom: 15rpx;
+  font-weight: 600;
+}
+
+.empty-accounts .empty-desc {
+  font-size: 24rpx;
+  color: #999;
+  text-align: center;
+  line-height: 1.5;
 }

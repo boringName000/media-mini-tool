@@ -10,89 +10,214 @@ const {
   getPlatformIcon,
 } = require("../../utils/platformUtils");
 const { TaskStatusEnum } = require("../../type/type");
+const authUtils = require("../../utils/authUtils");
+const userInfoUtils = require("../../utils/userInfoUtils");
 
 Page({
   data: {
     // 任务统计数据
     taskStats: {
-      pending: 3, // 待发表
-      completed: 15, // 已完成
-      rejected: 1, // 已拒绝
+      pending: 0, // 待发表
+      completed: 0, // 已完成
+      rejected: 0, // 已拒绝
     },
     // 账号列表数据
-    accountList: [
-      {
-        accountId: "ACC001",
-        platformEnum: PlatformEnum.XIAOHONGSHU,
-        platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-        platformIcon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
-        accountName: "美食达人小红",
-        trackTypeEnum: TrackTypeEnum.FOOD_TRACK,
-        trackType: getTrackTypeName(TrackTypeEnum.FOOD_TRACK),
-        trackIcon: getTrackTypeIcon(TrackTypeEnum.FOOD_TRACK),
-        todayArticles: 3,
-        status: "正常运营",
-      },
-      {
-        accountId: "ACC002",
-        platformEnum: PlatformEnum.WECHAT_MP,
-        platform: getPlatformName(PlatformEnum.WECHAT_MP),
-        platformIcon: getPlatformIcon(PlatformEnum.WECHAT_MP),
-        accountName: "旅游探索者",
-        trackTypeEnum: TrackTypeEnum.TRAVEL_TRACK,
-        trackType: getTrackTypeName(TrackTypeEnum.TRAVEL_TRACK),
-        trackIcon: getTrackTypeIcon(TrackTypeEnum.TRAVEL_TRACK),
-        todayArticles: 1,
-        status: "正常运营",
-      },
-      {
-        accountId: "ACC003",
-        platformEnum: PlatformEnum.XIAOHONGSHU,
-        platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-        platformIcon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
-        accountName: "书法艺术家",
-        trackTypeEnum: TrackTypeEnum.CALLIGRAPHY,
-        trackType: getTrackTypeName(TrackTypeEnum.CALLIGRAPHY),
-        trackIcon: getTrackTypeIcon(TrackTypeEnum.CALLIGRAPHY),
-        todayArticles: 2,
-        status: "待审核",
-      },
-      {
-        accountId: "ACC004",
-        platformEnum: PlatformEnum.WECHAT_MP,
-        platform: getPlatformName(PlatformEnum.WECHAT_MP),
-        platformIcon: getPlatformIcon(PlatformEnum.WECHAT_MP),
-        accountName: "摄影师小李",
-        trackTypeEnum: TrackTypeEnum.PHOTOGRAPHY,
-        trackType: getTrackTypeName(TrackTypeEnum.PHOTOGRAPHY),
-        trackIcon: getTrackTypeIcon(TrackTypeEnum.PHOTOGRAPHY),
-        todayArticles: 0,
-        status: "正常运营",
-      },
-      {
-        accountId: "ACC005",
-        platformEnum: PlatformEnum.XIAOHONGSHU,
-        platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-        platformIcon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
-        accountName: "古董收藏家",
-        trackTypeEnum: TrackTypeEnum.ANTIQUE,
-        trackType: getTrackTypeName(TrackTypeEnum.ANTIQUE),
-        trackIcon: getTrackTypeIcon(TrackTypeEnum.ANTIQUE),
-        todayArticles: 5,
-        status: "正常运营",
-      },
-    ],
+    accountList: [],
+    // 加载状态
+    isLoading: false,
   },
 
   /**
    * 生命周期函数--监听页面加载
    */
-  onLoad: function (options) {},
+  onLoad: function (options) {
+    // 检查登录状态
+    if (!authUtils.requireLogin(this)) {
+      return;
+    }
+  },
 
   /**
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady: function () {},
+
+  /**
+   * 加载用户账号数据
+   */
+  loadUserAccounts: function () {
+    this.setData({
+      isLoading: true,
+    });
+
+    // 从全局数据获取用户信息
+    const app = getApp();
+    const loginResult = app.globalData.loginResult;
+
+    if (loginResult && loginResult.success && loginResult.accounts) {
+      const accounts = loginResult.accounts;
+      console.log("从全局数据获取到用户账号数据:", accounts);
+
+      // 格式化账号数据
+      const formattedAccounts = this.formatAccountData(accounts);
+
+      this.setData({
+        accountList: formattedAccounts,
+        isLoading: false,
+      });
+
+      // 更新任务统计数据（这里可以根据实际需求计算）
+      this.updateTaskStats(formattedAccounts);
+    } else {
+      console.log("全局数据中没有账号信息，尝试刷新用户数据");
+
+      // 如果全局数据中没有账号信息，则刷新用户数据
+      userInfoUtils
+        .getCurrentUserInfo()
+        .then((result) => {
+          if (result.success && result.userInfo) {
+            const accounts = result.userInfo.accounts || [];
+            console.log("刷新后获取到用户账号数据:", accounts);
+
+            // 格式化账号数据
+            const formattedAccounts = this.formatAccountData(accounts);
+
+            this.setData({
+              accountList: formattedAccounts,
+              isLoading: false,
+            });
+
+            // 更新任务统计数据
+            this.updateTaskStats(formattedAccounts);
+          } else {
+            console.error("获取用户信息失败:", result.error);
+            this.setData({
+              isLoading: false,
+            });
+            wx.showToast({
+              title: "获取账号信息失败",
+              icon: "none",
+              duration: 2000,
+            });
+          }
+        })
+        .catch((error) => {
+          console.error("获取用户信息异常:", error);
+          this.setData({
+            isLoading: false,
+          });
+          wx.showToast({
+            title: "网络错误，请重试",
+            icon: "none",
+            duration: 2000,
+          });
+        });
+    }
+  },
+
+  /**
+   * 格式化账号数据
+   */
+  formatAccountData: function (accounts) {
+    return accounts.map((account) => {
+      // 获取平台信息
+      const platformEnum =
+        parseInt(account.platform) ||
+        account.platform ||
+        PlatformEnum.XIAOHONGSHU;
+      const platformName = getPlatformName(platformEnum);
+      const platformIcon = getPlatformIcon(platformEnum);
+
+      // 获取赛道信息
+      const trackTypeEnum =
+        parseInt(account.trackType) ||
+        account.trackType ||
+        TrackTypeEnum.FOOD_TRACK;
+      const trackTypeName = getTrackTypeName(trackTypeEnum);
+      const trackTypeIcon = getTrackTypeIcon(trackTypeEnum);
+
+      // 计算今日发文数量（从posts数组中统计今天的文章）
+      const todayArticles = this.calculateTodayArticles(account.posts || []);
+
+      // 获取账号状态
+      const status = this.getAccountStatus(account);
+
+      return {
+        accountId: account.accountId,
+        platformEnum: platformEnum,
+        platform: platformName,
+        platformIcon: platformIcon,
+        accountName:
+          account.accountNickname || account.originalAccountId || "未命名账号",
+        trackTypeEnum: trackTypeEnum,
+        trackType: trackTypeName,
+        trackIcon: trackTypeIcon,
+        todayArticles: todayArticles,
+        status: status,
+        // 保留原始数据用于其他操作
+        originalData: account,
+      };
+    });
+  },
+
+  /**
+   * 计算今日发文数量
+   */
+  calculateTodayArticles: function (posts) {
+    if (!posts || posts.length === 0) {
+      return 0;
+    }
+
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD格式
+
+    return posts.filter((post) => {
+      if (!post.createTime) return false;
+      const postDate = new Date(post.createTime);
+      const postDateStr = postDate.toISOString().split("T")[0];
+      return postDateStr === todayStr;
+    }).length;
+  },
+
+  /**
+   * 获取账号状态
+   */
+  getAccountStatus: function (account) {
+    if (account.status === 0) {
+      return "已禁用";
+    } else if (account.status === 1) {
+      if (account.auditStatus === 0) {
+        return "待审核";
+      } else if (account.auditStatus === 1) {
+        return "正常运营";
+      } else if (account.auditStatus === 2) {
+        return "审核未通过";
+      }
+    }
+    return "未知状态";
+  },
+
+  /**
+   * 更新任务统计数据
+   */
+  updateTaskStats: function (accounts) {
+    // 这里可以根据实际需求计算任务统计数据
+    // 目前使用默认值，后续可以根据数据库中的任务数据来计算
+    const taskStats = {
+      pending: 0,
+      completed: 0,
+      rejected: 0,
+    };
+
+    // 可以根据账号数量或其他逻辑来设置默认值
+    if (accounts.length > 0) {
+      taskStats.pending = accounts.length; // 示例：每个账号默认有一个待发表任务
+    }
+
+    this.setData({
+      taskStats: taskStats,
+    });
+  },
 
   /**
    * 生命周期函数--监听页面显示
@@ -104,6 +229,9 @@ Page({
         selected: 1,
       });
     }
+
+    // 刷新用户账号数据
+    this.loadUserAccounts();
   },
 
   /**
@@ -142,9 +270,15 @@ Page({
         .map((account) => account.trackTypeEnum)
         .join(",");
 
-      queryParams += `&accountIds=${encodeURIComponent(accountIds)}`;
-      queryParams += `&platformEnums=${encodeURIComponent(platformEnums)}`;
-      queryParams += `&trackTypeEnums=${encodeURIComponent(trackTypeEnums)}`;
+      if (accountIds) {
+        queryParams += `&accountIds=${encodeURIComponent(accountIds)}`;
+      }
+      if (platformEnums) {
+        queryParams += `&platformEnums=${encodeURIComponent(platformEnums)}`;
+      }
+      if (trackTypeEnums) {
+        queryParams += `&trackTypeEnums=${encodeURIComponent(trackTypeEnums)}`;
+      }
     }
 
     wx.navigateTo({
