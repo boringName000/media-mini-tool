@@ -25,6 +25,7 @@ Page({
     accountNickname: "",
     isViolation: false,
     screenshotUrl: "",
+    registerDate: "", // 注册日期
 
     // 选择器数据
     trackTypeList: [],
@@ -130,6 +131,13 @@ Page({
     console.log("平台名称:", platformName);
     console.log("平台图标:", platformIcon);
 
+    // 格式化注册日期为YYYY-MM-DD格式用于picker
+    let registerDateDisplay = "";
+    if (accountData.registerDate) {
+      const date = new Date(accountData.registerDate);
+      registerDateDisplay = date.toISOString().split("T")[0]; // 格式化为YYYY-MM-DD
+    }
+
     // 设置表单数据
     const formData = {
       selectedTrackType: selectedTrack || null,
@@ -139,6 +147,7 @@ Page({
         accountData.accountNickname || accountData.accountName || "",
       isViolation: accountData.isViolation || false,
       screenshotUrl: screenshotUrl,
+      registerDate: registerDateDisplay,
     };
 
     // 更新账号信息，确保平台信息和注册日期正确显示
@@ -205,6 +214,12 @@ Page({
     this.setData({
       isViolation,
     });
+  },
+
+  // 注册日期选择（已禁用，只读显示）
+  onRegisterDateChange: function (e) {
+    // 注册日期不允许修改，此方法保留但不执行任何操作
+    console.log("注册日期不允许修改");
   },
 
   // 上传截图
@@ -321,33 +336,115 @@ Page({
       mask: true,
     });
 
-    // 模拟提交数据到服务器
-    setTimeout(() => {
-      wx.hideLoading();
+    // 准备更新的字段数据
+    const updateFields = {};
 
-      // 提交成功
+    // 检查并添加需要更新的字段
+    if (
+      this.data.selectedTrackType &&
+      this.data.selectedTrackType.type !== this.data.accountInfo.trackType
+    ) {
+      updateFields.trackType = this.data.selectedTrackType.type;
+    }
+
+    if (this.data.phoneNumber !== this.data.accountInfo.phoneNumber) {
+      updateFields.phoneNumber = this.data.phoneNumber;
+    }
+
+    if (this.data.accountNickname !== this.data.accountInfo.accountNickname) {
+      updateFields.accountNickname = this.data.accountNickname;
+    }
+
+    if (this.data.isViolation !== this.data.accountInfo.isViolation) {
+      updateFields.isViolation = this.data.isViolation;
+    }
+
+    if (this.data.screenshotUrl !== this.data.accountInfo.screenshotUrl) {
+      updateFields.screenshotUrl = this.data.screenshotUrl;
+    }
+
+    // 注册日期不允许修改，移除相关更新逻辑
+
+    // 如果没有需要更新的字段，直接返回
+    if (Object.keys(updateFields).length === 0) {
+      wx.hideLoading();
       wx.showToast({
-        title: "提交成功",
-        icon: "success",
+        title: "没有需要更新的内容",
+        icon: "none",
         duration: 2000,
       });
+      return;
+    }
 
-      // 延迟返回上一页
-      setTimeout(() => {
-        wx.navigateBack({
-          delta: 1,
+    console.log("准备更新的字段:", updateFields);
+
+    // 获取用户ID
+    const app = getApp();
+    const userId = app.globalData.loginResult?.userId;
+
+    if (!userId) {
+      wx.hideLoading();
+      wx.showToast({
+        title: "用户信息获取失败",
+        icon: "none",
+        duration: 2000,
+      });
+      return;
+    }
+
+    // 调用云函数更新账号信息
+    wx.cloud
+      .callFunction({
+        name: "update-user-account",
+        data: {
+          userId: userId,
+          accountId: this.data.accountInfo.accountId,
+          updateFields: updateFields,
+        },
+      })
+      .then((res) => {
+        wx.hideLoading();
+
+        if (res.result.success) {
+          console.log("账号更新成功:", res.result);
+
+          // 更新本地数据
+          this.setData({
+            accountInfo: {
+              ...this.data.accountInfo,
+              ...updateFields,
+            },
+          });
+
+          wx.showToast({
+            title: "更新成功",
+            icon: "success",
+            duration: 2000,
+          });
+
+          // 延迟返回上一页
+          setTimeout(() => {
+            wx.navigateBack({
+              delta: 1,
+            });
+          }, 2000);
+        } else {
+          console.error("账号更新失败:", res.result.error);
+          wx.showToast({
+            title: res.result.error || "更新失败",
+            icon: "none",
+            duration: 2000,
+          });
+        }
+      })
+      .catch((err) => {
+        wx.hideLoading();
+        console.error("调用云函数失败:", err);
+        wx.showToast({
+          title: "网络错误，请稍后重试",
+          icon: "none",
+          duration: 2000,
         });
-      }, 2000);
-    }, 1500);
-
-    // 实际项目中，这里应该调用API提交数据
-    console.log("提交审核信息:", {
-      accountInfo: this.data.accountInfo,
-      selectedTrackType: this.data.selectedTrackType,
-      phoneNumber: this.data.phoneNumber,
-      accountNickname: this.data.accountNickname,
-      isViolation: this.data.isViolation,
-      screenshotUrl: this.data.screenshotUrl,
-    });
+      });
   },
 });
