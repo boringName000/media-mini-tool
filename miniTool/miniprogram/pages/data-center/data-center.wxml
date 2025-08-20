@@ -12,58 +12,70 @@
     
     <!-- 账号列表 -->
     <view class="account-list">
-      <view 
-        class="account-item" 
-        wx:for="{{accountList}}" 
-        wx:key="accountId"
-      >
-        <!-- 平台图标和类型 -->
-        <view class="account-platform">
-          <view class="platform-icon">{{item.platformIcon}}</view>
-          <view class="platform-text">{{item.platform}}</view>
-        </view>
-        
-        <!-- 账号详情 -->
-        <view class="account-details">
-          <view class="account-main-info">
-            <text class="account-name">{{item.accountName}}</text>
-            <text class="account-id">ID: {{item.accountId}}</text>
-          </view>
-          
-          <view class="account-info-row">
-            <view class="track-type">
-              <text class="track-icon">{{item.trackIcon}}</text>
-              <text class="track-text">{{item.trackType}}</text>
-            </view>
-            <text class="account-status {{item.status === '正常运营' ? 'normal' : 'pending'}}">{{item.status}}</text>
-          </view>
-          
-          <view class="account-info-row">
-            <view class="publish-info">
-              <text class="info-label">最近发布：</text>
-              <text class="info-value">{{item.lastPublishedTime}}</text>
-            </view>
-            <view class="articles-count">
-              <text class="info-label">文章数：</text>
-              <text class="info-value">{{item.articlesCount}}</text>
-            </view>
-          </view>
-          
-          <view class="report-status">
-            <view wx:if="{{item.isReported}}" class="reported-status">
-              <text class="status-icon">✅</text>
-              <text class="status-text">已回传</text>
-            </view>
-            <view wx:else class="report-button" data-index="{{index}}" catchtap="onReportTap">
-              <text class="button-text">回传</text>
-            </view>
-          </view>
-        </view>
-        
-
+      <!-- 加载状态 -->
+      <view class="loading-state" wx:if="{{loading}}">
+        <view class="loading-icon">⏳</view>
+        <text class="loading-text">加载中...</text>
       </view>
+      
+      <!-- 空状态 -->
+      <view class="empty-accounts" wx:elif="{{!loading && accountList.length === 0}}">
+        <view class="empty-icon">👤</view>
+        <text class="empty-text">暂无账号</text>
+        <text class="empty-desc">请先添加您的创作账号</text>
+      </view>
+      
+      <!-- 账号列表 -->
+      <block wx:else>
+        <view 
+          class="account-item" 
+          wx:for="{{accountList}}" 
+          wx:key="accountId"
+        >
+          <!-- 平台图标和类型 -->
+          <view class="account-platform">
+            <view class="platform-icon">{{item.platformIcon}}</view>
+            <view class="platform-text">{{item.platform}}</view>
+          </view>
+          
+          <!-- 账号详情 -->
+          <view class="account-details">
+            <view class="account-main-info">
+              <text class="account-name">{{item.accountName}}</text>
+              <text class="account-id">ID: {{item.accountId}}</text>
+            </view>
+            
+            <view class="account-info-row">
+              <view class="track-type">
+                <text class="track-icon">{{item.trackIcon}}</text>
+                <text class="track-text">{{item.trackType}}</text>
+              </view>
+              <text class="account-status {{item.status === '正常运营' ? 'normal' : 'pending'}}">{{item.status}}</text>
+            </view>
+            
+            <view class="account-info-row">
+              <view class="publish-info">
+                <text class="info-label">最近发布：</text>
+                <text class="info-value">{{item.lastPublishedTime}}</text>
+              </view>
+              <view class="articles-count">
+                <text class="info-label">文章数：</text>
+                <text class="info-value">{{item.articlesCount}}</text>
+              </view>
+            </view>
+            
+            <view class="report-status">
+              <view wx:if="{{item.isReported}}" class="reported-status">
+                <text class="status-icon">✅</text>
+                <text class="status-text">已回传</text>
+              </view>
+              <view wx:else class="report-button" data-index="{{index}}" catchtap="onReportTap">
+                <text class="button-text">回传</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </block>
     </view>
   </view>
-  
-
 </view> 

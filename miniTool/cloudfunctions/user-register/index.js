@@ -96,17 +96,25 @@ exports.main = async (event, context) => {
       };
     }
 
-    // 准备用户数据
+    // 准备用户数据 - 初始化所有用户信息字段
     const userData = {
+      // 主键字段
+      userId: wxContext.OPENID,
+
+      // 用户基础信息字段
       nickname: nickname,
       phone: phone,
       password: password, // 注意：实际项目中应该加密存储
-      userId: wxContext.OPENID,
-      registerTimestamp: db.serverDate(),
-      status: 1, // 用户状态：0-禁用，1-启用
+      status: 1, // 用户状态：1-正常，0-禁用
       userLevel: 1, // 用户等级，默认1级
       userType: 1, // 用户类型：1-普通用户，999-管理员
-      lastLoginTimestamp: null,
+      registerTimestamp: db.serverDate(), // 注册时间
+      lastLoginTimestamp: null, // 最后登录时间
+      lastUpdateTimestamp: db.serverDate(), // 最后更新时间
+      inviteCode: inviteCode, // 邀请码
+
+      // 账号信息字段
+      accounts: [], // 用户账号数组，初始为空
     };
 
     // 向 user-info 集合添加用户数据
@@ -153,6 +161,10 @@ exports.main = async (event, context) => {
       registerTimestamp: userData.registerTimestamp,
       userLevel: userData.userLevel,
       userType: userData.userType,
+      lastLoginTimestamp: userData.lastLoginTimestamp,
+      lastUpdateTimestamp: userData.lastUpdateTimestamp,
+      inviteCode: userData.inviteCode,
+      accounts: userData.accounts,
       deleteInvitation: deleteInvitation,
       event,
       openid: wxContext.OPENID,

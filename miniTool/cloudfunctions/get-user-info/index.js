@@ -69,6 +69,7 @@ exports.main = async (event, context) => {
         status: user.status,
         registerTimestamp: user.registerTimestamp,
         lastLoginTimestamp: user.lastLoginTimestamp,
+        lastUpdateTimestamp: user.lastUpdateTimestamp,
         inviteCode: user.inviteCode,
         accounts: user.accounts || [], // 添加账号信息
       },

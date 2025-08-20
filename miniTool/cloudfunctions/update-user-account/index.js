@@ -243,6 +243,7 @@ exports.main = async (event, context) => {
         status: updatedUser.status,
         registerTimestamp: updatedUser.registerTimestamp,
         lastLoginTimestamp: updatedUser.lastLoginTimestamp,
+        lastUpdateTimestamp: updatedUser.lastUpdateTimestamp,
         inviteCode: updatedUser.inviteCode,
         accounts: updatedUser.accounts || [],
       },

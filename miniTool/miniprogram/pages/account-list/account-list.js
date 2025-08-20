@@ -5,6 +5,7 @@ const authUtils = require("../../utils/authUtils");
 const platformUtils = require("../../utils/platformUtils");
 const trackTypeUtils = require("../../utils/trackTypeUtils");
 const timeUtils = require("../../utils/timeUtils");
+const accountUtils = require("../../utils/accountUtils");
 
 Page({
   data: {
@@ -87,14 +88,14 @@ Page({
           trackTypeEnum: account.trackType,
           trackTypeIcon: trackTypeIcon,
 
-          // 审核状态
+          // 审核状态 - 使用 accountUtils 统一处理
           auditStatus: account.auditStatus || 0,
-          auditStatusText: ["待审核", "已通过", "未通过"][
+          auditStatusText: accountUtils.getAuditStatusText(
             account.auditStatus || 0
-          ],
-          auditStatusColor: ["#f39c12", "#27ae60", "#e74c3c"][
+          ),
+          auditStatusColor: accountUtils.getAuditStatusColor(
             account.auditStatus || 0
-          ],
+          ),
 
           // 其他信息
           dailyPostCount: account.dailyPostCount || 0,

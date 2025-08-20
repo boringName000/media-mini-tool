@@ -10,86 +10,20 @@ const {
   getPlatformIcon,
 } = require("../../utils/platformUtils");
 const authUtils = require("../../utils/authUtils");
+const userInfoUtils = require("../../utils/userInfoUtils");
+const timeUtils = require("../../utils/timeUtils");
+const accountUtils = require("../../utils/accountUtils");
 
 Page({
   data: {
     // 账号列表数据
-    accountList: [
-      {
-        accountId: "ACC001",
-        platformEnum: PlatformEnum.XIAOHONGSHU,
-        platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-        platformIcon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
-        accountName: "美食达人小红",
-        trackTypeEnum: TrackTypeEnum.FOOD_TRACK,
-        trackType: getTrackTypeName(TrackTypeEnum.FOOD_TRACK),
-        trackIcon: getTrackTypeIcon(TrackTypeEnum.FOOD_TRACK),
-        status: "正常运营",
-        isReported: true,
-        lastPublishedTime: "2025-01-20 14:30",
-        articlesCount: 156,
-      },
-      {
-        accountId: "ACC002",
-        platformEnum: PlatformEnum.WECHAT_MP,
-        platform: getPlatformName(PlatformEnum.WECHAT_MP),
-        platformIcon: getPlatformIcon(PlatformEnum.WECHAT_MP),
-        accountName: "旅游探索者",
-        trackTypeEnum: TrackTypeEnum.TRAVEL_TRACK,
-        trackType: getTrackTypeName(TrackTypeEnum.TRAVEL_TRACK),
-        trackIcon: getTrackTypeIcon(TrackTypeEnum.TRAVEL_TRACK),
-        status: "正常运营",
-        isReported: false,
-        lastPublishedTime: "2025-01-19 09:15",
-        articlesCount: 89,
-      },
-      {
-        accountId: "ACC003",
-        platformEnum: PlatformEnum.XIAOHONGSHU,
-        platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-        platformIcon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
-        accountName: "书法艺术家",
-        trackTypeEnum: TrackTypeEnum.CALLIGRAPHY,
-        trackType: getTrackTypeName(TrackTypeEnum.CALLIGRAPHY),
-        trackIcon: getTrackTypeIcon(TrackTypeEnum.CALLIGRAPHY),
-        status: "待审核",
-        isReported: false,
-        lastPublishedTime: "2025-01-18 16:45",
-        articlesCount: 234,
-      },
-      {
-        accountId: "ACC004",
-        platformEnum: PlatformEnum.WECHAT_MP,
-        platform: getPlatformName(PlatformEnum.WECHAT_MP),
-        platformIcon: getPlatformIcon(PlatformEnum.WECHAT_MP),
-        accountName: "摄影师小李",
-        trackTypeEnum: TrackTypeEnum.PHOTOGRAPHY,
-        trackType: getTrackTypeName(TrackTypeEnum.PHOTOGRAPHY),
-        trackIcon: getTrackTypeIcon(TrackTypeEnum.PHOTOGRAPHY),
-        status: "正常运营",
-        isReported: true,
-        lastPublishedTime: "2025-01-21 11:20",
-        articlesCount: 67,
-      },
-      {
-        accountId: "ACC005",
-        platformEnum: PlatformEnum.XIAOHONGSHU,
-        platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-        platformIcon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
-        accountName: "古董收藏家",
-        trackTypeEnum: TrackTypeEnum.ANTIQUE,
-        trackType: getTrackTypeName(TrackTypeEnum.ANTIQUE),
-        trackIcon: getTrackTypeIcon(TrackTypeEnum.ANTIQUE),
-        status: "正常运营",
-        isReported: false,
-        lastPublishedTime: "2025-01-17 13:55",
-        articlesCount: 45,
-      },
-    ],
+    accountList: [],
+    loading: true,
+    refreshing: false,
   },
 
   onLoad: function (options) {
-    // 页面加载时的初始化逻辑
+    console.log("数据中心页面加载");
 
     // 检查登录状态
     if (!authUtils.requireLogin(this)) {
@@ -98,7 +32,123 @@ Page({
   },
 
   onShow: function () {
-    // 页面显示时的逻辑
+    // 每次页面显示时都刷新数据，确保数据最新
+    console.log("数据中心页面显示，刷新数据");
+    this.loadAccountList();
+  },
+
+  // 加载账号列表
+  loadAccountList: async function () {
+    this.setData({
+      loading: true,
+    });
+
+    try {
+      // 获取用户信息（包含账号信息）
+      const result = await userInfoUtils.getCurrentUserInfo();
+
+      if (!result.success) {
+        console.error("获取用户信息失败:", result.error);
+        wx.showToast({
+          title: "获取账号信息失败",
+          icon: "none",
+          duration: 2000,
+        });
+        this.setData({
+          loading: false,
+          refreshing: false,
+        });
+        return;
+      }
+
+      const userInfo = result.userInfo;
+      const accounts = userInfo.accounts || [];
+
+      console.log("获取到的用户信息:", userInfo);
+      console.log("获取到的用户账号信息:", accounts);
+      console.log("账号数量:", accounts.length);
+
+      // 处理账号数据，添加显示所需的字段
+      const accountList = accounts.map((account) => {
+        // 获取平台图标
+        const platformIcon = getPlatformIcon(account.platform);
+
+        // 获取赛道类型信息
+        const trackTypeName = getTrackTypeName(account.trackType);
+        const trackTypeIcon = getTrackTypeIcon(account.trackType);
+
+        // 处理文章数量
+        const articlesCount = (account.posts || []).length;
+
+        // 处理最后发布时间
+        let lastPublishedTime = "暂无发布";
+        if (account.lastPublishedTime) {
+          try {
+            const date = new Date(account.lastPublishedTime);
+            lastPublishedTime = timeUtils.formatTime(date, "YYYY-MM-DD HH:mm");
+          } catch (error) {
+            console.error("格式化最后发布时间失败:", error);
+            lastPublishedTime = "时间格式错误";
+          }
+        }
+
+        // 处理状态显示 - 使用 accountUtils 统一处理
+        const status = accountUtils.getAuditStatusText(account.auditStatus);
+
+        return {
+          // 基本信息
+          accountId: account.accountId,
+          accountName: account.accountNickname,
+          platform: getPlatformName(account.platform),
+          platformIcon: platformIcon,
+          trackType: trackTypeName,
+          trackIcon: trackTypeIcon,
+
+          // 数据中心特有字段
+          isReported: account.isReported || false,
+          lastPublishedTime: lastPublishedTime,
+          articlesCount: articlesCount,
+
+          // 状态信息
+          status: status,
+
+          // 保留原始数据用于详情页面
+          originalAccountData: account,
+        };
+      });
+
+      this.setData({
+        accountList,
+        loading: false,
+        refreshing: false,
+      });
+
+      console.log("数据中心账号列表加载完成:", accountList);
+    } catch (error) {
+      console.error("加载数据中心账号列表失败:", error);
+      wx.showToast({
+        title: "加载失败，请重试",
+        icon: "none",
+        duration: 2000,
+      });
+      this.setData({
+        loading: false,
+        refreshing: false,
+      });
+    }
+  },
+
+  // 下拉刷新
+  onPullDownRefresh: function () {
+    this.setData({
+      refreshing: true,
+    });
+    this.loadAccountList();
+
+    // 停止下拉刷新动画
+    setTimeout(() => {
+      wx.stopPullDownRefresh();
+    }, 1000);
   },
 
   // 点击回传按钮

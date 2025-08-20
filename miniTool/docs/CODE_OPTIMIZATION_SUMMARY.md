@@ -1,190 +1,140 @@
-# 代码重复逻辑清理总结
+# 代码优化总结
 
-## 问题发现
+## 概述
 
-用户发现 `validateAccountData` 函数存在重复逻辑，经过检查确认确实存在代码重复问题。
+本次优化主要解决了审核状态处理逻辑的重复代码问题，统一使用 `accountUtils.js` 中的工具函数。
 
-## 重复逻辑分析
+## 优化内容
 
-### 🔍 发现的问题
+### 1. 重复代码问题
 
-1. **`validateAccountData` 函数未被使用**
+#### **问题描述**
 
-   - 位置：`miniprogram/utils/accountUtils.js`
-   - 状态：已定义但未被调用
+多个页面中存在相同的审核状态处理逻辑：
 
-2. **页面中存在重复的验证逻辑**
-   - 位置：`miniprogram/pages/add-account/add-account.js`
-   - 函数：`validateForm()`
-   - 问题：与 `validateAccountData` 逻辑完全相同
+- `data-center.js`: 手动判断 `auditStatus` 并返回状态文本
+- `task.js`: 手动判断 `auditStatus` 并返回状态文本
+- `account-list.js`: 手动定义状态文本数组和颜色数组
 
-### 📊 重复内容对比
+#### **优化方案**
 
-#### 页面中的 `validateForm` 函数
+统一使用 `accountUtils.js` 中的工具函数：
 
-```javascript
-validateForm: function () {
-  const errors = {};
-  let isValid = true;
+- `getAuditStatusText(auditStatus)`: 获取审核状态文本
+- `getAuditStatusColor(auditStatus)`: 获取审核状态颜色
 
-  // 验证赛道选择
-  if (!this.data.selectedTrackType) {
-    errors.trackType = "请选择赛道";
-    isValid = false;
-  }
+### 2. 具体优化
 
-  // 验证平台选择
-  if (!this.data.selectedPlatform) {
-    errors.platform = "请选择平台";
-    isValid = false;
-  }
-
-  // 验证手机号
-  if (!this.data.phoneNumber) {
-    errors.phoneNumber = "请输入注册手机号";
-    isValid = false;
-  } else if (!/^1[3-9]\d{9}$/.test(this.data.phoneNumber)) {
-    errors.phoneNumber = "请输入正确的手机号格式";
-    isValid = false;
-  }
-
-  // 验证账号昵称
-  if (!this.data.accountNickname) {
-    errors.accountNickname = "请输入账号昵称";
-    isValid = false;
-  }
-
-  // 验证账号ID
-  if (!this.data.accountId) {
-    errors.accountId = "请输入账号ID";
-    isValid = false;
-  }
-
-  this.setData({ errors });
-  return isValid;
-}
-```
-
-#### 工具函数中的 `validateAccountData` 函数
+#### **data-center.js**
 
 ```javascript
-validateAccountData: function (accountData) {
-  const errors = {};
-  let isValid = true;
-
-  // 验证赛道选择
-  if (!accountData.trackType) {
-    errors.trackType = "请选择赛道";
-    isValid = false;
-  }
-
-  // 验证平台选择
-  if (!accountData.platform) {
-    errors.platform = "请选择平台";
-    isValid = false;
-  }
-
-  // 验证手机号
-  if (!accountData.phoneNumber) {
-    errors.phoneNumber = "请输入注册手机号";
-    isValid = false;
-  } else if (!/^1[3-9]\d{9}$/.test(accountData.phoneNumber)) {
-    errors.phoneNumber = "请输入正确的手机号格式";
-    isValid = false;
-  }
-
-  // 验证账号昵称
-  if (!accountData.accountNickname) {
-    errors.accountNickname = "请输入账号昵称";
-    isValid = false;
-  }
-
-  // 验证账号ID
-  if (!accountData.accountId) {
-    errors.accountId = "请输入账号ID";
-    isValid = false;
-  }
-
-  return { isValid, errors };
+// 优化前
+let status = "正常运营";
+if (account.auditStatus === 0) {
+  status = "待审核";
+} else if (account.auditStatus === 2) {
+  status = "未通过";
 }
+
+// 优化后
+const status = accountUtils.getAuditStatusText(account.auditStatus);
 ```
 
-## 解决方案
-
-### ✅ 优化后的代码
-
-将页面中的 `validateForm` 函数重构为：
+#### **task.js**
 
 ```javascript
-validateForm: function () {
-  const accountUtils = require("../../utils/accountUtils");
-
-  // 格式化数据用于验证
-  const accountData = accountUtils.formatAccountData(this.data);
-
-  // 使用工具函数进行验证
-  const validation = accountUtils.validateAccountData(accountData);
-
-  // 设置错误信息到页面
-  this.setData({
-    errors: validation.errors,
-  });
-
-  return validation.isValid;
+// 优化前
+if (account.auditStatus === 0) {
+  return "待审核";
+} else if (account.auditStatus === 1) {
+  return "正常运营";
+} else if (account.auditStatus === 2) {
+  return "审核未通过";
 }
+
+// 优化后
+return accountUtils.getAuditStatusText(account.auditStatus);
 ```
 
-### 🎯 优化效果
+#### **account-list.js**
 
-1. **消除代码重复** - 删除了页面中的重复验证逻辑
-2. **统一验证规则** - 所有验证都通过工具函数进行
-3. **提高可维护性** - 验证规则只需要在一个地方维护
-4. **增强复用性** - 其他页面也可以使用相同的验证逻辑
+```javascript
+// 优化前
+auditStatusText: ["待审核", "已通过", "未通过"][account.auditStatus || 0],
+auditStatusColor: ["#f39c12", "#27ae60", "#e74c3c"][account.auditStatus || 0],
 
-## 代码质量改进
+// 优化后
+auditStatusText: accountUtils.getAuditStatusText(account.auditStatus || 0),
+auditStatusColor: accountUtils.getAuditStatusColor(account.auditStatus || 0),
+```
 
-### ✅ 优化前的问题
+### 3. 优化效果
 
-- ❌ 代码重复，维护困难
-- ❌ 验证规则分散，容易不一致
-- ❌ 工具函数未被充分利用
-- ❌ 违反 DRY 原则（Don't Repeat Yourself）
+#### **代码复用性**
 
-### ✅ 优化后的优势
+- ✅ 统一的状态处理逻辑
+- ✅ 减少重复代码
+- ✅ 便于维护和修改
 
-- ✅ 代码复用，减少重复
-- ✅ 验证规则统一，易于维护
-- ✅ 工具函数得到充分利用
-- ✅ 符合 DRY 原则
-- ✅ 更好的代码组织结构
+#### **一致性**
 
-## 最佳实践建议
+- ✅ 所有页面使用相同的状态文本
+- ✅ 所有页面使用相同的状态颜色
+- ✅ 避免状态文本不一致的问题
 
-### 1. 验证逻辑统一管理
+#### **可维护性**
 
-- 将验证逻辑集中在工具函数中
-- 页面只负责调用和显示结果
-- 避免在多个地方重复相同的验证代码
+- ✅ 状态文本和颜色集中管理
+- ✅ 修改状态只需在 `accountUtils.js` 中修改
+- ✅ 新增状态类型时只需更新工具函数
 
-### 2. 工具函数设计原则
+#### **代码规范**
 
-- 功能单一，职责明确
-- 参数清晰，返回值规范
-- 易于测试和复用
+- ✅ 统一在文件顶部引入依赖
+- ✅ 避免在函数内部使用 `require`
+- ✅ 符合模块化开发最佳实践
 
-### 3. 代码审查要点
+### 4. 保留的代码
 
-- 检查是否有重复的验证逻辑
-- 确认工具函数是否被正确使用
-- 验证代码是否符合 DRY 原则
+#### **统计计算**
+
+`account-list.js` 中的统计计算逻辑保留，因为：
+
+- 这是计算数量，不是获取状态文本
+- 逻辑简单且合理
+- 不涉及状态文本的重复定义
+
+```javascript
+const approvedCount = accountList.filter(
+  (item) => item.auditStatus === 1
+).length;
+const pendingCount = accountList.filter(
+  (item) => item.auditStatus === 0
+).length;
+```
+
+### 5. 工具函数说明
+
+#### **getAuditStatusText(auditStatus)**
+
+返回审核状态的文本描述：
+
+- `0`: "待审核"
+- `1`: "已通过"
+- `2`: "未通过"
+
+#### **getAuditStatusColor(auditStatus)**
+
+返回审核状态的颜色：
+
+- `0`: "#f39c12" (橙色 - 待审核)
+- `1`: "#27ae60" (绿色 - 已通过)
+- `2`: "#e74c3c" (红色 - 未通过)
 
 ## 总结
 
-通过这次代码优化，我们：
+通过本次优化，成功消除了审核状态处理逻辑的重复代码，提高了代码的复用性和可维护性。所有页面现在都统一使用 `accountUtils.js` 中的工具函数来处理审核状态的显示。
 
-1. **发现了代码重复问题** - 用户敏锐地发现了重复逻辑
-2. **统一了验证规则** - 所有验证都通过工具函数进行
-3. **提高了代码质量** - 消除了重复，增强了可维护性
-4. **优化了代码结构** - 更好的职责分离和代码组织
+## 版本历史
 
-这次优化体现了良好的代码审查习惯，及时发现和解决了代码质量问题，为项目的长期维护奠定了良好基础。
+- **v1.0**: 初始优化，统一审核状态处理逻辑

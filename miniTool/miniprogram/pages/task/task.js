@@ -12,6 +12,7 @@ const {
 const { TaskStatusEnum } = require("../../type/type");
 const authUtils = require("../../utils/authUtils");
 const userInfoUtils = require("../../utils/userInfoUtils");
+const accountUtils = require("../../utils/accountUtils");
 
 Page({
   data: {
@@ -186,13 +187,7 @@ Page({
     if (account.status === 0) {
       return "已禁用";
     } else if (account.status === 1) {
-      if (account.auditStatus === 0) {
-        return "待审核";
-      } else if (account.auditStatus === 1) {
-        return "正常运营";
-      } else if (account.auditStatus === 2) {
-        return "审核未通过";
-      }
+      return accountUtils.getAuditStatusText(account.auditStatus);
     }
     return "未知状态";
   },
