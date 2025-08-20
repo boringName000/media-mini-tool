@@ -15,13 +15,15 @@ Page({
     if (!authUtils.requireLogin(this)) {
       return;
     }
-
-    this.generateMonthlyEarningsList();
-    this.calculateEarningsStats();
   },
 
   onShow: function () {
-    // 页面显示时刷新数据
+    // 页面显示时刷新数据，确保每次进入都是最新数据
+    this.loadEarningsData();
+  },
+
+  // 加载收益数据
+  loadEarningsData: function () {
     this.generateMonthlyEarningsList();
     this.calculateEarningsStats();
   },
@@ -47,11 +49,28 @@ Page({
 
   // 根据用户注册时间生成月度收益列表
   generateMonthlyEarningsList: function () {
-    // 从工具文件获取用户注册时间戳
-    const registerTimestamp = "1754742131987";
-    const userRegisterDate = new Date(registerTimestamp);
-    const currentDate = new Date();
+    // 从 app 全局数据获取用户注册时间
+    const app = getApp();
+    const loginResult = app.globalData.loginResult;
 
+    if (!loginResult || !loginResult.registerTimestamp) {
+      console.warn("未获取到用户注册时间，使用默认时间");
+      // 如果没有注册时间，使用默认时间（2025年1月）
+      const defaultRegisterDate = new Date("2025-01-01");
+      this.generateEarningsListFromDate(defaultRegisterDate);
+      return;
+    }
+
+    // 使用用户真实的注册时间
+    const userRegisterDate = new Date(loginResult.registerTimestamp);
+    console.log("使用用户注册时间生成收益列表:", userRegisterDate);
+
+    this.generateEarningsListFromDate(userRegisterDate);
+  },
+
+  // 根据指定日期生成收益列表
+  generateEarningsListFromDate: function (userRegisterDate) {
+    const currentDate = new Date();
     const monthlyEarningsList = [];
     let id = 1;
 
