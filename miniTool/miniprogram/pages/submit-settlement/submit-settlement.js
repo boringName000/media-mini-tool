@@ -573,7 +573,7 @@ Page({
 
   // 提交结算数据到云函数
   submitSettlementToCloud: async function () {
-    if (!this.validateForm()) {
+    if (!this.validateFormData()) {
       return;
     }
 
@@ -645,8 +645,6 @@ Page({
 
       // 准备更新字段
       const updateFields = {
-        settlementStatus: 2, // 已结算
-        settlementTime: new Date().toISOString(),
         settlementMethod: this.getSettlementMethodValue(
           this.data.selectedMethod
         ),

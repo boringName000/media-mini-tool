@@ -88,7 +88,6 @@ exports.main = async (event, context) => {
     // 定义允许更新的字段
     const allowedFields = [
       "monthlyPostCount",
-      "settlementTime",
       "settlementStatus",
       "settlementMethod",
       "transferOrderNo",
@@ -392,17 +391,6 @@ function validateEarningFields(earning) {
       valid: false,
       message: "转账截图URL必须是字符串类型",
     };
-  }
-
-  // 验证 settlementTime
-  if (earning.settlementTime !== undefined && earning.settlementTime !== null) {
-    const settlementDate = new Date(earning.settlementTime);
-    if (isNaN(settlementDate.getTime())) {
-      return {
-        valid: false,
-        message: "结算时间格式不正确",
-      };
-    }
   }
 
   return {

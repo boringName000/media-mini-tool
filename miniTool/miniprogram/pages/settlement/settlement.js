@@ -248,12 +248,21 @@ Page({
     const index = e.currentTarget.dataset.index;
     const account = this.data.settlementAccountList[index];
 
-    if (isSettled(account.status)) {
-      wx.showToast({
-        title: "该账号已结算",
-        icon: "none",
-        duration: 2000,
-      });
+    // 只有待结算状态才能点击
+    if (account.status !== SettlementStatusEnum.PENDING) {
+      if (account.status === SettlementStatusEnum.SETTLED) {
+        wx.showToast({
+          title: "该账号已结算",
+          icon: "none",
+          duration: 2000,
+        });
+      } else if (account.status === SettlementStatusEnum.UNSETTLED) {
+        wx.showToast({
+          title: "未开始结算",
+          icon: "none",
+          duration: 2000,
+        });
+      }
       return;
     }
 
