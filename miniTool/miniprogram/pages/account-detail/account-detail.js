@@ -39,6 +39,9 @@ Page({
 
     // 上传状态
     isUploading: false,
+
+    // 截图文件信息（用于上传到云存储）
+    screenshotFile: null,
   },
 
   onLoad: function (options) {
@@ -232,31 +235,29 @@ Page({
       sourceType: ["album", "camera"],
       success: function (res) {
         const tempFilePath = res.tempFiles[0].tempFilePath;
+        const fileSize = res.tempFiles[0].size;
 
-        that.setData({
-          isUploading: true,
-        });
-
-        // 显示上传进度
-        wx.showLoading({
-          title: "上传中...",
-          mask: true,
-        });
-
-        // 模拟上传到云存储
-        setTimeout(() => {
-          wx.hideLoading();
-          that.setData({
-            screenshotUrl: tempFilePath,
-            isUploading: false,
-          });
-
+        // 检查文件大小（限制为10MB）
+        if (fileSize > 10 * 1024 * 1024) {
           wx.showToast({
-            title: "上传成功",
-            icon: "success",
+            title: "图片大小不能超过10MB",
+            icon: "none",
             duration: 2000,
           });
-        }, 1500);
+          return;
+        }
+
+        // 直接存储临时文件路径，不立即上传到云存储
+        that.setData({
+          screenshotUrl: tempFilePath,
+          screenshotFile: res.tempFiles[0], // 保存文件信息用于后续上传
+        });
+
+        wx.showToast({
+          title: "图片已选择",
+          icon: "success",
+          duration: 1500,
+        });
       },
       fail: function (err) {
         console.error("选择图片失败:", err);
@@ -271,8 +272,30 @@ Page({
 
   // 删除截图
   deleteScreenshot: function () {
-    this.setData({
-      screenshotUrl: "",
+    const currentScreenshotUrl = this.data.screenshotUrl;
+
+    if (!currentScreenshotUrl) {
+      return;
+    }
+
+    wx.showModal({
+      title: "确认删除",
+      content: "确定要删除这张截图吗？",
+      success: (res) => {
+        if (res.confirm) {
+          // 直接清除本地临时文件
+          this.setData({
+            screenshotUrl: "",
+            screenshotFile: null,
+          });
+
+          wx.showToast({
+            title: "删除成功",
+            icon: "success",
+            duration: 1500,
+          });
+        }
+      },
     });
   },
 
@@ -320,7 +343,7 @@ Page({
   },
 
   // 提交审核
-  submitAudit: function () {
+  submitAudit: async function () {
     if (!this.validateForm()) {
       wx.showToast({
         title: "请完善表单信息",
@@ -336,115 +359,145 @@ Page({
       mask: true,
     });
 
-    // 准备更新的字段数据
-    const updateFields = {};
+    try {
+      let finalScreenshotUrl = this.data.screenshotUrl;
 
-    // 检查并添加需要更新的字段
-    if (
-      this.data.selectedTrackType &&
-      this.data.selectedTrackType.type !== this.data.accountInfo.trackType
-    ) {
-      updateFields.trackType = this.data.selectedTrackType.type;
-    }
+      // 如果有新的截图文件，先上传到云存储
+      if (this.data.screenshotFile) {
+        try {
+          // 生成文件名
+          const timestamp = Date.now();
+          const randomStr = Math.random().toString(36).substring(2, 8);
+          const fileName = `screenshot_${timestamp}_${randomStr}.jpg`;
 
-    if (this.data.phoneNumber !== this.data.accountInfo.phoneNumber) {
-      updateFields.phoneNumber = this.data.phoneNumber;
-    }
+          // 上传到云存储
+          const uploadResult = await wx.cloud.uploadFile({
+            cloudPath: `userAccountScreenshots/${fileName}`,
+            filePath: this.data.screenshotFile.tempFilePath,
+          });
 
-    if (this.data.accountNickname !== this.data.accountInfo.accountNickname) {
-      updateFields.accountNickname = this.data.accountNickname;
-    }
+          console.log("截图上传成功:", uploadResult);
+          finalScreenshotUrl = uploadResult.fileID;
+        } catch (uploadError) {
+          console.error("截图上传失败:", uploadError);
+          wx.hideLoading();
+          wx.showToast({
+            title: "截图上传失败，请重试",
+            icon: "none",
+            duration: 2000,
+          });
+          return;
+        }
+      }
 
-    if (this.data.isViolation !== this.data.accountInfo.isViolation) {
-      updateFields.isViolation = this.data.isViolation;
-    }
+      // 准备更新的字段数据
+      const updateFields = {};
 
-    if (this.data.screenshotUrl !== this.data.accountInfo.screenshotUrl) {
-      updateFields.screenshotUrl = this.data.screenshotUrl;
-    }
+      // 检查并添加需要更新的字段
+      if (
+        this.data.selectedTrackType &&
+        this.data.selectedTrackType.type !== this.data.accountInfo.trackType
+      ) {
+        updateFields.trackType = this.data.selectedTrackType.type;
+      }
 
-    // 注册日期不允许修改，移除相关更新逻辑
+      if (this.data.phoneNumber !== this.data.accountInfo.phoneNumber) {
+        updateFields.phoneNumber = this.data.phoneNumber;
+      }
 
-    // 如果没有需要更新的字段，直接返回
-    if (Object.keys(updateFields).length === 0) {
-      wx.hideLoading();
-      wx.showToast({
-        title: "没有需要更新的内容",
-        icon: "none",
-        duration: 2000,
-      });
-      return;
-    }
+      if (this.data.accountNickname !== this.data.accountInfo.accountNickname) {
+        updateFields.accountNickname = this.data.accountNickname;
+      }
 
-    console.log("准备更新的字段:", updateFields);
+      if (this.data.isViolation !== this.data.accountInfo.isViolation) {
+        updateFields.isViolation = this.data.isViolation;
+      }
 
-    // 获取用户ID
-    const app = getApp();
-    const userId = app.globalData.loginResult?.userId;
+      // 使用最终的文件ID（可能是新上传的或原有的）
+      if (finalScreenshotUrl !== this.data.accountInfo.screenshotUrl) {
+        updateFields.screenshotUrl = finalScreenshotUrl;
+      }
 
-    if (!userId) {
-      wx.hideLoading();
-      wx.showToast({
-        title: "用户信息获取失败",
-        icon: "none",
-        duration: 2000,
-      });
-      return;
-    }
+      // 注册日期不允许修改，移除相关更新逻辑
 
-    // 调用云函数更新账号信息
-    wx.cloud
-      .callFunction({
+      // 如果没有需要更新的字段，直接返回
+      if (Object.keys(updateFields).length === 0) {
+        wx.hideLoading();
+        wx.showToast({
+          title: "没有需要更新的内容",
+          icon: "none",
+          duration: 2000,
+        });
+        return;
+      }
+
+      console.log("准备更新的字段:", updateFields);
+
+      // 获取用户ID
+      const app = getApp();
+      const userId = app.globalData.loginResult?.userId;
+
+      if (!userId) {
+        wx.hideLoading();
+        wx.showToast({
+          title: "用户信息获取失败",
+          icon: "none",
+          duration: 2000,
+        });
+        return;
+      }
+
+      // 调用云函数更新账号信息
+      const res = await wx.cloud.callFunction({
         name: "update-user-account",
         data: {
           userId: userId,
           accountId: this.data.accountInfo.accountId,
           updateFields: updateFields,
         },
-      })
-      .then((res) => {
-        wx.hideLoading();
+      });
 
-        if (res.result.success) {
-          console.log("账号更新成功:", res.result);
+      wx.hideLoading();
 
-          // 更新本地数据
-          this.setData({
-            accountInfo: {
-              ...this.data.accountInfo,
-              ...updateFields,
-            },
-          });
+      if (res.result.success) {
+        console.log("账号更新成功:", res.result);
 
-          wx.showToast({
-            title: "更新成功",
-            icon: "success",
-            duration: 2000,
-          });
+        // 更新本地数据
+        this.setData({
+          accountInfo: {
+            ...this.data.accountInfo,
+            ...updateFields,
+          },
+        });
 
-          // 延迟返回上一页
-          setTimeout(() => {
-            wx.navigateBack({
-              delta: 1,
-            });
-          }, 2000);
-        } else {
-          console.error("账号更新失败:", res.result.error);
-          wx.showToast({
-            title: res.result.error || "更新失败",
-            icon: "none",
-            duration: 2000,
-          });
-        }
-      })
-      .catch((err) => {
-        wx.hideLoading();
-        console.error("调用云函数失败:", err);
         wx.showToast({
-          title: "网络错误，请稍后重试",
+          title: "更新成功",
+          icon: "success",
+          duration: 2000,
+        });
+
+        // 延迟返回上一页
+        setTimeout(() => {
+          wx.navigateBack({
+            delta: 1,
+          });
+        }, 2000);
+      } else {
+        console.error("账号更新失败:", res.result.error);
+        wx.showToast({
+          title: res.result.error || "更新失败",
           icon: "none",
           duration: 2000,
         });
+      }
+    } catch (error) {
+      wx.hideLoading();
+      console.error("提交账号信息失败:", error);
+      wx.showToast({
+        title: "网络错误，请稍后重试",
+        icon: "none",
+        duration: 2000,
       });
+    }
   },
 });
