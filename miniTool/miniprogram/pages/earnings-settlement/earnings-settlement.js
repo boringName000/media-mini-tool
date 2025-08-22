@@ -3,8 +3,8 @@ const authUtils = require("../../utils/authUtils");
 Page({
   data: {
     // 收益统计数据
-    totalEarnings: 0,
-    monthlyEarnings: 0,
+    totalAccountEarnings: 0,
+    totalSettlementEarnings: 0,
 
     // 月度收益列表（根据用户注册时间动态生成）
     monthlyEarningsList: [],
@@ -30,20 +30,50 @@ Page({
 
   // 计算收益统计数据
   calculateEarningsStats: function () {
-    const monthlyEarningsList = this.data.monthlyEarningsList || [];
+    // 从 app 全局数据获取用户账号数据
+    const app = getApp();
+    const loginResult = app.globalData.loginResult;
 
-    // 计算总收益（所有月度时间的本期总收益之和）
-    const totalEarnings = monthlyEarningsList.reduce(
-      (sum, item) => sum + (item.periodTotalEarnings || 0),
-      0
-    );
+    if (!loginResult || !loginResult.accounts) {
+      console.warn("未获取到用户账号数据");
+      this.setData({
+        totalAccountEarnings: "0.00",
+        totalSettlementEarnings: "0.00",
+      });
+      return;
+    }
 
-    // 模拟本月收益（这里可以根据实际需求调整）
-    const monthlyEarnings = totalEarnings * 0.3; // 假设本月收益为总收益的30%
+    const accounts = loginResult.accounts || [];
+    let totalAccountEarnings = 0;
+    let totalSettlementEarnings = 0;
+
+    // 遍历所有账号的收益数据
+    accounts.forEach((account) => {
+      if (account.earnings && Array.isArray(account.earnings)) {
+        account.earnings.forEach((earning) => {
+          // 累加账号收益
+          if (earning.accountEarnings) {
+            totalAccountEarnings += parseFloat(earning.accountEarnings) || 0;
+          }
+
+          // 累加结算收益
+          if (earning.settlementEarnings) {
+            totalSettlementEarnings +=
+              parseFloat(earning.settlementEarnings) || 0;
+          }
+        });
+      }
+    });
+
+    console.log("收益统计计算:", {
+      totalAccountEarnings,
+      totalSettlementEarnings,
+      accountsCount: accounts.length,
+    });
 
     this.setData({
-      totalEarnings: totalEarnings.toFixed(2),
-      monthlyEarnings: monthlyEarnings.toFixed(2),
+      totalAccountEarnings: totalAccountEarnings.toFixed(2),
+      totalSettlementEarnings: totalSettlementEarnings.toFixed(2),
     });
   },
 
@@ -70,7 +100,19 @@ Page({
 
   // 根据指定日期生成收益列表
   generateEarningsListFromDate: function (userRegisterDate) {
-    const currentDate = new Date();
+    // 从 app 全局数据获取用户账号数据
+    const app = getApp();
+    const loginResult = app.globalData.loginResult;
+
+    if (!loginResult || !loginResult.accounts) {
+      console.warn("未获取到用户账号数据");
+      this.setData({
+        monthlyEarningsList: [],
+      });
+      return;
+    }
+
+    const accounts = loginResult.accounts || [];
     const monthlyEarningsList = [];
     let id = 1;
 
@@ -80,6 +122,7 @@ Page({
       userRegisterDate.getMonth(),
       1
     );
+    const currentDate = new Date();
 
     while (currentMonth <= currentDate) {
       const year = currentMonth.getFullYear();
@@ -90,16 +133,18 @@ Page({
       monthlyEarningsList.push({
         id: id++,
         title: `${monthName}上半月收益结算`,
-        periodTotalEarnings:
-          Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000, // 本期总收益
+        year: year,
+        month: month,
+        period: "first",
       });
 
       // 生成下半月收益条目
       monthlyEarningsList.push({
         id: id++,
         title: `${monthName}下半月收益结算`,
-        periodTotalEarnings:
-          Math.floor(Math.random() * (5000 - 2000 + 1)) + 2000, // 本期总收益
+        year: year,
+        month: month,
+        period: "second",
       });
 
       // 移动到下一个月
@@ -135,11 +180,19 @@ Page({
     const index = e.currentTarget.dataset.index;
     const monthlyEarnings = this.data.monthlyEarningsList[index];
 
-    // 跳转到结算页面，并传递月度收益信息
+    // 计算时间区间
+    const startTime = this.calculatePeriodStartTime(monthlyEarnings);
+    const endTime = this.calculatePeriodEndTime(monthlyEarnings);
+
+    // 跳转到结算页面，并传递时间区间参数
     wx.navigateTo({
       url: `/pages/settlement/settlement?period=${encodeURIComponent(
         monthlyEarnings.title
-      )}`,
+      )}&startTime=${encodeURIComponent(
+        startTime.toISOString()
+      )}&endTime=${encodeURIComponent(endTime.toISOString())}&year=${
+        monthlyEarnings.year
+      }&month=${monthlyEarnings.month}&periodType=${monthlyEarnings.period}`,
       success: function () {
         console.log("跳转到结算页面");
       },
@@ -151,5 +204,33 @@ Page({
         });
       },
     });
+  },
+
+  // 计算期间开始时间
+  calculatePeriodStartTime: function (monthlyEarnings) {
+    const year = monthlyEarnings.year;
+    const month = monthlyEarnings.month;
+
+    if (monthlyEarnings.period === "first") {
+      // 上半月：1号 00:00:00
+      return new Date(year, month - 1, 1, 0, 0, 0, 0);
+    } else {
+      // 下半月：16号 00:00:00
+      return new Date(year, month - 1, 16, 0, 0, 0, 0);
+    }
+  },
+
+  // 计算期间结束时间
+  calculatePeriodEndTime: function (monthlyEarnings) {
+    const year = monthlyEarnings.year;
+    const month = monthlyEarnings.month;
+
+    if (monthlyEarnings.period === "first") {
+      // 上半月：15号 23:59:59.999
+      return new Date(year, month - 1, 15, 23, 59, 59, 999);
+    } else {
+      // 下半月：月末 23:59:59.999
+      return new Date(year, month, 0, 23, 59, 59, 999);
+    }
   },
 });

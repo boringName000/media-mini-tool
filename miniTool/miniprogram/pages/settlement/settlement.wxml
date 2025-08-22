@@ -23,10 +23,14 @@
       </view>
     </view>
     
-    <!-- 本期已结算收益 -->
+    <!-- 收益统计 -->
     <view class="earnings-row">
       <view class="earnings-item">
-        <text class="earnings-label">本期已结算收益：</text>
+        <text class="earnings-label">已结算账号收益：</text>
+        <text class="earnings-number">¥{{settlementStats.totalAccountEarnings}}</text>
+      </view>
+      <view class="earnings-item">
+        <text class="earnings-label">已结算收益：</text>
         <text class="earnings-number">¥{{settlementStats.settledEarnings}}</text>
       </view>
     </view>
@@ -45,8 +49,6 @@
       class="account-item" 
       wx:for="{{settlementAccountList}}" 
       wx:key="accountId"
-      bindtap="onAccountTap"
-      data-index="{{index}}"
     >
       <!-- 账号基本信息 -->
       <view class="account-info">
@@ -79,7 +81,7 @@
       <!-- 结算时间信息 -->
       <view class="settlement-info">
         <text class="settlement-period-text">{{item.settlementPeriod}}</text>
-        <text class="last-settlement">上次结算：{{item.lastSettlementTime}}</text>
+        <text class="last-settlement">结算时间：{{item.lastSettlementTime}}</text>
       </view>
 
       <!-- 操作按钮 -->

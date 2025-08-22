@@ -51,6 +51,23 @@
 | `dailyPostCount`    | Number  | ✅   | 0        | 每日发文数量                           |
 | `lastPostTime`      | Date    | ❌   | null     | 最后发文时间                           |
 | `posts`             | Array   | ✅   | []       | 已发布的文章数据数组                   |
+| `earnings`          | Array   | ✅   | []       | 收益数据数组                           |
+
+#### earnings 数组中的每个收益对象结构：
+
+| 字段名               | 类型   | 必填 | 默认值 | 说明                                   |
+| -------------------- | ------ | ---- | ------ | -------------------------------------- |
+| `startTime`          | Date   | ✅   | -      | 开始时间                               |
+| `endTime`            | Date   | ✅   | -      | 结束时间                               |
+| `monthlyPostCount`   | Number | ✅   | 0      | 月发布文章数                           |
+| `settlementTime`     | Date   | ❌   | null   | 结算时间                               |
+| `settlementStatus`   | Number | ✅   | 0      | 结算状态：0-未结算，1-待结算，2-已结算 |
+| `settlementMethod`   | Number | ❌   | null   | 结算方式                               |
+| `transferOrderNo`    | String | ❌   | null   | 转账订单号                             |
+| `accountEarnings`    | Number | ✅   | 0      | 账号收益                               |
+| `settlementEarnings` | Number | ✅   | 0      | 结算收益                               |
+| `settlementImageUrl` | String | ❌   | null   | 结算单图片 URL                         |
+| `transferImageUrl`   | String | ❌   | null   | 转账截图 URL                           |
 
 ## 云函数返回值规范
 
@@ -280,12 +297,26 @@
 - `dailyPostCount`: 必须是非负整数
 - `registerDate`: 如果提供，必须是有效的日期格式，不能大于当前时间，不能过于久远（超过 10 年）
 
+### 收益信息验证
+
+- `startTime`: 必填，必须是有效的日期格式
+- `endTime`: 必填，必须是有效的日期格式，且不能早于 startTime
+- `monthlyPostCount`: 必须是非负整数
+- `settlementTime`: 如果提供，必须是有效的日期格式
+- `settlementStatus`: 只能是 0、1 或 2（0-未结算，1-待结算，2-已结算）
+- `settlementMethod`: 如果提供，必须是有效的结算方式枚举值
+- `transferOrderNo`: 如果提供，不能为空字符串
+- `accountEarnings`: 必须是非负数
+- `settlementEarnings`: 必须是非负数
+- `settlementImageUrl`: 如果提供，必须是有效的 URL 格式
+- `transferImageUrl`: 如果提供，必须是有效的 URL 格式
+
 ## 注意事项
 
 1. **时间字段**: 所有时间字段都使用 `Date` 类型，在数据库中存储为 `ISODate`
-2. **数组字段**: `accounts` 和 `posts` 字段都是数组类型
+2. **数组字段**: `accounts`、`posts` 和 `earnings` 字段都是数组类型
 3. **布尔字段**: `isViolation` 使用 `Boolean` 类型
-4. **枚举字段**: `platform`、`trackType`、`status`、`auditStatus`、`userType`、`userLevel` 使用 `Number` 类型
+4. **枚举字段**: `platform`、`trackType`、`status`、`auditStatus`、`userType`、`userLevel`、`isSettled`、`settlementMethod` 使用 `Number` 类型
 5. **可选字段**: 标记为 ❌ 的字段在创建时可以不提供，会使用默认值
 6. **必填字段**: 标记为 ✅ 的字段在创建时必须提供
 7. **账号 ID 生成**: 系统自动生成账号 ID，格式为 "AC" + 5 位数字（从 00001 开始）
@@ -294,3 +325,4 @@
 ## 版本历史
 
 - **v1.0**: 基于现有云函数代码分析，整理实际存在的数据库字段结构
+- **v1.1**: 新增 earnings 收益数据数组字段结构

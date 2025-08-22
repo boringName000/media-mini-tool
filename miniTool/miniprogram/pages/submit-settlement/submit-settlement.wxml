@@ -122,7 +122,10 @@
             <view class="upload-icon">📄</view>
             <text class="upload-text">点击上传</text>
           </view>
-          <image wx:else class="uploaded-image" src="{{settlementDocImage}}" mode="aspectFit" bindtap="previewSettlementDoc"></image>
+          <view wx:else class="uploaded-image-container">
+            <image class="uploaded-image" src="{{settlementDocImage}}" mode="aspectFit" bindtap="previewSettlementDoc"></image>
+            <view class="delete-button" catchtap="deleteSettlementDoc">🗑️</view>
+          </view>
         </view>
       </view>
       
@@ -138,7 +141,10 @@
             <view class="upload-icon">📱</view>
             <text class="upload-text">点击上传</text>
           </view>
-          <image wx:else class="uploaded-image" src="{{transferScreenshotImage}}" mode="aspectFit" bindtap="previewTransferScreenshot"></image>
+          <view wx:else class="uploaded-image-container">
+            <image class="uploaded-image" src="{{transferScreenshotImage}}" mode="aspectFit" bindtap="previewTransferScreenshot"></image>
+            <view class="delete-button" catchtap="deleteTransferScreenshot">🗑️</view>
+          </view>
         </view>
       </view>
     </view>

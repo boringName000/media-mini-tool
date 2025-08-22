@@ -44,6 +44,7 @@ const PlatformEnum = {
 
 const SettlementStatusEnum = {
   // 结算状态
+  UNSETTLED: 0, // 未结算
   PENDING: 1, // 待结算
   SETTLED: 2, // 已结算
 };

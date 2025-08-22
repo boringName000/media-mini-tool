@@ -15,15 +15,15 @@
       <view class="stat-card">
         <view class="stat-icon">📊</view>
         <view class="stat-content">
-          <text class="stat-number">¥{{totalEarnings}}</text>
-          <text class="stat-label">总收益</text>
+          <text class="stat-number">¥{{totalAccountEarnings}}</text>
+          <text class="stat-label">总账号收益</text>
         </view>
       </view>
       <view class="stat-card">
         <view class="stat-icon">📈</view>
         <view class="stat-content">
-          <text class="stat-number">¥{{monthlyEarnings}}</text>
-          <text class="stat-label">本月收益</text>
+          <text class="stat-number">¥{{totalSettlementEarnings}}</text>
+          <text class="stat-label">总结算收益</text>
         </view>
       </view>
     </view>

@@ -11,6 +11,8 @@ const { SettlementStatusEnum } = require("../type/type");
  */
 function getSettlementStatusName(statusEnum) {
   switch (statusEnum) {
+    case SettlementStatusEnum.UNSETTLED:
+      return "未结算";
     case SettlementStatusEnum.PENDING:
       return "待结算";
     case SettlementStatusEnum.SETTLED:
@@ -27,13 +29,24 @@ function getSettlementStatusName(statusEnum) {
  */
 function getSettlementStatusEnum(statusName) {
   switch (statusName) {
+    case "未结算":
+      return SettlementStatusEnum.UNSETTLED;
     case "待结算":
       return SettlementStatusEnum.PENDING;
     case "已结算":
       return SettlementStatusEnum.SETTLED;
     default:
-      return SettlementStatusEnum.PENDING;
+      return SettlementStatusEnum.UNSETTLED;
   }
+}
+
+/**
+ * 判断是否为未结算状态
+ * @param {number} statusEnum - 结算状态枚举值
+ * @returns {boolean} 是否为未结算
+ */
+function isUnsettled(statusEnum) {
+  return statusEnum === SettlementStatusEnum.UNSETTLED;
 }
 
 /**
@@ -58,6 +71,7 @@ module.exports = {
   SettlementStatusEnum,
   getSettlementStatusName,
   getSettlementStatusEnum,
+  isUnsettled,
   isPending,
   isSettled,
 };

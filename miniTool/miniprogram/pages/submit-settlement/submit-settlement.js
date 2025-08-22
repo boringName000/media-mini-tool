@@ -6,6 +6,13 @@ Page({
     accountId: "",
     accountName: "",
     settlementPeriod: "",
+    // 云函数需要的参数
+    userId: "",
+    startTime: "",
+    endTime: "",
+    year: null,
+    month: null,
+    periodType: "",
     // 结算方式选项
     settlementMethods: [
       { value: "wechat", label: "微信" },
@@ -21,6 +28,8 @@ Page({
     accountEarningsError: "", // 本期账号收益错误提示
     settlementDocImage: "", // 结算单图片
     transferScreenshotImage: "", // 转账截图
+    settlementDocFile: null, // 结算单文件信息，用于后续上传
+    transferScreenshotFile: null, // 转账截图文件信息，用于后续上传
   },
 
   onLoad: function (options) {
@@ -49,6 +58,55 @@ Page({
         settlementPeriod: decodeURIComponent(options.period),
       });
     }
+
+    // 处理云函数需要的参数
+    if (options.userId) {
+      this.setData({
+        userId: options.userId,
+      });
+    }
+
+    if (options.startTime) {
+      this.setData({
+        startTime: decodeURIComponent(options.startTime),
+      });
+    }
+
+    if (options.endTime) {
+      this.setData({
+        endTime: decodeURIComponent(options.endTime),
+      });
+    }
+
+    if (options.year) {
+      this.setData({
+        year: parseInt(options.year),
+      });
+    }
+
+    if (options.month) {
+      this.setData({
+        month: parseInt(options.month),
+      });
+    }
+
+    if (options.periodType) {
+      this.setData({
+        periodType: options.periodType,
+      });
+    }
+
+    console.log("处理后的参数:", {
+      accountId: this.data.accountId,
+      accountName: this.data.accountName,
+      settlementPeriod: this.data.settlementPeriod,
+      userId: this.data.userId,
+      startTime: this.data.startTime,
+      endTime: this.data.endTime,
+      year: this.data.year,
+      month: this.data.month,
+      periodType: this.data.periodType,
+    });
   },
 
   onShow: function () {
@@ -233,47 +291,8 @@ Page({
 
   // 提交结算数据
   submitSettlementData: function () {
-    const that = this;
-
-    // 数据验证
-    if (!this.validateFormData()) {
-      return;
-    }
-
-    // 显示加载提示
-    wx.showLoading({
-      title: "提交中...",
-      mask: true,
-    });
-
-    // 准备提交数据
-    const submitData = this.prepareSubmitData();
-
-    console.log("准备提交的数据:", submitData);
-
-    // 模拟提交到后台
-    setTimeout(() => {
-      wx.hideLoading();
-
-      // 模拟提交成功
-      wx.showModal({
-        title: "提交成功",
-        content: "结算数据已成功提交，请等待审核",
-        showCancel: false,
-        confirmText: "确定",
-        success: function (res) {
-          if (res.confirm) {
-            // 返回上一页
-            wx.navigateBack({
-              delta: 1,
-            });
-          }
-        },
-      });
-    }, 2000);
-
-    // 实际项目中，这里应该调用真实的API
-    // this.callSubmitAPI(submitData);
+    // 调用云函数提交结算数据
+    this.submitSettlementToCloud();
   },
 
   // 验证表单数据
@@ -380,48 +399,321 @@ Page({
     };
   },
 
-  // 调用提交API（实际项目中使用）
-  callSubmitAPI: function (data) {
-    wx.request({
-      url: "https://your-api-endpoint/submit-settlement",
-      method: "POST",
-      data: data,
-      header: {
-        "content-type": "application/json",
-      },
+  // 上传结算单图片
+  uploadSettlementDoc: function () {
+    const that = this;
+
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ["image"],
+      sourceType: ["album", "camera"],
       success: function (res) {
-        wx.hideLoading();
-        if (res.statusCode === 200) {
-          wx.showModal({
-            title: "提交成功",
-            content: "结算数据已成功提交，请等待审核",
-            showCancel: false,
-            confirmText: "确定",
-            success: function (modalRes) {
-              if (modalRes.confirm) {
-                wx.navigateBack({
-                  delta: 1,
-                });
-              }
-            },
-          });
-        } else {
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        const fileSize = res.tempFiles[0].size;
+
+        // 检查文件大小（限制为10MB）
+        if (fileSize > 10 * 1024 * 1024) {
           wx.showToast({
-            title: "提交失败，请重试",
-            icon: "error",
+            title: "图片大小不能超过10MB",
+            icon: "none",
             duration: 2000,
           });
+          return;
         }
+
+        // 直接存储临时文件路径，不立即上传到云存储
+        that.setData({
+          settlementDocImage: tempFilePath,
+          settlementDocFile: res.tempFiles[0], // 保存文件信息用于后续上传
+        });
+
+        wx.showToast({
+          title: "结算单已选择",
+          icon: "success",
+          duration: 1500,
+        });
       },
       fail: function (err) {
-        wx.hideLoading();
-        console.error("提交失败:", err);
+        console.error("选择结算单失败:", err);
         wx.showToast({
-          title: "网络错误，请重试",
-          icon: "error",
+          title: "选择图片失败",
+          icon: "none",
           duration: 2000,
         });
       },
     });
+  },
+
+  // 删除结算单图片
+  deleteSettlementDoc: function () {
+    const currentImageUrl = this.data.settlementDocImage;
+
+    if (!currentImageUrl) {
+      return;
+    }
+
+    wx.showModal({
+      title: "确认删除",
+      content: "确定要删除这张结算单吗？",
+      success: (res) => {
+        if (res.confirm) {
+          // 直接清除本地临时文件
+          this.setData({
+            settlementDocImage: "",
+            settlementDocFile: null,
+          });
+
+          wx.showToast({
+            title: "删除成功",
+            icon: "success",
+            duration: 1500,
+          });
+        }
+      },
+    });
+  },
+
+  // 预览结算单图片
+  previewSettlementDoc: function () {
+    const imageUrl = this.data.settlementDocImage;
+    if (imageUrl) {
+      // 直接预览临时文件
+      wx.previewImage({
+        urls: [imageUrl],
+        current: imageUrl,
+      });
+    }
+  },
+
+  // 上传转账截图
+  uploadTransferScreenshot: function () {
+    const that = this;
+
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ["image"],
+      sourceType: ["album", "camera"],
+      success: function (res) {
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        const fileSize = res.tempFiles[0].size;
+
+        // 检查文件大小（限制为10MB）
+        if (fileSize > 10 * 1024 * 1024) {
+          wx.showToast({
+            title: "图片大小不能超过10MB",
+            icon: "none",
+            duration: 2000,
+          });
+          return;
+        }
+
+        // 直接存储临时文件路径，不立即上传到云存储
+        that.setData({
+          transferScreenshotImage: tempFilePath,
+          transferScreenshotFile: res.tempFiles[0], // 保存文件信息用于后续上传
+        });
+
+        wx.showToast({
+          title: "转账截图已选择",
+          icon: "success",
+          duration: 1500,
+        });
+      },
+      fail: function (err) {
+        console.error("选择转账截图失败:", err);
+        wx.showToast({
+          title: "选择图片失败",
+          icon: "none",
+          duration: 2000,
+        });
+      },
+    });
+  },
+
+  // 删除转账截图
+  deleteTransferScreenshot: function () {
+    const currentImageUrl = this.data.transferScreenshotImage;
+
+    if (!currentImageUrl) {
+      return;
+    }
+
+    wx.showModal({
+      title: "确认删除",
+      content: "确定要删除这张转账截图吗？",
+      success: (res) => {
+        if (res.confirm) {
+          // 直接清除本地临时文件
+          this.setData({
+            transferScreenshotImage: "",
+            transferScreenshotFile: null,
+          });
+
+          wx.showToast({
+            title: "删除成功",
+            icon: "success",
+            duration: 1500,
+          });
+        }
+      },
+    });
+  },
+
+  // 预览转账截图
+  previewTransferScreenshot: function () {
+    const imageUrl = this.data.transferScreenshotImage;
+    if (imageUrl) {
+      // 直接预览临时文件
+      wx.previewImage({
+        urls: [imageUrl],
+        current: imageUrl,
+      });
+    }
+  },
+
+  // 提交结算数据到云函数
+  submitSettlementToCloud: async function () {
+    if (!this.validateForm()) {
+      return;
+    }
+
+    // 显示加载提示
+    wx.showLoading({
+      title: "提交中...",
+      mask: true,
+    });
+
+    try {
+      let finalSettlementDocUrl = this.data.settlementDocImage;
+      let finalTransferScreenshotUrl = this.data.transferScreenshotImage;
+
+      // 如果有结算单图片，先上传到云存储
+      if (this.data.settlementDocFile) {
+        try {
+          // 生成文件名
+          const timestamp = Date.now();
+          const randomStr = Math.random().toString(36).substring(2, 8);
+          const fileName = `settlement_doc_${timestamp}_${randomStr}.jpg`;
+
+          // 上传到云存储
+          const uploadResult = await wx.cloud.uploadFile({
+            cloudPath: `userSettlementScreenshot/${fileName}`,
+            filePath: this.data.settlementDocFile.tempFilePath,
+          });
+
+          console.log("结算单上传成功:", uploadResult);
+          finalSettlementDocUrl = uploadResult.fileID;
+        } catch (uploadError) {
+          console.error("结算单上传失败:", uploadError);
+          wx.hideLoading();
+          wx.showToast({
+            title: "结算单上传失败，请重试",
+            icon: "none",
+            duration: 2000,
+          });
+          return;
+        }
+      }
+
+      // 如果有转账截图，先上传到云存储
+      if (this.data.transferScreenshotFile) {
+        try {
+          // 生成文件名
+          const timestamp = Date.now();
+          const randomStr = Math.random().toString(36).substring(2, 8);
+          const fileName = `transfer_screenshot_${timestamp}_${randomStr}.jpg`;
+
+          // 上传到云存储
+          const uploadResult = await wx.cloud.uploadFile({
+            cloudPath: `userTransferScreenshot/${fileName}`,
+            filePath: this.data.transferScreenshotFile.tempFilePath,
+          });
+
+          console.log("转账截图上传成功:", uploadResult);
+          finalTransferScreenshotUrl = uploadResult.fileID;
+        } catch (uploadError) {
+          console.error("转账截图上传失败:", uploadError);
+          wx.hideLoading();
+          wx.showToast({
+            title: "转账截图上传失败，请重试",
+            icon: "none",
+            duration: 2000,
+          });
+          return;
+        }
+      }
+
+      // 准备更新字段
+      const updateFields = {
+        settlementStatus: 2, // 已结算
+        settlementTime: new Date().toISOString(),
+        settlementMethod: this.getSettlementMethodValue(
+          this.data.selectedMethod
+        ),
+        transferOrderNo: this.data.orderNumber,
+        accountEarnings: parseFloat(this.data.accountEarnings),
+        settlementEarnings: parseFloat(this.data.settlementEarnings),
+        settlementImageUrl: finalSettlementDocUrl,
+        transferImageUrl: finalTransferScreenshotUrl,
+      };
+
+      // 调用云函数更新账号收益信息
+      const result = await wx.cloud.callFunction({
+        name: "update-account-earnings",
+        data: {
+          userId: this.data.userId,
+          accountId: this.data.accountId,
+          startTime: this.data.startTime,
+          endTime: this.data.endTime,
+          updateFields: updateFields,
+        },
+      });
+
+      wx.hideLoading();
+
+      if (result.result.success) {
+        // 提交成功
+        wx.showToast({
+          title: "结算提交成功",
+          icon: "success",
+          duration: 2000,
+        });
+
+        console.log("结算数据更新成功:", result.result.updatedEarning);
+
+        // 延迟返回上一页
+        setTimeout(() => {
+          wx.navigateBack({
+            delta: 1,
+          });
+        }, 2000);
+      } else {
+        // 提交失败
+        wx.showToast({
+          title: result.result.message || "提交失败",
+          icon: "none",
+          duration: 2500,
+        });
+      }
+    } catch (error) {
+      wx.hideLoading();
+      console.error("提交结算失败:", error);
+      wx.showToast({
+        title: "提交失败，请重试",
+        icon: "none",
+        duration: 2000,
+      });
+    }
+  },
+
+  // 获取结算方式数值
+  getSettlementMethodValue: function (method) {
+    const methodMap = {
+      wechat: 1,
+      alipay: 2,
+      other: 3,
+      none: 0,
+    };
+    return methodMap[method] || 0;
   },
 });
