@@ -15,7 +15,8 @@
     "pages/account-detail/account-detail",
     "pages/agreement/agreement",
     "pages/login/login",
-    "pages/test-db/test-db"
+    "pages/test-db/test-db",
+    "pages/admin-config/admin-config"
   ],
   "usingComponents": {},
   "window": {

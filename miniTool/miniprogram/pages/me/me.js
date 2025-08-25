@@ -45,6 +45,11 @@ Page({
         desc: "测试数据库连接和操作",
       },
       {
+        icon: "⚙️",
+        title: "管理端配置",
+        desc: "管理员功能配置",
+      },
+      {
         icon: "🚪",
         title: "退出登录",
         desc: "安全退出当前账号",
@@ -203,6 +208,21 @@ Page({
         url: "/pages/test-db/test-db",
         success: function () {
           console.log("跳转到数据库测试页面");
+        },
+        fail: function (err) {
+          console.error("跳转失败:", err);
+          wx.showToast({
+            title: "跳转失败，请重试",
+            icon: "none",
+          });
+        },
+      });
+    } else if (menu.title === "管理端配置") {
+      // 跳转到管理端配置页面
+      wx.navigateTo({
+        url: "/pages/admin-config/admin-config",
+        success: function () {
+          console.log("跳转到管理端配置页面");
         },
         fail: function (err) {
           console.error("跳转失败:", err);
