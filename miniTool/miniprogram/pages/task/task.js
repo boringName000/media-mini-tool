@@ -196,18 +196,29 @@ Page({
    * 更新任务统计数据
    */
   updateTaskStats: function (accounts) {
-    // 这里可以根据实际需求计算任务统计数据
-    // 目前使用默认值，后续可以根据数据库中的任务数据来计算
     const taskStats = {
-      pending: 0,
-      completed: 0,
-      rejected: 0,
+      pending: 0, // 待发表任务数量
+      completed: 0, // 已完成任务数量
+      rejected: 0, // 已拒绝任务数量（直接给0）
     };
 
-    // 可以根据账号数量或其他逻辑来设置默认值
-    if (accounts.length > 0) {
-      taskStats.pending = accounts.length; // 示例：每个账号默认有一个待发表任务
-    }
+    // 遍历所有账号，统计每日任务数据
+    accounts.forEach((account) => {
+      const dailyTasks = account.originalData.dailyTasks || [];
+      const posts = account.originalData.posts || [];
+
+      // completed: posts 数组里面的都是已完成
+      taskStats.completed += posts.length;
+
+      // pending: dailyTasks 每日任务中，没有完成的任务（isCompleted 为 false）
+      dailyTasks.forEach((task) => {
+        if (!task.isCompleted) {
+          taskStats.pending++;
+        }
+      });
+    });
+
+    console.log("任务统计数据:", taskStats);
 
     this.setData({
       taskStats: taskStats,

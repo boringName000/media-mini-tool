@@ -10,6 +10,7 @@
 2. **获取指定用户信息** - 根据传入的 openid 获取指定用户信息
 3. **用户状态验证** - 检查用户是否存在和状态是否正常
 4. **安全过滤** - 返回用户信息时不包含敏感数据（如密码）
+5. **每日任务更新** - 自动调用 create-daily-tasks 云函数更新每日任务数据
 
 ## 接口参数
 
@@ -46,6 +47,16 @@
     isSelfQuery: true,         // 是否是查询自己的信息
     appid: "string",           // 小程序 appid
     unionid: "string"          // 用户 unionid
+  },
+  dailyTasksUpdate: {          // 每日任务更新结果
+    success: true,             // 更新是否成功
+    message: "string",         // 更新结果消息
+    data: {                    // 更新结果数据
+      totalTasksCreated: 0,    // 新创建的任务数量
+      totalTasksSkipped: 0,    // 跳过的任务数量
+      totalTasksContinued: 0,  // 继续使用的任务数量
+      updatedAccounts: []      // 更新的账号列表
+    }
   }
 }
 ```
@@ -170,6 +181,21 @@ wx.cloud
    }
    ```
 
+### 每日任务更新错误
+
+每日任务更新失败不会影响主流程，但会在日志中记录错误信息：
+
+```javascript
+// 每日任务更新失败时的返回值
+{
+  success: true,
+  message: "获取用户信息成功",
+  userInfo: { /* 用户信息 */ },
+  queryContext: { /* 查询上下文 */ },
+  dailyTasksUpdate: null  // 更新失败时为 null
+}
+```
+
 ## 安全考虑
 
 1. **敏感信息过滤** - 返回的用户信息不包含密码等敏感数据
@@ -220,3 +246,5 @@ wx cloud functions deploy get-user-info --env your-env-id
 2. **错误处理** - 调用时应该处理网络错误和业务错误
 3. **权限扩展** - 可以根据需要添加更细粒度的权限控制
 4. **数据同步** - 用户信息更新后需要同步更新本地缓存
+5. **每日任务更新** - 每次获取用户信息时会自动更新每日任务状态
+6. **容错处理** - 每日任务更新失败不会影响用户信息获取

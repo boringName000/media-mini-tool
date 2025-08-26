@@ -74,19 +74,19 @@
               <text class="account-id">{{item.accountId}}</text>
             </view>
           </view>
-          <view class="account-track-info">
-            <view class="track-status-group">
-              <view class="track-type" catchtap="onTrackTypeTap" data-index="{{index}}">
-                <text class="track-icon">{{item.trackIcon}}</text>
-                <text class="track-text">{{item.trackType}}</text>
+                      <view class="account-track-info">
+              <view class="track-status-group">
+                <view class="track-type" catchtap="onTrackTypeTap" data-index="{{index}}">
+                  <text class="track-icon">{{item.trackIcon}}</text>
+                  <text class="track-text">{{item.trackType}}</text>
+                </view>
+                <text class="account-status">{{item.status}}</text>
               </view>
-              <text class="account-status">{{item.status}}</text>
+              <view class="today-articles">
+                <text class="articles-count">{{item.todayArticles}}</text>
+                <text class="articles-label">篇/今日</text>
+              </view>
             </view>
-            <view class="today-articles">
-              <text class="articles-count">{{item.todayArticles}}</text>
-              <text class="articles-label">篇/今日</text>
-            </view>
-          </view>
         </view>
         
         <view class="account-arrow">›</view>

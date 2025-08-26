@@ -199,7 +199,10 @@ Page({
         filePath: file.path,
         success: function (res) {
           console.log("文件上传成功:", res);
-          that.updateFileStatus(startIndex + index, "success", res.fileID);
+
+          // 调用新增文章信息云函数
+          that.addArticleInfo(file, res.fileID, startIndex + index);
+
           uploadedCount++;
         },
         fail: function (err) {
@@ -229,6 +232,71 @@ Page({
           }
         },
       });
+    });
+  },
+
+  // 调用新增文章信息云函数
+  addArticleInfo: function (file, fileID, fileIndex) {
+    const that = this;
+
+    // 获取不带扩展名的文件名
+    const lastDotIndex = file.name.lastIndexOf(".");
+    const articleTitle =
+      lastDotIndex > 0 ? file.name.substring(0, lastDotIndex) : file.name;
+
+    // 准备云函数参数
+    const params = {
+      articleTitle: articleTitle,
+      trackType: this.data.selectedTrackType,
+      platformType: this.data.selectedPlatform,
+      downloadUrl: fileID,
+    };
+
+    console.log("调用新增文章信息云函数:", params);
+
+    wx.cloud.callFunction({
+      name: "add-article-info",
+      data: params,
+      success: function (res) {
+        console.log("新增文章信息成功:", res);
+
+        if (res.result && res.result.success) {
+          // 更新文件状态为成功
+          that.updateFileStatus(fileIndex, "success", fileID);
+
+          // 显示成功提示
+          wx.showToast({
+            title: `文章信息已记录`,
+            icon: "success",
+            duration: 1500,
+          });
+        } else {
+          // 云函数调用失败
+          console.error("新增文章信息失败:", res.result);
+          that.updateFileStatus(
+            fileIndex,
+            "failed",
+            fileID,
+            res.result?.message || "记录文章信息失败"
+          );
+
+          wx.showToast({
+            title: res.result?.message || "记录文章信息失败",
+            icon: "none",
+            duration: 2000,
+          });
+        }
+      },
+      fail: function (err) {
+        console.error("调用新增文章信息云函数失败:", err);
+        that.updateFileStatus(fileIndex, "failed", fileID, "网络错误");
+
+        wx.showToast({
+          title: "网络错误，请重试",
+          icon: "none",
+          duration: 2000,
+        });
+      },
     });
   },
 

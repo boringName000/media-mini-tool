@@ -52,6 +52,7 @@
 | `lastPostTime`      | Date    | ❌   | null     | 最后发文时间                           |
 | `posts`             | Array   | ✅   | []       | 已发布的文章数据数组                   |
 | `earnings`          | Array   | ✅   | []       | 收益数据数组                           |
+| `dailyTasks`        | Array   | ✅   | []       | 每日任务数组                           |
 
 #### posts 数组中的每个文章对象结构：
 
@@ -63,6 +64,7 @@
 | `trackType`   | Number | ✅   | -      | 赛道类型       |
 | `platform`    | Number | ✅   | -      | 平台类型       |
 | `publishTime` | Date   | ✅   | -      | 发布时间       |
+| `callbackUrl` | String | ❌   | null   | 回传地址       |
 
 #### earnings 数组中的每个收益对象结构：
 
@@ -79,6 +81,14 @@
 | `settlementEarnings` | Number | ✅   | 0      | 结算收益                               |
 | `settlementImageUrl` | String | ❌   | null   | 结算单图片 URL                         |
 | `transferImageUrl`   | String | ❌   | null   | 转账截图 URL                           |
+
+#### dailyTasks 数组中的每个任务对象结构：
+
+| 字段名        | 类型    | 必填 | 默认值 | 说明                                |
+| ------------- | ------- | ---- | ------ | ----------------------------------- |
+| `articleId`   | String  | ✅   | -      | 文章唯一标识符                      |
+| `taskTime`    | Date    | ✅   | -      | 文章任务时间                        |
+| `isCompleted` | Boolean | ✅   | false  | 是否完成（通过检查 posts 数组判断） |
 
 ## 云函数返回值规范
 
@@ -307,6 +317,7 @@
 - `auditStatus`: 只能是 0、1 或 2
 - `dailyPostCount`: 必须是非负整数
 - `registerDate`: 如果提供，必须是有效的日期格式，不能大于当前时间，不能过于久远（超过 10 年）
+- `dailyTasks`: 必须是数组类型，数组中的每个元素必须是有效的任务对象
 
 ### 文章信息验证
 
@@ -316,6 +327,13 @@
 - `trackType`: 必填，必须是有效的赛道枚举值
 - `platform`: 必填，必须是有效的平台枚举值
 - `publishTime`: 必填，必须是有效的日期格式，不能大于当前时间
+- `callbackUrl`: 可选，如果提供，必须是有效的 URL 格式
+
+### 每日任务验证
+
+- `articleId`: 必填，不能为空，必须是有效的文章标识符
+- `taskTime`: 必填，必须是有效的日期格式，不能大于当前时间
+- `isCompleted`: 必填，必须是布尔值（true/false）
 
 ### 收益信息验证
 
@@ -347,3 +365,6 @@
 - **v1.0**: 基于现有云函数代码分析，整理实际存在的数据库字段结构
 - **v1.1**: 新增 earnings 收益数据数组字段结构
 - **v1.2**: 新增 posts 文章数据数组字段结构
+- **v1.3**: 在 posts 数组中新增 callbackUrl 回传地址字段
+- **v1.4**: 在 accounts 数组中新增 dailyTasks 每日任务数组字段结构
+- **v1.5**: 在 dailyTasks 数组中新增 isCompleted 是否完成字段

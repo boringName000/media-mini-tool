@@ -56,6 +56,22 @@ exports.main = async (event, context) => {
       };
     }
 
+    // 调用 create-daily-tasks 云函数更新每日任务数据
+    let dailyTasksResult = null;
+    try {
+      dailyTasksResult = await cloud.callFunction({
+        name: "create-daily-tasks",
+        data: {
+          userId: user.userId,
+        },
+      });
+
+      console.log("每日任务更新结果:", dailyTasksResult);
+    } catch (dailyTasksError) {
+      console.error("调用 create-daily-tasks 云函数失败:", dailyTasksError);
+      // 不阻止主流程，继续返回用户信息
+    }
+
     // 返回用户信息（不包含敏感信息如密码）
     return {
       success: true,
@@ -81,6 +97,14 @@ exports.main = async (event, context) => {
         appid: wxContext.APPID,
         unionid: wxContext.UNIONID,
       },
+      // 返回每日任务更新结果
+      dailyTasksUpdate: dailyTasksResult
+        ? {
+            success: dailyTasksResult.result.success,
+            message: dailyTasksResult.result.message,
+            data: dailyTasksResult.result.data,
+          }
+        : null,
     };
   } catch (error) {
     console.error("获取用户信息失败：", error);
