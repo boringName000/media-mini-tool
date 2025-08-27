@@ -52,10 +52,11 @@ wx.cloud.callFunction({
     "articles": [
       {
         "articleId": "ART1123456123",
-        "title": "文章标题",
-        "downloadUrl": "https://example.com/article.txt",
+        "articleTitle": "文章标题",
+        "downloadUrl": "cloud://xxx/article/1/美食文章-1703123456789.txt",
         "trackType": 1,
-        "platform": 1,
+        "platformType": 2,
+        "uploadTime": "2024-01-15T10:30:00.000Z",
         "createTime": "2024-01-15T10:30:00.000Z"
       }
     ],
@@ -92,14 +93,15 @@ wx.cloud.callFunction({
 
 ### articles 数组中的文章对象
 
-| 字段名        | 类型   | 说明           |
-| ------------- | ------ | -------------- |
-| `articleId`   | String | 文章唯一标识符 |
-| `title`       | String | 文章标题       |
-| `downloadUrl` | String | 文章下载地址   |
-| `trackType`   | Number | 赛道类型       |
-| `platform`    | Number | 平台类型       |
-| `createTime`  | Date   | 创建时间       |
+| 字段名         | 类型   | 说明           |
+| -------------- | ------ | -------------- |
+| `articleId`    | String | 文章唯一标识符 |
+| `articleTitle` | String | 文章标题       |
+| `downloadUrl`  | String | 文章下载地址   |
+| `trackType`    | Number | 赛道类型       |
+| `platformType` | Number | 平台类型       |
+| `uploadTime`   | Date   | 上传时间       |
+| `createTime`   | Date   | 创建时间       |
 
 ## 错误码说明
 
@@ -131,3 +133,21 @@ wx.cloud.callFunction({
 4. 建议在前端对查询结果进行缓存，避免重复查询
 5. 使用类型查询时，必须同时提供 `trackType` 和 `platformType` 两个参数
 6. 文章 ID 查询优先级高于类型查询，如果同时提供两种参数，优先使用文章 ID 查询
+
+## 设计说明
+
+### 全量字段返回
+本云函数设计为返回文章的完整信息，包含所有数据库字段。这样设计的原因：
+
+1. **灵活性**: 不同页面可能需要不同的字段信息
+2. **扩展性**: 便于后续功能扩展，无需修改云函数
+3. **一致性**: 保持与数据库结构的一致性
+4. **复用性**: 一个云函数可以满足多种使用场景
+
+### 性能考虑
+虽然返回全量字段会增加数据传输量，但通过以下方式优化性能：
+
+1. **查询限制**: 单次最多查询100个文章ID
+2. **缓存机制**: 建议前端实现缓存，避免重复查询
+3. **索引优化**: 确保数据库字段有适当的索引
+4. **网络优化**: 使用高效的网络传输协议

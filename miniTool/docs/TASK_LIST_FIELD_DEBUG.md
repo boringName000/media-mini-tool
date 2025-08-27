@@ -28,7 +28,19 @@ articleTitle: article.title || "未知标题",
 articleTitle: article.articleTitle || "未知标题",
 ```
 
-### **2. 修复代码**
+### **2. 字段名确认**
+
+根据 `ARTICLE_MGR_DATABASE_SCHEMA.md` 文档，确认了正确的字段名：
+
+- ✅ `article.articleId` - 文章ID
+- ✅ `article.articleTitle` - 文章标题  
+- ✅ `article.downloadUrl` - 下载地址
+- ✅ `article.trackType` - 赛道类型
+- ✅ `article.platformType` - 平台类型
+- ✅ `article.uploadTime` - 上传时间
+- ✅ `article.createTime` - 创建时间
+
+### **3. 修复代码**
 
 ```javascript
 // 更新任务列表中的文章信息
@@ -146,8 +158,20 @@ console.log(`未找到文章信息的任务:`, updatedTask);
    - WXML 模板是否正确绑定数据
    - 是否有 CSS 样式影响显示
 
+## 📋 更新说明
+
+### **云函数设计调整**
+- ✅ **保持全量字段返回**: `get-article-info` 云函数返回文章的完整信息
+- ✅ **字段名统一**: 确保所有字段名与数据库结构一致
+- ✅ **灵活性提升**: 支持不同页面使用不同字段的需求
+
+### **性能优化策略**
+- ✅ **前端缓存**: 实现本地缓存机制减少重复请求
+- ✅ **查询限制**: 单次最多查询100个文章ID
+- ✅ **索引优化**: 确保数据库字段有适当索引
+
 ---
 
 **修复时间**: 2024 年 12 月  
-**状态**: ✅ 已修复字段名问题  
+**状态**: ✅ 已修复字段名问题，云函数保持全量字段返回  
 **下一步**: 测试验证修复效果
