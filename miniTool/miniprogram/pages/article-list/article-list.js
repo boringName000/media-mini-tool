@@ -5,6 +5,7 @@ const {
 } = require("../../utils/trackTypeUtils");
 
 const { PlatformEnum, getPlatformName } = require("../../utils/platformUtils");
+const timeUtils = require("../../utils/timeUtils");
 
 Page({
   data: {
@@ -13,86 +14,47 @@ Page({
     // 当前筛选的赛道类型
     currentTrackType: null,
     currentTrackName: "",
+    // 当前筛选的平台类型
+    currentPlatformType: null,
+    currentPlatformName: "",
     // 文章列表数据
-    articleList: [
-      {
-        id: 1,
-        title: "美食探店：隐藏在胡同里的小馆子",
-        content: "今天为大家推荐一家藏在胡同深处的宝藏小店，这里的招牌菜...",
-        platformEnum: PlatformEnum.XIAOHONGSHU,
-        platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-        trackTypeEnum: TrackTypeEnum.FOOD_TRACK,
-        trackType: getTrackTypeName(TrackTypeEnum.FOOD_TRACK),
-        publishTime: "2024-01-15 14:30",
-      },
-      {
-        id: 2,
-        title: "旅游攻略：北京三日游完整指南",
-        content:
-          "计划来北京旅游的朋友们，这篇攻略一定要收藏！涵盖景点、美食、住宿...",
-        platformEnum: PlatformEnum.WECHAT_MP,
-        platform: getPlatformName(PlatformEnum.WECHAT_MP),
-        trackTypeEnum: TrackTypeEnum.TRAVEL_TRACK,
-        trackType: getTrackTypeName(TrackTypeEnum.TRAVEL_TRACK),
-        publishTime: "2024-01-14 10:15",
-      },
-      {
-        id: 3,
-        title: "书法练习：楷书基础笔画详解",
-        content:
-          "今天跟大家分享楷书的基础笔画练习方法，从横、竖、撇、捺开始...",
-        platformEnum: PlatformEnum.XIAOHONGSHU,
-        platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-        trackTypeEnum: TrackTypeEnum.CALLIGRAPHY,
-        trackType: getTrackTypeName(TrackTypeEnum.CALLIGRAPHY),
-        publishTime: "2024-01-13 16:45",
-      },
-      {
-        id: 4,
-        title: "摄影技巧：夜景拍摄入门指南",
-        content:
-          "夜景拍摄一直是摄影爱好者的热门话题，今天分享一些实用的技巧...",
-        platformEnum: PlatformEnum.WECHAT_MP,
-        platform: getPlatformName(PlatformEnum.WECHAT_MP),
-        trackTypeEnum: TrackTypeEnum.PHOTOGRAPHY,
-        trackType: getTrackTypeName(TrackTypeEnum.PHOTOGRAPHY),
-        publishTime: "2024-01-12 20:00",
-      },
-      {
-        id: 5,
-        title: "古董收藏：明清瓷器鉴别要点",
-        content: "对于古董收藏爱好者来说，瓷器鉴别是一门重要的学问...",
-        platformEnum: PlatformEnum.XIAOHONGSHU,
-        platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-        trackTypeEnum: TrackTypeEnum.ANTIQUE,
-        trackType: getTrackTypeName(TrackTypeEnum.ANTIQUE),
-        publishTime: "2024-01-11 13:20",
-      },
-    ],
+    articleList: [],
     // 过滤后的文章列表
     filteredArticleList: [],
+    // 加载状态
+    isLoading: false,
   },
+
+  // 页面内存缓存，用于存储不同参数组合的文章数据
+  articleCache: new Map(),
 
   /**
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    // 检查是否有赛道类型参数
-    if (options.trackType && options.trackName) {
+    console.log("文章列表页面接收到的参数:", options);
+
+    // 检查是否有赛道类型和平台类型参数
+    if (options.trackType && options.platformType) {
       const trackType = parseInt(options.trackType);
-      const trackName = decodeURIComponent(options.trackName);
+      const platformType = parseInt(options.platformType);
+
+      // 使用工具函数获取显示名称
+      const trackName = getTrackTypeName(trackType);
+      const platformName = getPlatformName(platformType);
 
       this.setData({
         currentTrackType: trackType,
         currentTrackName: trackName,
+        currentPlatformType: platformType,
+        currentPlatformName: platformName,
+        isLoading: true,
       });
-
-      // 根据赛道类型过滤文章
-      this.filterArticlesByTrackType(trackType);
     } else {
-      // 初始化显示所有文章
+      // 没有参数时显示空状态
       this.setData({
-        filteredArticleList: this.data.articleList,
+        filteredArticleList: [],
+        isLoading: false,
       });
     }
   },
@@ -103,9 +65,130 @@ Page({
   onReady: function () {},
 
   /**
+   * 从云函数获取文章数据
+   */
+  loadArticlesFromCloud: function (trackType, platformType) {
+    const that = this;
+
+    // 生成缓存key
+    const cacheKey = `${trackType}-${platformType}`;
+    console.log("检查缓存，key:", cacheKey);
+
+    // 检查缓存中是否已有数据
+    if (this.articleCache.has(cacheKey)) {
+      console.log("从缓存中获取文章数据");
+      const cachedData = this.articleCache.get(cacheKey);
+
+      this.setData({
+        articleList: cachedData,
+        filteredArticleList: cachedData,
+        isLoading: false,
+      });
+
+      console.log("缓存数据加载完成，共", cachedData.length, "篇");
+      return;
+    }
+
+    console.log("缓存中无数据，调用云函数获取文章数据:", {
+      trackType,
+      platformType,
+    });
+
+    wx.cloud.callFunction({
+      name: "get-article-info",
+      data: {
+        trackType: trackType,
+        platformType: platformType,
+      },
+      success: function (res) {
+        console.log("云函数调用成功:", res);
+
+        if (res.result && res.result.success) {
+          const articles = res.result.data.articles || [];
+          console.log("获取到文章数据:", articles);
+
+          // 处理文章数据，添加显示名称
+          const processedArticles = articles.map((article) => {
+            return {
+              ...article,
+              platform: getPlatformName(article.platformType),
+              trackTypeName: getTrackTypeName(article.trackType),
+              // 格式化上传时间
+              uploadTimeFormatted: timeUtils.formatTime(
+                article.uploadTime,
+                "YYYY-MM-DD"
+              ),
+            };
+          });
+
+          // 将数据存储到缓存中
+          that.articleCache.set(cacheKey, processedArticles);
+          console.log("文章数据已缓存，key:", cacheKey);
+
+          that.setData({
+            articleList: processedArticles,
+            filteredArticleList: processedArticles,
+            isLoading: false,
+          });
+
+          console.log("文章数据加载完成，共", processedArticles.length, "篇");
+        } else {
+          console.error("云函数返回错误:", res.result);
+          that.setData({
+            isLoading: false,
+          });
+          wx.showToast({
+            title: res.result?.message || "获取文章失败",
+            icon: "none",
+            duration: 2000,
+          });
+        }
+      },
+      fail: function (err) {
+        console.error("云函数调用失败:", err);
+        that.setData({
+          isLoading: false,
+        });
+        wx.showToast({
+          title: "网络错误，请重试",
+          icon: "none",
+          duration: 2000,
+        });
+      },
+    });
+  },
+
+  /**
    * 生命周期函数--监听页面显示
    */
-  onShow: function () {},
+  onShow: function () {
+    // 如果有赛道类型和平台类型参数，调用云函数获取数据
+    if (this.data.currentTrackType && this.data.currentPlatformType) {
+      this.loadArticlesFromCloud(
+        this.data.currentTrackType,
+        this.data.currentPlatformType
+      );
+    }
+  },
+
+  /**
+   * 清除指定参数的缓存
+   */
+  clearCache: function (trackType, platformType) {
+    const cacheKey = `${trackType}-${platformType}`;
+    if (this.articleCache.has(cacheKey)) {
+      this.articleCache.delete(cacheKey);
+      console.log("已清除缓存，key:", cacheKey);
+    }
+  },
+
+  /**
+   * 清除所有缓存
+   */
+  clearAllCache: function () {
+    this.articleCache.clear();
+    console.log("已清除所有缓存");
+  },
 
   /**
    * 搜索输入事件
@@ -134,8 +217,13 @@ Page({
       searchKeyword: "",
     });
 
-    // 根据当前赛道类型过滤
-    if (this.data.currentTrackType) {
+    // 根据当前赛道类型和平台类型过滤
+    if (this.data.currentTrackType && this.data.currentPlatformType) {
+      this.filterArticlesByTrackAndPlatform(
+        this.data.currentTrackType,
+        this.data.currentPlatformType
+      );
+    } else if (this.data.currentTrackType) {
       this.filterArticlesByTrackType(this.data.currentTrackType);
     } else {
       this.setData({
@@ -145,11 +233,26 @@ Page({
   },
 
   /**
-   * 根据赛道类型过滤文章
+   * 根据赛道类型和平台类型过滤文章
+   */
+  filterArticlesByTrackAndPlatform: function (trackType, platformType) {
+    const filtered = this.data.articleList.filter((article) => {
+      return (
+        article.trackType === trackType && article.platformType === platformType
+      );
+    });
+
+    this.setData({
+      filteredArticleList: filtered,
+    });
+  },
+
+  /**
+   * 根据赛道类型过滤文章（保留原有方法用于兼容）
    */
   filterArticlesByTrackType: function (trackType) {
     const filtered = this.data.articleList.filter((article) => {
-      return article.trackTypeEnum === trackType;
+      return article.trackType === trackType;
     });
 
     this.setData({
@@ -162,8 +265,13 @@ Page({
    */
   filterArticles: function (keyword) {
     if (!keyword || keyword.trim() === "") {
-      // 如果没有关键词，根据当前赛道类型过滤
-      if (this.data.currentTrackType) {
+      // 如果没有关键词，根据当前赛道类型和平台类型过滤
+      if (this.data.currentTrackType && this.data.currentPlatformType) {
+        this.filterArticlesByTrackAndPlatform(
+          this.data.currentTrackType,
+          this.data.currentPlatformType
+        );
+      } else if (this.data.currentTrackType) {
         this.filterArticlesByTrackType(this.data.currentTrackType);
       } else {
         this.setData({
@@ -175,29 +283,34 @@ Page({
 
     let baseArticles = this.data.articleList;
 
-    // 如果当前有赛道类型筛选，先按赛道类型过滤
-    if (this.data.currentTrackType) {
+    // 如果当前有赛道类型和平台类型筛选，先按这两个条件过滤
+    if (this.data.currentTrackType && this.data.currentPlatformType) {
       baseArticles = baseArticles.filter((article) => {
-        return article.trackTypeEnum === this.data.currentTrackType;
+        return (
+          article.trackType === this.data.currentTrackType &&
+          article.platformType === this.data.currentPlatformType
+        );
+      });
+    } else if (this.data.currentTrackType) {
+      // 如果只有赛道类型筛选，按赛道类型过滤
+      baseArticles = baseArticles.filter((article) => {
+        return article.trackType === this.data.currentTrackType;
       });
     }
 
     const filtered = baseArticles.filter((article) => {
       // 搜索标题和内容
-      const titleMatch = article.title
-        .toLowerCase()
-        .includes(keyword.toLowerCase());
-      const contentMatch = article.content
+      const titleMatch = article.articleTitle
         .toLowerCase()
         .includes(keyword.toLowerCase());
       const platformMatch = article.platform
         .toLowerCase()
         .includes(keyword.toLowerCase());
-      const trackMatch = article.trackType
+      const trackMatch = article.trackTypeName
         .toLowerCase()
         .includes(keyword.toLowerCase());
 
-      return titleMatch || contentMatch || platformMatch || trackMatch;
+      return titleMatch || platformMatch || trackMatch;
     });
 
     this.setData({
@@ -213,7 +326,7 @@ Page({
     const article = this.data.filteredArticleList[index];
 
     wx.showToast({
-      title: `查看文章: ${article.title}`,
+      title: `查看文章: ${article.articleTitle}`,
       icon: "none",
     });
 
@@ -243,7 +356,7 @@ Page({
    */
   downloadTitle: function (article) {
     wx.setClipboardData({
-      data: article.title,
+      data: article.articleTitle,
       success: function () {
         wx.showToast({
           title: "标题已复制到剪贴板",
@@ -263,13 +376,13 @@ Page({
    * 下载文章
    */
   downloadArticle: function (article) {
-    const content = `文章标题：${article.title}\n\n文章内容：\n${article.content}\n\n平台：${article.platform}\n赛道：${article.trackType}\n发布时间：${article.publishTime}`;
+    const content = `文章标题：${article.articleTitle}\n\n平台：${article.platform}\n赛道：${article.trackTypeName}\n上传时间：${article.uploadTimeFormatted}\n下载地址：${article.downloadUrl}`;
 
     wx.setClipboardData({
       data: content,
       success: function () {
         wx.showToast({
-          title: "文章内容已复制到剪贴板",
+          title: "文章信息已复制到剪贴板",
           icon: "success",
         });
       },
@@ -296,15 +409,29 @@ Page({
    * 页面相关事件处理函数--监听用户下拉动作
    */
   onPullDownRefresh: function () {
-    // 模拟刷新数据
+    // 清除当前参数的缓存
+    if (this.data.currentTrackType && this.data.currentPlatformType) {
+      this.clearCache(
+        this.data.currentTrackType,
+        this.data.currentPlatformType
+      );
+    }
+
+    // 重新获取数据
+    if (this.data.currentTrackType && this.data.currentPlatformType) {
+      this.loadArticlesFromCloud(
+        this.data.currentTrackType,
+        this.data.currentPlatformType
+      );
+    }
+
+    // 停止下拉刷新动画
     setTimeout(() => {
       wx.stopPullDownRefresh();
       wx.showToast({
         title: "刷新成功",
         icon: "success",
       });
-      // 重新过滤文章
-      this.filterArticles(this.data.searchKeyword);
     }, 1000);
   },
 

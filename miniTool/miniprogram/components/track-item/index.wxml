@@ -1,7 +1,0 @@
-<view class="track-item-container" bind:tap="onTap">
-  <view class="track-item-icon">{{icon}}</view>
-  <view class="track-item-content">
-    <view class="track-item-name">{{name}}</view>
-    <view class="track-item-description">{{description}}</view>
-  </view>
-</view> 

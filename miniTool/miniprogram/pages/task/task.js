@@ -283,38 +283,11 @@ Page({
     const index = e.currentTarget.dataset.index;
     const account = this.data.accountList[index];
 
-    // 跳转到文章列表页面，并传递赛道类型参数
+    // 跳转到文章列表页面，传递赛道类型和平台类型参数
     wx.navigateTo({
-      url: `/pages/article-list/article-list?trackType=${
-        account.trackTypeEnum
-      }&trackName=${encodeURIComponent(account.trackType)}`,
+      url: `/pages/article-list/article-list?trackType=${account.trackTypeEnum}&platformType=${account.platformEnum}`,
       success: function () {
         console.log(`跳转到${account.accountName}的文章列表页面`);
-      },
-      fail: function (err) {
-        console.error("跳转失败:", err);
-        wx.showToast({
-          title: "跳转失败，请重试",
-          icon: "none",
-        });
-      },
-    });
-  },
-
-  /**
-   * 点击赛道类型
-   */
-  onTrackTypeTap: function (e) {
-    const index = e.currentTarget.dataset.index;
-    const account = this.data.accountList[index];
-
-    // 跳转到文章列表页面，并传递赛道类型参数
-    wx.navigateTo({
-      url: `/pages/article-list/article-list?trackType=${
-        account.trackTypeEnum
-      }&trackName=${encodeURIComponent(account.trackType)}`,
-      success: function () {
-        console.log(`跳转到${account.trackType}赛道的文章列表页面`);
       },
       fail: function (err) {
         console.error("跳转失败:", err);

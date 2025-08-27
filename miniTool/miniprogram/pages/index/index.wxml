@@ -36,15 +36,19 @@
   <view class="track-center-area">
     <view class="track-center-title">赛道中心</view>
     <view class="track-center-content">
-      <track-item 
+      <view 
+        class="track-item" 
         wx:for="{{trackTypes}}" 
         wx:key="index"
-        icon="{{item.icon}}"
-        name="{{item.name}}"
-        description="{{item.description}}"
-        type="{{item.type}}"
-        bind:tap="onTrackItemTap"
-      ></track-item>
+        data-index="{{index}}"
+        catch:tap="onTrackItemTap"
+      >
+        <view class="track-item-icon">{{item.icon}}</view>
+        <view class="track-item-content">
+          <view class="track-item-name">{{item.name}}</view>
+          <view class="track-item-description">{{item.description}}</view>
+        </view>
+      </view>
     </view>
   </view>
 </scroll-view>

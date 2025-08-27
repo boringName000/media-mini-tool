@@ -1,6 +1,3 @@
 {
-  "navigationBarTitleText": "首页",
-  "usingComponents": {
-    "track-item": "/components/track-item/index"
-  }
+  "navigationBarTitleText": "首页"
 }

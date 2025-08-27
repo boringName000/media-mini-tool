@@ -34,20 +34,20 @@
       >
         <!-- 文章主要信息 -->
         <view class="article-main">
-          <view class="article-title">{{item.title}}</view>
+          <view class="article-title">{{item.articleTitle}}</view>
         </view>
         
         <!-- 文章元信息 -->
         <view class="article-meta">
           <view class="article-platform">
             <view class="platform-badge">{{item.platform}}</view>
-            <view class="track-badge">{{item.trackType}}</view>
+            <view class="track-badge">{{item.trackTypeName}}</view>
           </view>
         </view>
         
         <!-- 发布时间和下载操作 -->
         <view class="article-footer">
-          <view class="publish-time">{{item.publishTime}}</view>
+          <view class="publish-time">{{item.uploadTimeFormatted}}</view>
           <view class="download-actions">
             <view class="download-btn" data-index="{{index}}" data-type="title" catchtap="onDownloadTap">
               <text class="download-icon">📄</text>
