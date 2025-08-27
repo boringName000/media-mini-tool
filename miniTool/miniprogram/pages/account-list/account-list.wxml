@@ -73,8 +73,8 @@
               <text class="detail-value">{{item.trackType}}</text>
             </view>
             <view class="detail-item">
-              <text class="detail-label">每日发文：</text>
-              <text class="detail-value">{{item.dailyPostCount}}篇</text>
+              <text class="detail-label">总发文：</text>
+              <text class="detail-value">{{item.totalPostCount}}篇</text>
             </view>
           </view>
           <view class="detail-row">

@@ -98,7 +98,7 @@ Page({
           ),
 
           // 其他信息
-          dailyPostCount: account.dailyPostCount || 0,
+          totalPostCount: (account.posts && account.posts.length) || 0,
           registerTime: timeUtils.formatTime(
             account.registerDate,
             "YYYY-MM-DD"
