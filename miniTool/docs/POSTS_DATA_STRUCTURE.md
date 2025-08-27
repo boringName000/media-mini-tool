@@ -32,46 +32,10 @@
 
 ```javascript
 {
-  postId: "string",              // 文章唯一ID
-  title: "string",               // 文章标题
-  content: "string",             // 文章内容（可选）
+  articleId: "string",           // 文章唯一标识符
+  trackType: number,             // 赛道类型
   publishTime: Date,             // 发布时间
-  platform: "string",            // 发布平台
-  status: "string",              // 文章状态：draft-草稿，published-已发布，deleted-已删除
-  views: number,                 // 浏览量
-  likes: number,                 // 点赞数
-  comments: number,              // 评论数
-  shares: number,                // 分享数
-  tags: ["string"],              // 标签数组
-  images: ["string"],            // 图片URL数组
-  videoUrl: "string",            // 视频URL（可选）
-  location: "string",            // 发布位置（可选）
-  isTop: boolean,                // 是否置顶
-  isRecommend: boolean,          // 是否推荐
-  createTimestamp: Date,         // 创建时间戳
-  updateTimestamp: Date          // 更新时间戳
-}
-```
-
-### 扩展字段（可选）
-
-```javascript
-{
-  // ... 基础字段
-  category: "string",            // 文章分类
-  topic: "string",               // 话题标签
-  mentionUsers: ["string"],      // @用户列表
-  mentionProducts: ["string"],   // @商品列表
-  monetization: {                // 变现信息
-    type: "string",              // 变现类型：ad-广告，product-商品，service-服务
-    amount: number,              // 变现金额
-    currency: "string"           // 货币类型
-  },
-  performance: {                 // 性能指标
-    engagementRate: number,      // 互动率
-    reachRate: number,           // 触达率
-    conversionRate: number       // 转化率
-  }
+  callbackUrl: "string"          // 回传地址
 }
 ```
 
@@ -82,20 +46,10 @@
 ```javascript
 // 在账号的posts数组中添加新文章
 const newPost = {
-  postId: "POST_" + Date.now(),
-  title: "美食探店分享",
-  content: "今天发现了一家超棒的餐厅...",
+  articleId: "ART1_20241201_001",
+  trackType: 1, // 美食赛道
   publishTime: new Date(),
-  platform: "XIAOHONGSHU",
-  status: "published",
-  views: 1250,
-  likes: 89,
-  comments: 12,
-  shares: 5,
-  tags: ["美食", "探店", "推荐"],
-  images: ["https://example.com/image1.jpg"],
-  createTimestamp: new Date(),
-  updateTimestamp: new Date(),
+  callbackUrl: "https://example.com/callback/123",
 };
 
 // 更新账号数据
@@ -115,13 +69,12 @@ const allPosts = account.posts;
 
 // 获取最近发布的文章
 const recentPosts = account.posts
-  .filter((post) => post.status === "published")
   .sort((a, b) => new Date(b.publishTime) - new Date(a.publishTime))
   .slice(0, 10);
 
-// 获取高互动文章
-const highEngagementPosts = account.posts.filter(
-  (post) => post.likes > 100 || post.comments > 20
+// 获取特定赛道的文章
+const foodTrackPosts = account.posts.filter(
+  (post) => post.trackType === 1 // 美食赛道
 );
 
 // 按月份统计文章数量
@@ -220,10 +173,9 @@ const getTimeBasedStats = (account, timeRange = "month") => {
 ```javascript
 // 为posts数组中的常用查询字段创建索引
 {
-  "accounts.posts.postId": 1,
+  "accounts.posts.articleId": 1,
   "accounts.posts.publishTime": -1,
-  "accounts.posts.status": 1,
-  "accounts.posts.platform": 1
+  "accounts.posts.trackType": 1
 }
 ```
 
@@ -264,20 +216,10 @@ const migrateTotalPostsToPostsArray = (userData) => {
       const placeholderPosts = Array.from(
         { length: account.totalPosts },
         (_, index) => ({
-          postId: `MIGRATED_${account.accountId}_${index + 1}`,
-          title: `历史文章 ${index + 1}`,
-          content: "数据迁移中的历史文章",
+          articleId: `MIGRATED_${account.accountId}_${index + 1}`,
+          trackType: account.trackType || 1,
           publishTime: new Date(Date.now() - index * 24 * 60 * 60 * 1000), // 按时间倒序
-          platform: account.platform?.type || "UNKNOWN",
-          status: "published",
-          views: 0,
-          likes: 0,
-          comments: 0,
-          shares: 0,
-          tags: ["历史数据"],
-          images: [],
-          createTimestamp: new Date(),
-          updateTimestamp: new Date(),
+          callbackUrl: "https://example.com/callback/migrated",
         })
       );
 

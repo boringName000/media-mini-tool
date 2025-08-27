@@ -59,6 +59,10 @@ async function createInitialTask(account, publishedArticleIds) {
     // 创建初始任务
     const initialTask = {
       articleId: selectedArticle.articleId,
+      articleTitle: selectedArticle.articleTitle,
+      trackType: selectedArticle.trackType,
+      platformType: selectedArticle.platformType,
+      downloadUrl: selectedArticle.downloadUrl,
       taskTime: currentTime,
       isCompleted: false, // 新任务默认为未完成状态
     };
@@ -222,6 +226,10 @@ exports.main = async (event, context) => {
         // 更新任务信息
         dailyTasks[j] = {
           articleId: selectedArticle.articleId,
+          articleTitle: selectedArticle.articleTitle,
+          trackType: selectedArticle.trackType,
+          platformType: selectedArticle.platformType,
+          downloadUrl: selectedArticle.downloadUrl,
           taskTime: newTaskTime,
           isCompleted: false, // 新任务默认为未完成状态
         };

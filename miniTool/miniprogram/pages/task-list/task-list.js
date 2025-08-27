@@ -101,17 +101,20 @@ Page({
     // 保存用户账号数据
     this.setData({ userAccounts: accounts });
 
-    // 构建所有任务列表
+    // 构建所有任务列表（包含完整的文章信息）
     const allTasks = this.buildTaskList(accounts);
     this.setData({ allTasks });
 
-    // 获取文章详细信息
-    this.loadArticleInfo(allTasks);
+    // 直接设置任务列表
+    this.setData({
+      taskList: allTasks,
+      loading: false,
+      dataLoaded: true,
+    });
 
-    // 加载任务列表
-    this.loadTaskList();
-
-    this.setData({ loading: false, dataLoaded: true });
+    // 打印调试信息
+    console.log("加载的任务数量:", allTasks.length);
+    console.log("加载的任务列表:", allTasks);
   },
 
   // 构建任务列表
@@ -129,11 +132,15 @@ Page({
             accountId: account.accountId,
             articleId: task.articleId,
             accountName: account.accountNickname,
-            platformEnum: account.platform,
-            platformName: getPlatformName(account.platform),
-            platformIcon: getPlatformIcon(account.platform),
-            trackTypeEnum: account.trackType,
-            trackType: getTrackTypeName(account.trackType),
+            platformEnum: task.platformType || account.platform,
+            platformName: getPlatformName(
+              task.platformType || account.platform
+            ),
+            platformIcon: getPlatformIcon(
+              task.platformType || account.platform
+            ),
+            trackTypeEnum: task.trackType || account.trackType,
+            trackType: getTrackTypeName(task.trackType || account.trackType),
             taskTime: timeUtils.formatTime(task.taskTime, "YYYY-MM-DD", {
               defaultValue: "未知时间",
             }),
@@ -141,9 +148,9 @@ Page({
             status: TaskStatusEnum.PENDING,
             statusText: getTaskStatusName(TaskStatusEnum.PENDING),
             statusClass: getTaskStatusClass(TaskStatusEnum.PENDING),
-            // 文章信息占位符，等待从云函数获取
-            articleTitle: "加载中...",
-            articleDownloadUrl: "",
+            // 直接使用任务中的文章信息
+            articleTitle: task.articleTitle || "未知标题",
+            articleDownloadUrl: task.downloadUrl || "",
           };
 
           allTasks.push(taskObj);
@@ -162,8 +169,8 @@ Page({
             platformEnum: account.platform,
             platformName: getPlatformName(account.platform),
             platformIcon: getPlatformIcon(account.platform),
-            trackTypeEnum: account.trackType,
-            trackType: getTrackTypeName(account.trackType),
+            trackTypeEnum: post.trackType || account.trackType,
+            trackType: getTrackTypeName(post.trackType || account.trackType),
             taskTime: timeUtils.formatTime(post.publishTime, "YYYY-MM-DD", {
               defaultValue: "未知时间",
             }),
@@ -171,9 +178,9 @@ Page({
             status: TaskStatusEnum.COMPLETED,
             statusText: getTaskStatusName(TaskStatusEnum.COMPLETED),
             statusClass: getTaskStatusClass(TaskStatusEnum.COMPLETED),
-            // 文章信息占位符，等待从云函数获取
-            articleTitle: "加载中...",
-            articleDownloadUrl: "",
+            // 直接使用文章中的信息
+            articleTitle: post.title || "未知标题",
+            articleDownloadUrl: "", // posts 数组中没有 downloadUrl 字段
           };
 
           allTasks.push(taskObj);
@@ -186,37 +193,6 @@ Page({
 
     console.log("构建的任务列表:", allTasks);
     return allTasks;
-  },
-
-  // 加载任务列表
-  loadTaskList() {
-    if (this.data.loading) return;
-
-    this.setData({ loading: true });
-
-    // 使用真实数据，一次性加载所有任务
-    this.fetchTasksFromServer();
-  },
-
-  // 从服务器获取任务数据
-  fetchTasksFromServer() {
-    // 使用真实数据，一次性加载所有任务
-    const filteredTasks = this.filterTasks();
-
-    this.setData({
-      taskList: filteredTasks,
-      loading: false,
-    });
-
-    // 打印调试信息
-    console.log("筛选后的任务数量:", filteredTasks.length);
-    console.log("加载的任务列表:", filteredTasks);
-  },
-
-  // 筛选任务
-  filterTasks() {
-    // 直接返回构建好的任务列表，因为 buildTaskList 已经根据状态筛选了
-    return [...this.data.allTasks];
   },
 
   // 下载任务
@@ -318,100 +294,6 @@ Page({
         icon: "success",
       });
     }, 1500);
-  },
-
-  // 获取文章详细信息
-  async loadArticleInfo(allTasks) {
-    if (!allTasks || allTasks.length === 0) {
-      console.log("没有任务需要获取文章信息");
-      return;
-    }
-
-    // 提取所有文章ID
-    const articleIds = allTasks
-      .map((task) => task.articleId)
-      .filter((id) => id);
-
-    if (articleIds.length === 0) {
-      console.log("没有有效的文章ID");
-      return;
-    }
-
-    console.log("开始获取文章信息，文章ID:", articleIds);
-
-    try {
-      // 调用云函数获取文章信息
-      const result = await wx.cloud.callFunction({
-        name: "get-article-info",
-        data: {
-          articleIds: articleIds,
-        },
-      });
-
-      if (result.result && result.result.success) {
-        const articles = result.result.data.articles || [];
-        console.log("获取到的文章信息:", articles);
-
-        // 更新任务列表中的文章信息
-        this.updateTaskListWithArticleInfo(allTasks, articles);
-      } else {
-        console.error(
-          "获取文章信息失败:",
-          result.result?.message || "未知错误"
-        );
-        wx.showToast({
-          title: "获取文章信息失败",
-          icon: "none",
-        });
-      }
-    } catch (error) {
-      console.error("调用获取文章信息云函数失败:", error);
-      wx.showToast({
-        title: "获取文章信息异常",
-        icon: "none",
-      });
-    }
-  },
-
-  // 更新任务列表中的文章信息
-  updateTaskListWithArticleInfo(allTasks, articles) {
-    // 创建文章信息映射
-    const articleMap = {};
-    articles.forEach((article) => {
-      articleMap[article.articleId] = article;
-    });
-
-    // 更新任务列表中的文章信息
-    const updatedTasks = allTasks.map((task) => {
-      const article = articleMap[task.articleId];
-      console.log(`处理任务 ${task.articleId}:`, { task, article });
-
-      if (article) {
-        const updatedTask = {
-          ...task,
-          articleTitle: article.articleTitle || "未知标题",
-          articleDownloadUrl: article.downloadUrl || "",
-        };
-        console.log(`更新后的任务:`, updatedTask);
-        return updatedTask;
-      } else {
-        const updatedTask = {
-          ...task,
-          articleTitle: "文章信息获取失败",
-          articleDownloadUrl: "",
-        };
-        console.log(`未找到文章信息的任务:`, updatedTask);
-        return updatedTask;
-      }
-    });
-
-    // 更新数据
-    this.setData({
-      allTasks: updatedTasks,
-    });
-
-    // 重新加载任务列表以显示更新后的信息
-    this.loadTaskList();
   },
 
   // 刷新数据

@@ -60,11 +60,9 @@
 | ------------- | ------ | ---- | ------ | -------------- |
 | `articleId`   | String | ✅   | -      | 文章唯一标识符 |
 | `title`       | String | ✅   | -      | 文章标题       |
-| `downloadUrl` | String | ✅   | -      | 文章下载地址   |
 | `trackType`   | Number | ✅   | -      | 赛道类型       |
-| `platform`    | Number | ✅   | -      | 平台类型       |
 | `publishTime` | Date   | ✅   | -      | 发布时间       |
-| `callbackUrl` | String | ❌   | null   | 回传地址       |
+| `callbackUrl` | String | ✅   | -      | 回传地址       |
 
 #### earnings 数组中的每个收益对象结构：
 
@@ -84,11 +82,15 @@
 
 #### dailyTasks 数组中的每个任务对象结构：
 
-| 字段名        | 类型    | 必填 | 默认值 | 说明                                |
-| ------------- | ------- | ---- | ------ | ----------------------------------- |
-| `articleId`   | String  | ✅   | -      | 文章唯一标识符                      |
-| `taskTime`    | Date    | ✅   | -      | 文章任务时间                        |
-| `isCompleted` | Boolean | ✅   | false  | 是否完成（通过检查 posts 数组判断） |
+| 字段名         | 类型    | 必填 | 默认值 | 说明                                |
+| -------------- | ------- | ---- | ------ | ----------------------------------- |
+| `articleId`    | String  | ✅   | -      | 文章唯一标识符                      |
+| `articleTitle` | String  | ✅   | -      | 文章标题                            |
+| `trackType`    | Number  | ✅   | -      | 赛道类型                            |
+| `platformType` | Number  | ✅   | -      | 平台类型                            |
+| `downloadUrl`  | String  | ✅   | -      | 文章下载地址                        |
+| `taskTime`     | Date    | ✅   | -      | 文章任务时间                        |
+| `isCompleted`  | Boolean | ✅   | false  | 是否完成（通过检查 posts 数组判断） |
 
 ## 云函数返回值规范
 
@@ -294,6 +296,46 @@
 }
 ```
 
+### 6. 更新用户账号文章 (update-account-posts)
+
+**请求参数：**
+
+```javascript
+{
+  userId: String,
+  accountId: String,
+  articleId: String,
+  title: String,
+  trackType: Number,
+  callbackUrl: String
+}
+```
+
+**返回值：**
+
+```javascript
+{
+  success: Boolean,
+  message: String,
+  data: {
+    operationType: String, // "add" 或 "update"
+    postData: {
+      articleId: String,
+      title: String,
+      trackType: Number,
+      publishTime: Date,
+      callbackUrl: String
+    },
+    accountId: String,
+    totalPosts: Number
+  },
+  event: Object,
+  openid: String,
+  appid: String,
+  unionid: String
+}
+```
+
 ## 字段验证规则
 
 ### 用户基础信息验证
@@ -322,16 +364,17 @@
 ### 文章信息验证
 
 - `articleId`: 必填，不能为空，必须是唯一的文章标识符
-- `title`: 必填，不能为空，文章标题长度不能超过 200 字符
-- `downloadUrl`: 必填，必须是有效的 URL 格式
 - `trackType`: 必填，必须是有效的赛道枚举值
-- `platform`: 必填，必须是有效的平台枚举值
 - `publishTime`: 必填，必须是有效的日期格式，不能大于当前时间
-- `callbackUrl`: 可选，如果提供，必须是有效的 URL 格式
+- `callbackUrl`: 必填，必须是有效的 URL 格式
 
 ### 每日任务验证
 
 - `articleId`: 必填，不能为空，必须是有效的文章标识符
+- `articleTitle`: 必填，不能为空，文章标题长度不能超过 200 字符
+- `trackType`: 必填，必须是有效的赛道枚举值
+- `platformType`: 必填，必须是有效的平台枚举值
+- `downloadUrl`: 必填，必须是有效的 URL 格式
 - `taskTime`: 必填，必须是有效的日期格式，不能大于当前时间
 - `isCompleted`: 必填，必须是布尔值（true/false）
 
@@ -368,3 +411,6 @@
 - **v1.3**: 在 posts 数组中新增 callbackUrl 回传地址字段
 - **v1.4**: 在 accounts 数组中新增 dailyTasks 每日任务数组字段结构
 - **v1.5**: 在 dailyTasks 数组中新增 isCompleted 是否完成字段
+- **v1.6**: 简化 posts 数组结构，删除未使用的 title、downloadUrl、platform 字段
+- **v1.7**: 新增 update-account-posts 云函数，支持添加和更新用户账号文章
+- **v1.8**: 在 dailyTasks 数组中新增 articleTitle、trackType、platformType、downloadUrl 字段
