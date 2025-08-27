@@ -261,31 +261,8 @@ Page({
         break;
     }
 
-    // 构建查询参数
-    let queryParams = `status=${statusEnum}`;
-
-    // 如果是待发表状态，携带所有账号的ID信息
-    if (type === "pending") {
-      const accountIds = this.data.accountList
-        .map((account) => account.accountId)
-        .join(",");
-      const platformEnums = this.data.accountList
-        .map((account) => account.platformEnum)
-        .join(",");
-      const trackTypeEnums = this.data.accountList
-        .map((account) => account.trackTypeEnum)
-        .join(",");
-
-      if (accountIds) {
-        queryParams += `&accountIds=${encodeURIComponent(accountIds)}`;
-      }
-      if (platformEnums) {
-        queryParams += `&platformEnums=${encodeURIComponent(platformEnums)}`;
-      }
-      if (trackTypeEnums) {
-        queryParams += `&trackTypeEnums=${encodeURIComponent(trackTypeEnums)}`;
-      }
-    }
+    // 构建查询参数，只传递状态参数
+    const queryParams = `status=${statusEnum}`;
 
     wx.navigateTo({
       url: `/pages/task-list/task-list?${queryParams}`,

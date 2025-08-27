@@ -19,8 +19,7 @@
       </view>
       
       <view class="task-content">
-        <view class="task-title">{{item.title}}</view>
-        <view class="task-description">{{item.description}}</view>
+        <view class="task-title">{{item.articleTitle}}</view>
         
         <view class="task-info">
           <view class="info-row">
@@ -33,9 +32,15 @@
               <text class="info-value">{{item.trackType}}</text>
             </view>
           </view>
-          <view class="info-item">
-            <text class="info-label">账号：</text>
-            <text class="info-value">{{item.accountName}}</text>
+          <view class="info-row">
+            <view class="info-item">
+              <text class="info-label">账号：</text>
+              <text class="info-value">{{item.accountName}}</text>
+            </view>
+            <view class="info-item">
+              <text class="info-label">任务时间：</text>
+              <text class="info-value">{{item.taskTime}}</text>
+            </view>
           </view>
         </view>
       </view>
