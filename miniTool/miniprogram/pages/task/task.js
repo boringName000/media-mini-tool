@@ -137,8 +137,10 @@ Page({
       const trackTypeName = getTrackTypeName(trackTypeEnum);
       const trackTypeIcon = getTrackTypeIcon(trackTypeEnum);
 
-      // 计算今日发文数量（从posts数组中统计今天的文章）
-      const todayArticles = this.calculateTodayArticles(account.posts || []);
+      // 计算今日发文数量（统计每日任务数组中已完成的任务）
+      const todayArticles = this.calculateTodayArticles(
+        account.dailyTasks || []
+      );
 
       // 获取账号状态
       const status = this.getAccountStatus(account);
@@ -162,21 +164,16 @@ Page({
   },
 
   /**
-   * 计算今日发文数量
+   * 计算今日发文数量（统计每日任务数组中已完成的任务）
    */
-  calculateTodayArticles: function (posts) {
-    if (!posts || posts.length === 0) {
+  calculateTodayArticles: function (dailyTasks) {
+    if (!dailyTasks || dailyTasks.length === 0) {
       return 0;
     }
 
-    const today = new Date();
-    const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD格式
-
-    return posts.filter((post) => {
-      if (!post.publishTime) return false;
-      const postDate = new Date(post.publishTime);
-      const postDateStr = postDate.toISOString().split("T")[0];
-      return postDateStr === todayStr;
+    return dailyTasks.filter((task) => {
+      // 只检查任务是否完成，云函数已保证是当天的任务
+      return task.isCompleted === true;
     }).length;
   },
 
