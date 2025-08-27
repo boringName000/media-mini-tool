@@ -121,7 +121,7 @@
 .info-row {
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  justify-content: space-between;
 }
 
 .info-item {
@@ -134,7 +134,7 @@
   font-size: 24rpx;
   color: #7f8c8d;
   font-weight: 500;
-  min-width: 80rpx;
+  min-width: 100rpx;
 }
 
 .info-value {

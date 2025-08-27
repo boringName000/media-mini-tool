@@ -31,10 +31,7 @@ Page({
     // 任务列表
     taskList: [],
 
-    // 分页
-    page: 1,
-    pageSize: 10,
-    hasMore: true,
+    // 加载状态
     loading: false,
 
     // 数据加载状态
@@ -143,7 +140,7 @@ Page({
             platformIcon: getPlatformIcon(account.platform),
             trackTypeEnum: account.trackType,
             trackType: getTrackTypeName(account.trackType),
-            taskTime: timeUtils.formatTime(task.taskTime, "YYYY-MM-DD HH:mm", {
+            taskTime: timeUtils.formatTime(task.taskTime, "YYYY-MM-DD", {
               defaultValue: "未知时间",
             }),
             isCompleted: task.isCompleted, // 使用服务器状态，用于UI显示
@@ -173,13 +170,9 @@ Page({
             platformIcon: getPlatformIcon(account.platform),
             trackTypeEnum: account.trackType,
             trackType: getTrackTypeName(account.trackType),
-            taskTime: timeUtils.formatTime(
-              post.publishTime,
-              "YYYY-MM-DD HH:mm",
-              {
-                defaultValue: "未知时间",
-              }
-            ),
+            taskTime: timeUtils.formatTime(post.publishTime, "YYYY-MM-DD", {
+              defaultValue: "未知时间",
+            }),
             isCompleted: true,
             status: TaskStatusEnum.COMPLETED,
             statusText: getTaskStatusName(TaskStatusEnum.COMPLETED),
@@ -203,43 +196,27 @@ Page({
 
   // 加载任务列表
   loadTaskList() {
-    if (this.data.loading || !this.data.hasMore) return;
+    if (this.data.loading) return;
 
     this.setData({ loading: true });
 
-    // 构建API请求参数
-    const requestParams = {
-      page: this.data.page,
-      pageSize: this.data.pageSize,
-      status: this.data.currentStatus,
-    };
-
-    // 使用真实数据
-    this.fetchTasksFromServer(requestParams);
+    // 使用真实数据，一次性加载所有任务
+    this.fetchTasksFromServer();
   },
 
   // 从服务器获取任务数据
-  fetchTasksFromServer(params) {
-    // 使用真实数据
+  fetchTasksFromServer() {
+    // 使用真实数据，一次性加载所有任务
     const filteredTasks = this.filterTasks();
-    const startIndex = (this.data.page - 1) * this.data.pageSize;
-    const endIndex = startIndex + this.data.pageSize;
-    const pageTasks = filteredTasks.slice(startIndex, endIndex);
 
     this.setData({
-      taskList:
-        this.data.page === 1
-          ? pageTasks
-          : [...this.data.taskList, ...pageTasks],
-      hasMore: endIndex < filteredTasks.length,
-      page: this.data.page + 1,
+      taskList: filteredTasks,
       loading: false,
     });
 
-    // 打印请求参数，用于调试
-    console.log("请求任务列表参数:", params);
+    // 打印调试信息
     console.log("筛选后的任务数量:", filteredTasks.length);
-    console.log("当前页任务数量:", pageTasks.length);
+    console.log("加载的任务列表:", filteredTasks);
   },
 
   // 筛选任务
@@ -276,7 +253,7 @@ Page({
     if (!task.articleDownloadUrl) {
       wx.showToast({
         title: "文章下载链接不可用",
-        icon: "none"
+        icon: "none",
       });
       return;
     }
@@ -340,7 +317,7 @@ Page({
             title: "复制失败",
             icon: "none",
           });
-        }
+        },
       });
     } else {
       // 如果没有下载链接，显示错误
@@ -377,8 +354,10 @@ Page({
     }
 
     // 提取所有文章ID
-    const articleIds = allTasks.map(task => task.articleId).filter(id => id);
-    
+    const articleIds = allTasks
+      .map((task) => task.articleId)
+      .filter((id) => id);
+
     if (articleIds.length === 0) {
       console.log("没有有效的文章ID");
       return;
@@ -389,10 +368,10 @@ Page({
     try {
       // 调用云函数获取文章信息
       const result = await wx.cloud.callFunction({
-        name: 'get-article-info',
+        name: "get-article-info",
         data: {
-          articleIds: articleIds
-        }
+          articleIds: articleIds,
+        },
       });
 
       if (result.result && result.result.success) {
@@ -402,17 +381,20 @@ Page({
         // 更新任务列表中的文章信息
         this.updateTaskListWithArticleInfo(allTasks, articles);
       } else {
-        console.error("获取文章信息失败:", result.result?.message || "未知错误");
+        console.error(
+          "获取文章信息失败:",
+          result.result?.message || "未知错误"
+        );
         wx.showToast({
           title: "获取文章信息失败",
-          icon: "none"
+          icon: "none",
         });
       }
     } catch (error) {
       console.error("调用获取文章信息云函数失败:", error);
       wx.showToast({
         title: "获取文章信息异常",
-        icon: "none"
+        icon: "none",
       });
     }
   },
@@ -421,31 +403,37 @@ Page({
   updateTaskListWithArticleInfo(allTasks, articles) {
     // 创建文章信息映射
     const articleMap = {};
-    articles.forEach(article => {
+    articles.forEach((article) => {
       articleMap[article.articleId] = article;
     });
 
     // 更新任务列表中的文章信息
-    const updatedTasks = allTasks.map(task => {
+    const updatedTasks = allTasks.map((task) => {
       const article = articleMap[task.articleId];
+      console.log(`处理任务 ${task.articleId}:`, { task, article });
+
       if (article) {
-        return {
+        const updatedTask = {
           ...task,
-          articleTitle: article.title || "未知标题",
+          articleTitle: article.articleTitle || "未知标题",
           articleDownloadUrl: article.downloadUrl || "",
         };
+        console.log(`更新后的任务:`, updatedTask);
+        return updatedTask;
       } else {
-        return {
+        const updatedTask = {
           ...task,
           articleTitle: "文章信息获取失败",
           articleDownloadUrl: "",
         };
+        console.log(`未找到文章信息的任务:`, updatedTask);
+        return updatedTask;
       }
     });
 
     // 更新数据
     this.setData({
-      allTasks: updatedTasks
+      allTasks: updatedTasks,
     });
 
     // 重新加载任务列表以显示更新后的信息
@@ -455,9 +443,7 @@ Page({
   // 刷新数据
   refreshData() {
     this.setData({
-      page: 1,
       taskList: [],
-      hasMore: true,
       dataLoaded: false, // 重置数据加载状态
     });
     this.loadUserData();
@@ -469,9 +455,10 @@ Page({
     wx.stopPullDownRefresh();
   },
 
-  // 上拉加载更多
+  // 上拉刷新
   onReachBottom() {
-    this.loadTaskList();
+    // 移除上拉加载更多功能，改为上拉刷新
+    this.refreshData();
   },
 
   // 分享
