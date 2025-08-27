@@ -352,7 +352,7 @@ const testCase1 = {
     { articleId: "ART1", taskTime: "2024-01-15T10:00:00Z", isCompleted: true },
     { articleId: "ART2", taskTime: "2024-01-15T14:00:00Z", isCompleted: false },
   ],
-  posts: [{ articleId: "ART1", createTime: "2024-01-15T11:00:00Z" }],
+  posts: [{ articleId: "ART1", publishTime: "2024-01-15T11:00:00Z" }],
   expected: {
     pending: 1, // dailyTasks 中 isCompleted 为 false 的任务数量
     completed: 1, // posts 数组的长度

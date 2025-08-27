@@ -44,7 +44,6 @@ exports.main = async (event, context) => {
       trackType: trackType,
       platformType: platformType,
       downloadUrl: downloadUrl,
-      createTime: db.serverDate(),
     };
 
     // 插入到 article-mgr 数据库

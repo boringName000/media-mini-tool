@@ -173,8 +173,8 @@ Page({
     const todayStr = today.toISOString().split("T")[0]; // YYYY-MM-DD格式
 
     return posts.filter((post) => {
-      if (!post.createTime) return false;
-      const postDate = new Date(post.createTime);
+      if (!post.publishTime) return false;
+      const postDate = new Date(post.publishTime);
       const postDateStr = postDate.toISOString().split("T")[0];
       return postDateStr === todayStr;
     }).length;

@@ -56,8 +56,7 @@ wx.cloud.callFunction({
         "downloadUrl": "cloud://xxx/article/1/美食文章-1703123456789.txt",
         "trackType": 1,
         "platformType": 2,
-        "uploadTime": "2024-01-15T10:30:00.000Z",
-        "createTime": "2024-01-15T10:30:00.000Z"
+        "uploadTime": "2024-01-15T10:30:00.000Z"
       }
     ],
     "totalCount": 1,
@@ -101,7 +100,6 @@ wx.cloud.callFunction({
 | `trackType`    | Number | 赛道类型       |
 | `platformType` | Number | 平台类型       |
 | `uploadTime`   | Date   | 上传时间       |
-| `createTime`   | Date   | 创建时间       |
 
 ## 错误码说明
 
@@ -137,6 +135,7 @@ wx.cloud.callFunction({
 ## 设计说明
 
 ### 全量字段返回
+
 本云函数设计为返回文章的完整信息，包含所有数据库字段。这样设计的原因：
 
 1. **灵活性**: 不同页面可能需要不同的字段信息
@@ -145,9 +144,10 @@ wx.cloud.callFunction({
 4. **复用性**: 一个云函数可以满足多种使用场景
 
 ### 性能考虑
+
 虽然返回全量字段会增加数据传输量，但通过以下方式优化性能：
 
-1. **查询限制**: 单次最多查询100个文章ID
+1. **查询限制**: 单次最多查询 100 个文章 ID
 2. **缓存机制**: 建议前端实现缓存，避免重复查询
 3. **索引优化**: 确保数据库字段有适当的索引
 4. **网络优化**: 使用高效的网络传输协议

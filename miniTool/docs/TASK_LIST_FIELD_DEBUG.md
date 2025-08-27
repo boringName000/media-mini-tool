@@ -32,13 +32,12 @@ articleTitle: article.articleTitle || "未知标题",
 
 根据 `ARTICLE_MGR_DATABASE_SCHEMA.md` 文档，确认了正确的字段名：
 
-- ✅ `article.articleId` - 文章ID
-- ✅ `article.articleTitle` - 文章标题  
+- ✅ `article.articleId` - 文章 ID
+- ✅ `article.articleTitle` - 文章标题
 - ✅ `article.downloadUrl` - 下载地址
 - ✅ `article.trackType` - 赛道类型
 - ✅ `article.platformType` - 平台类型
 - ✅ `article.uploadTime` - 上传时间
-- ✅ `article.createTime` - 创建时间
 
 ### **3. 修复代码**
 
@@ -161,13 +160,15 @@ console.log(`未找到文章信息的任务:`, updatedTask);
 ## 📋 更新说明
 
 ### **云函数设计调整**
+
 - ✅ **保持全量字段返回**: `get-article-info` 云函数返回文章的完整信息
 - ✅ **字段名统一**: 确保所有字段名与数据库结构一致
 - ✅ **灵活性提升**: 支持不同页面使用不同字段的需求
 
 ### **性能优化策略**
+
 - ✅ **前端缓存**: 实现本地缓存机制减少重复请求
-- ✅ **查询限制**: 单次最多查询100个文章ID
+- ✅ **查询限制**: 单次最多查询 100 个文章 ID
 - ✅ **索引优化**: 确保数据库字段有适当索引
 
 ---

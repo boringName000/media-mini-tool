@@ -26,9 +26,8 @@
 
 ### 系统字段
 
-| 字段名       | 类型 | 必填 | 默认值            | 说明         |
-| ------------ | ---- | ---- | ----------------- | ------------ |
-| `createTime` | Date | ✅   | `db.serverDate()` | 记录创建时间 |
+| 字段名 | 类型 | 必填 | 默认值 | 说明 |
+| ------ | ---- | ---- | ------ | ---- |
 
 ## 字段详细说明
 
@@ -171,8 +170,7 @@ const PlatformEnum = {
   "uploadTime": "2023-12-21T10:30:45.123Z",
   "trackType": 1,
   "platformType": 2,
-  "downloadUrl": "cloud://xxx/article/1/美食文章-1703123456789.txt",
-  "createTime": "2023-12-21T10:30:45.123Z"
+  "downloadUrl": "cloud://xxx/article/1/美食文章-1703123456789.txt"
 }
 ```
 
@@ -185,8 +183,7 @@ const PlatformEnum = {
   "articleTitle": "娱乐新闻",
   "trackType": 4,
   "platformType": 3,
-  "downloadUrl": "cloud://xxx/article/4/娱乐新闻-1703123456789.txt",
-  "createTime": "2023-12-21T10:30:45.123Z"
+  "downloadUrl": "cloud://xxx/article/4/娱乐新闻-1703123456789.txt"
 }
 
 // 书法赛道文章
@@ -195,8 +192,7 @@ const PlatformEnum = {
   "articleTitle": "书法作品",
   "trackType": 7,
   "platformType": 1,
-  "downloadUrl": "cloud://xxx/article/7/书法作品-1703123456789.txt",
-  "createTime": "2023-12-21T10:30:45.123Z"
+  "downloadUrl": "cloud://xxx/article/7/书法作品-1703123456789.txt"
 }
 ```
 
