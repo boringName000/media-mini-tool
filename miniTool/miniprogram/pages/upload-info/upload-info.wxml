@@ -1,23 +1,31 @@
 <!-- 回传信息页面 -->
 <view class="upload-info-container">
 
-  <!-- 任务信息 -->
+  <!-- 文章信息 -->
   <view class="task-info-section">
     <view class="section-title">
-      <text class="title-text">任务信息</text>
+      <text class="title-text">文章信息</text>
     </view>
     <view class="task-info-card">
       <view class="info-row">
-        <text class="info-label">任务ID：</text>
-        <text class="info-value">{{taskId}}</text>
+        <text class="info-label">文章ID：</text>
+        <text class="info-value">{{articleId}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">任务标题：</text>
-        <text class="info-value">{{taskTitle}}</text>
+        <text class="info-label">文章标题：</text>
+        <text class="info-value">{{articleTitle}}</text>
       </view>
       <view class="info-row">
-        <text class="info-label">账号：</text>
+        <text class="info-label">账号名称：</text>
         <text class="info-value">{{accountName}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">赛道类型：</text>
+        <text class="info-value">{{trackTypeName}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">平台类型：</text>
+        <text class="info-value">{{platformTypeName}}</text>
       </view>
     </view>
   </view>

@@ -127,6 +127,12 @@ Page({
       accounts.forEach((account) => {
         const dailyTasks = account.dailyTasks || [];
         dailyTasks.forEach((task) => {
+          // 根据任务完成状态动态设置状态
+          const isTaskCompleted = task.isCompleted;
+          const taskStatus = isTaskCompleted
+            ? TaskStatusEnum.COMPLETED
+            : TaskStatusEnum.PENDING;
+
           const taskObj = {
             taskId: task.articleId, // 直接使用服务器的文章ID
             accountId: account.accountId,
@@ -145,9 +151,9 @@ Page({
               defaultValue: "未知时间",
             }),
             isCompleted: task.isCompleted, // 使用服务器状态，用于UI显示
-            status: TaskStatusEnum.PENDING,
-            statusText: getTaskStatusName(TaskStatusEnum.PENDING),
-            statusClass: getTaskStatusClass(TaskStatusEnum.PENDING),
+            status: taskStatus,
+            statusText: getTaskStatusName(taskStatus),
+            statusClass: getTaskStatusClass(taskStatus),
             // 直接使用任务中的文章信息
             articleTitle: task.articleTitle || "未知标题",
             articleDownloadUrl: task.downloadUrl || "",
@@ -225,11 +231,17 @@ Page({
 
     // 跳转到回传信息页面
     wx.navigateTo({
-      url: `/pages/upload-info/upload-info?taskId=${
-        task.taskId
-      }&articleId=${encodeURIComponent(
+      url: `/pages/upload-info/upload-info?articleId=${encodeURIComponent(
         task.articleId
-      )}&accountName=${encodeURIComponent(task.accountName)}`,
+      )}&articleTitle=${encodeURIComponent(
+        task.articleTitle
+      )}&accountName=${encodeURIComponent(
+        task.accountName
+      )}&accountId=${encodeURIComponent(
+        task.accountId
+      )}&trackType=${encodeURIComponent(
+        task.trackTypeEnum
+      )}&platformType=${encodeURIComponent(task.platformEnum)}`,
       success: function () {
         console.log("跳转到回传信息页面");
       },
