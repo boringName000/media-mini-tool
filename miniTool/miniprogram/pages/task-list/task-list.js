@@ -23,11 +23,6 @@ Page({
     currentStatus: null,
     statusDisplayText: "",
 
-    // 状态计数
-    pendingCount: 0,
-    completedCount: 0,
-    rejectedCount: 0,
-
     // 任务列表
     taskList: [],
 
@@ -115,7 +110,6 @@ Page({
 
     // 加载任务列表
     this.loadTaskList();
-    this.updateStatusCount();
 
     this.setData({ loading: false, dataLoaded: true });
   },
@@ -223,26 +217,6 @@ Page({
   filterTasks() {
     // 直接返回构建好的任务列表，因为 buildTaskList 已经根据状态筛选了
     return [...this.data.allTasks];
-  },
-
-  // 更新状态计数
-  updateStatusCount() {
-    const tasks = this.data.allTasks;
-    const pendingCount = tasks.filter(
-      (task) => task.status === TaskStatusEnum.PENDING
-    ).length;
-    const completedCount = tasks.filter(
-      (task) => task.status === TaskStatusEnum.COMPLETED
-    ).length;
-    const rejectedCount = tasks.filter(
-      (task) => task.status === TaskStatusEnum.REJECTED
-    ).length;
-
-    this.setData({
-      pendingCount,
-      completedCount,
-      rejectedCount,
-    });
   },
 
   // 下载任务
