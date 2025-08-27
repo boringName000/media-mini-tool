@@ -180,6 +180,7 @@ Page({
     files.forEach((file, index) => {
       // 使用赛道类型枚举值（数字）
       const trackTypeValue = this.data.selectedTrackType;
+      const platformTypeValue = this.data.selectedPlatform;
       const timestamp = Date.now();
 
       // 分离文件名和扩展名
@@ -189,7 +190,7 @@ Page({
       const fileExtension =
         lastDotIndex > 0 ? file.name.substring(lastDotIndex) : "";
 
-      const cloudPath = `article/${trackTypeValue}/${fileName}-${timestamp}${fileExtension}`;
+      const cloudPath = `article/${platformTypeValue}/${trackTypeValue}/${fileName}-${timestamp}${fileExtension}`;
 
       // 更新文件状态为上传中
       that.updateFileStatus(startIndex + index, "uploading");
