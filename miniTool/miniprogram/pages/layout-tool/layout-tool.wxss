@@ -1,0 +1,296 @@
+/* pages/layout-tool/layout-tool.wxss */
+
+.layout-tool-container {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 20rpx;
+}
+
+.tool-section {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 30rpx;
+  text-align: center;
+}
+
+.section-subtitle {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 20rpx;
+  padding-bottom: 10rpx;
+  border-bottom: 2rpx solid #e0e0e0;
+}
+
+/* 操作按钮 */
+.action-buttons {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 20rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.action-btn.primary:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.4);
+}
+
+.action-btn.secondary {
+  background-color: #f8f9fa;
+  color: #666;
+  border: 2rpx solid #e0e0e0;
+}
+
+.action-btn.secondary:active {
+  background-color: #e9ecef;
+}
+
+/* 下载状态 */
+.download-status {
+  background-color: #e3f2fd;
+  border: 1rpx solid #2196f3;
+  border-radius: 8rpx;
+  padding: 16rpx 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.status-text {
+  font-size: 26rpx;
+  color: #1976d2;
+}
+
+/* 文件列表 */
+.file-list-section {
+  margin-bottom: 30rpx;
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.file-item {
+  background-color: #fff;
+  border-radius: 12rpx;
+  border: 1rpx solid #e0e0e0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.file-item:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.file-info {
+  padding: 24rpx;
+}
+
+.file-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-bottom: 12rpx;
+}
+
+.file-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  word-break: break-all;
+  cursor: pointer;
+  padding: 8rpx 0;
+  line-height: 1.4;
+}
+
+.file-name:active {
+  color: #667eea;
+}
+
+.file-actions {
+  display: flex;
+  gap: 12rpx;
+  justify-content: flex-end;
+}
+
+.file-action-btn {
+  padding: 12rpx 20rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  border: none;
+  min-width: 80rpx;
+  transition: all 0.2s ease;
+}
+
+.preview-btn {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.preview-btn:active {
+  background-color: #388e3c;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.delete-btn:active {
+  background-color: #d32f2f;
+}
+
+.file-details {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 8rpx;
+}
+
+.file-size,
+.file-time {
+  font-size: 24rpx;
+  color: #999;
+  background-color: #f8f9fa;
+  padding: 4rpx 12rpx;
+  border-radius: 6rpx;
+}
+
+/* 文件预览 */
+.file-preview {
+  background-color: #f8f9fa;
+  border-radius: 12rpx;
+  border: 1rpx solid #e0e0e0;
+  margin-top: 30rpx;
+  overflow: hidden;
+}
+
+.preview-header {
+  background-color: #fff;
+  padding: 20rpx;
+  border-bottom: 1rpx solid #e0e0e0;
+}
+
+.preview-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.preview-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.view-effect-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8rpx;
+  padding: 12rpx 20rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.view-effect-btn:active {
+  transform: translateY(1rpx);
+}
+
+.preview-filename {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.preview-content {
+  padding: 20rpx;
+  max-height: 400rpx;
+  overflow-y: auto;
+}
+
+.content-text {
+  font-size: 26rpx;
+  color: #333;
+  line-height: 1.6;
+  word-break: break-all;
+  white-space: pre-wrap;
+}
+
+/* 无数据提示 */
+.no-data {
+  text-align: center;
+  padding: 80rpx 40rpx;
+}
+
+.no-data-icon {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.no-data-text {
+  display: block;
+  font-size: 28rpx;
+  color: #666;
+  margin-bottom: 10rpx;
+}
+
+.no-data-hint {
+  display: block;
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .layout-tool-container {
+    padding: 10rpx;
+  }
+
+  .tool-section {
+    padding: 20rpx;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .file-header {
+    gap: 12rpx;
+  }
+
+  .file-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .file-details {
+    flex-direction: column;
+    gap: 8rpx;
+  }
+}

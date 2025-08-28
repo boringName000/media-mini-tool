@@ -1,412 +1,408 @@
-// 云存储图片显示测试页面
-const userInfoUtils = require("../../utils/userInfoUtils");
-
+// 文件下载测试页面
 Page({
   data: {
-    // 真实的账户数据（从全局数据获取）
-    realAccountData: null,
-    // 图片加载状态
-    smartImageStatus: "加载中...",
-    normalImageStatus: "加载中...",
+    // 文件下载相关
+    downloadStatus: "",
+    downloadedFiles: [],
+    // 测试文件地址
+    testFileUrl:
+      "cloud://cloud1-5g6ik91va74262bb.636c-cloud1-5g6ik91va74262bb-1367027189/article/1/1/前_1-1756294175589.txt",
+    // 文件预览相关
+    currentFile: null,
+    fileContent: "",
   },
 
   onLoad: function (options) {
-    console.log("云存储图片显示测试页面加载");
-    // 获取真实的账户数据
-    this.getRealAccountData();
+    console.log("文件下载测试页面加载");
   },
 
-  // 获取真实的账户数据
-  getRealAccountData: function () {
-    const app = getApp();
-    const globalData = app.globalData;
-
-    console.log("=== 获取真实账户数据 ===");
-    console.log("globalData:", globalData);
-    console.log("loginResult:", globalData.loginResult);
-
-    if (
-      globalData.loginResult &&
-      globalData.loginResult.accounts &&
-      globalData.loginResult.accounts.length > 0
-    ) {
-      // 获取第一个账户的数据
-      const firstAccount = globalData.loginResult.accounts[0];
-      console.log("第一个账户数据:", firstAccount);
-
-      // 检查截图URL格式
-      if (firstAccount.screenshotUrl) {
-        console.log("截图URL:", firstAccount.screenshotUrl);
-        console.log(
-          "是否以cloud://开头:",
-          firstAccount.screenshotUrl.startsWith("cloud://")
-        );
-        console.log("URL长度:", firstAccount.screenshotUrl.length);
-        console.log(
-          "URL前10个字符:",
-          firstAccount.screenshotUrl.substring(0, 10)
-        );
-        console.log(
-          "URL前20个字符:",
-          firstAccount.screenshotUrl.substring(0, 20)
-        );
-      }
-
-      this.setData({
-        realAccountData: firstAccount,
-      });
-
-      wx.showToast({
-        title: "获取真实数据成功",
-        icon: "success",
-        duration: 2000,
-      });
-    } else {
-      console.log("没有找到账户数据");
-      wx.showToast({
-        title: "没有找到账户数据",
-        icon: "none",
-        duration: 2000,
-      });
-    }
-  },
-
-  // 切换不同的账户进行测试
-  switchAccount: function () {
-    const app = getApp();
-    const globalData = app.globalData;
-
-    if (
-      !globalData.loginResult ||
-      !globalData.loginResult.accounts ||
-      globalData.loginResult.accounts.length === 0
-    ) {
-      wx.showToast({
-        title: "没有账户数据",
-        icon: "none",
-        duration: 2000,
-      });
-      return;
-    }
-
-    const accounts = globalData.loginResult.accounts;
-    const currentIndex = this.data.realAccountData
-      ? accounts.findIndex(
-          (acc) => acc.accountId === this.data.realAccountData.accountId
-        )
-      : -1;
-
-    // 切换到下一个账户，如果没有当前账户或到达末尾，则选择第一个
-    const nextIndex = (currentIndex + 1) % accounts.length;
-    const nextAccount = accounts[nextIndex];
+  // 下载测试文件
+  downloadTestFile: function () {
+    console.log("=== 开始下载测试文件 ===");
 
     this.setData({
-      realAccountData: nextAccount,
+      downloadStatus: "开始下载...",
     });
 
-    console.log("切换到账户:", nextAccount);
-    console.log("账户截图URL:", nextAccount.screenshotUrl);
-
-    wx.showToast({
-      title: `切换到账户 ${nextIndex + 1}`,
-      icon: "success",
-      duration: 1500,
-    });
-  },
-
-  // 智能图片组件加载成功
-  onImageLoad: function (e) {
-    console.log("智能图片组件加载成功:", e.detail);
-    this.setData({
-      smartImageStatus: "加载成功",
+    wx.showLoading({
+      title: "下载中...",
     });
 
-    // 获取图片元素信息
-    wx.createSelectorQuery()
-      .select(".image-test-item:first-child .test-image")
-      .boundingClientRect((rect) => {
-        console.log("智能图片组件尺寸:", rect);
-      })
-      .exec();
-  },
-
-  // 智能图片组件加载错误
-  onImageError: function (e) {
-    console.error("智能图片组件加载失败:", e.detail);
-    this.setData({
-      smartImageStatus: "加载失败",
-    });
-  },
-
-  // 普通 image 组件加载成功
-  onNormalImageLoad: function (e) {
-    console.log("原生image组件加载成功:", e.detail);
-    this.setData({
-      normalImageStatus: "加载成功",
-    });
-
-    // 获取图片元素信息
-    wx.createSelectorQuery()
-      .select(".image-test-item:last-child .test-image")
-      .boundingClientRect((rect) => {
-        console.log("原生image组件尺寸:", rect);
-      })
-      .exec();
-  },
-
-  // 普通 image 组件加载错误
-  onNormalImageError: function (e) {
-    console.error("普通 image 组件加载失败:", e.detail);
-    this.setData({
-      normalImageStatus: "加载失败",
-    });
-  },
-
-  // 测试重构后的智能图片组件
-  testRefactoredSmartImage: function () {
-    console.log("=== 测试重构后的智能图片组件 ===");
-
-    if (
-      !this.data.realAccountData ||
-      !this.data.realAccountData.screenshotUrl
-    ) {
-      wx.showToast({
-        title: "没有截图URL",
-        icon: "none",
-        duration: 2000,
-      });
-      return;
-    }
-
-    const screenshotUrl = this.data.realAccountData.screenshotUrl;
-    console.log("截图URL:", screenshotUrl);
-
-    // 检查是否为云存储图片
-    const isCloud = screenshotUrl.startsWith("cloud://");
-    console.log("是否为云存储图片:", isCloud);
-
-    if (isCloud) {
-      console.log("云存储图片，微信原生image组件应该能直接显示");
-      wx.showToast({
-        title: "云存储图片，查看显示效果",
-        icon: "success",
-        duration: 2000,
-      });
-    } else {
-      console.log("非云存储图片");
-      wx.showToast({
-        title: "非云存储图片",
-        icon: "none",
-        duration: 2000,
-      });
-    }
-  },
-
-  // 测试云存储图片直接加载
-  testCloudImageDirectLoad: function () {
-    console.log("=== 测试云存储图片直接加载 ===");
-
-    if (
-      !this.data.realAccountData ||
-      !this.data.realAccountData.screenshotUrl
-    ) {
-      wx.showToast({
-        title: "没有截图URL",
-        icon: "none",
-        duration: 2000,
-      });
-      return;
-    }
-
-    const screenshotUrl = this.data.realAccountData.screenshotUrl;
-
-    // 尝试获取临时URL来验证文件是否存在
-    wx.cloud.getTempFileURL({
-      fileList: [screenshotUrl],
+    // 使用云存储下载文件
+    wx.cloud.downloadFile({
+      fileID: this.data.testFileUrl,
       success: (res) => {
-        console.log("获取临时URL成功:", res);
-        if (res.fileList && res.fileList[0]) {
-          console.log("文件存在，临时URL:", res.fileList[0].tempFileURL);
+        console.log("云存储下载成功:", res);
+        wx.hideLoading();
 
-          // 如果文件存在，说明云存储图片应该能直接显示
-          wx.showToast({
-            title: "文件存在，应该能直接显示",
-            icon: "success",
-            duration: 2000,
-          });
-        } else {
-          wx.showToast({
-            title: "文件不存在",
-            icon: "none",
-            duration: 2000,
-          });
-        }
+        // 保存文件到本地
+        this.saveFileToLocal(res.tempFilePath, "测试文档");
       },
       fail: (err) => {
-        console.error("获取临时URL失败:", err);
+        console.error("云存储下载失败:", err);
+        wx.hideLoading();
+
+        this.setData({
+          downloadStatus: "下载失败: " + err.errMsg,
+        });
+
         wx.showToast({
-          title: "文件访问失败",
+          title: "下载失败",
           icon: "none",
-          duration: 2000,
         });
       },
     });
   },
 
-  // 比较两个组件的样式差异
-  compareComponentStyles: function () {
-    console.log("=== 比较组件样式差异 ===");
+  // 保存文件到本地
+  saveFileToLocal: function (tempFilePath, fileName) {
+    console.log("=== 保存文件到本地 ===");
 
-    // 获取智能图片组件的样式信息
-    wx.createSelectorQuery()
-      .select(".image-test-item:first-child .test-image")
-      .boundingClientRect((smartImageRect) => {
-        console.log("智能图片组件样式:", smartImageRect);
+    this.setData({
+      downloadStatus: "保存文件中...",
+    });
 
-        // 获取原生image组件的样式信息
-        wx.createSelectorQuery()
-          .select(".image-test-item:last-child .test-image")
-          .boundingClientRect((nativeImageRect) => {
-            console.log("原生image组件样式:", nativeImageRect);
+    // 生成保存的文件名
+    const savedFileName = `${fileName}_${Date.now()}.txt`;
 
-            // 比较尺寸差异
-            if (smartImageRect && nativeImageRect) {
-              const widthDiff = smartImageRect.width - nativeImageRect.width;
-              const heightDiff = smartImageRect.height - nativeImageRect.height;
+    // 构建完整的保存路径
+    const savedFilePath = `${wx.env.USER_DATA_PATH}/downloads/${savedFileName}`;
 
-              console.log("尺寸差异:", {
-                widthDiff: widthDiff,
-                heightDiff: heightDiff,
-                smartImageSize: `${smartImageRect.width}x${smartImageRect.height}`,
-                nativeImageSize: `${nativeImageRect.width}x${nativeImageRect.height}`,
-              });
+    // 使用文件系统管理器保存文件到本地
+    const fs = wx.getFileSystemManager();
 
-              if (Math.abs(widthDiff) > 5 || Math.abs(heightDiff) > 5) {
-                wx.showToast({
-                  title: `尺寸差异: ${widthDiff.toFixed(
-                    0
-                  )}x${heightDiff.toFixed(0)}`,
-                  icon: "none",
-                  duration: 3000,
-                });
-              } else {
-                wx.showToast({
-                  title: "尺寸相同",
-                  icon: "success",
-                  duration: 2000,
-                });
+    // 先确保 downloads 目录存在
+    try {
+      fs.mkdirSync(`${wx.env.USER_DATA_PATH}/downloads`, true);
+    } catch (e) {
+      console.log("downloads 目录已存在或创建失败:", e);
+    }
+
+    // 使用新的文件系统 API 保存文件
+    fs.saveFile({
+      tempFilePath: tempFilePath,
+      filePath: savedFilePath,
+      success: (res) => {
+        console.log("文件保存成功:", savedFilePath);
+
+        this.setData({
+          downloadStatus: "文件已保存到本地",
+        });
+
+        wx.showToast({
+          title: "文件已下载到本地",
+          icon: "success",
+          duration: 2000,
+        });
+
+        // 保存成功后，询问用户是否打开文件
+        setTimeout(() => {
+          wx.showModal({
+            title: "文件下载成功",
+            content: "文件已下载到本地，是否立即打开查看？",
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                this.openSavedFile(savedFilePath, fileName);
               }
+            },
+          });
+        }, 1000);
+      },
+      fail: (err) => {
+        console.error("保存文件失败:", err);
+
+        this.setData({
+          downloadStatus: "保存失败: " + err.errMsg,
+        });
+
+        // 如果保存失败，尝试直接打开临时文件
+        wx.showModal({
+          title: "下载失败",
+          content: "无法保存到本地，是否直接打开文件？",
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              this.openTempFile(tempFilePath, fileName);
             }
-          })
-          .exec();
-      })
-      .exec();
+          },
+        });
+      },
+    });
   },
 
-  // 详细分析组件样式
-  analyzeComponentStyles: function () {
-    console.log("=== 详细分析组件样式 ===");
-
-    // 获取智能图片组件的详细信息
-    wx.createSelectorQuery()
-      .select(".image-test-item:first-child")
-      .boundingClientRect((containerRect) => {
-        console.log("智能图片容器尺寸:", containerRect);
-
-        wx.createSelectorQuery()
-          .select(".image-test-item:first-child .test-image")
-          .boundingClientRect((imageRect) => {
-            console.log("智能图片元素尺寸:", imageRect);
-
-            // 检查是否有尺寸差异
-            if (containerRect && imageRect) {
-              const containerWidth = containerRect.width;
-              const imageWidth = imageRect.width;
-              const widthRatio = imageWidth / containerWidth;
-
-              console.log("智能图片尺寸分析:", {
-                containerWidth: containerWidth,
-                imageWidth: imageWidth,
-                widthRatio: widthRatio.toFixed(2),
-                isFullWidth: widthRatio > 0.9,
-              });
-            }
-          })
-          .exec();
-      })
-      .exec();
-
-    // 获取原生image组件的详细信息
-    wx.createSelectorQuery()
-      .select(".image-test-item:last-child")
-      .boundingClientRect((containerRect) => {
-        console.log("原生image容器尺寸:", containerRect);
-
-        wx.createSelectorQuery()
-          .select(".image-test-item:last-child .test-image")
-          .boundingClientRect((imageRect) => {
-            console.log("原生image元素尺寸:", imageRect);
-
-            // 检查是否有尺寸差异
-            if (containerRect && imageRect) {
-              const containerWidth = containerRect.width;
-              const imageWidth = imageRect.width;
-              const widthRatio = imageWidth / containerWidth;
-
-              console.log("原生image尺寸分析:", {
-                containerWidth: containerWidth,
-                imageWidth: imageWidth,
-                widthRatio: widthRatio.toFixed(2),
-                isFullWidth: widthRatio > 0.9,
-              });
-            }
-          })
-          .exec();
-      })
-      .exec();
+  // 打开已保存的文件
+  openSavedFile: function (savedFilePath, fileName) {
+    wx.openDocument({
+      filePath: savedFilePath,
+      fileType: "txt",
+      success: () => {
+        console.log("文件打开成功");
+      },
+      fail: (err) => {
+        console.error("打开保存的文件失败:", err);
+        wx.showToast({
+          title: "文件已保存，但无法打开",
+          icon: "none",
+        });
+      },
+    });
   },
 
-  // 测试强制样式是否生效
-  testForceStyles: function () {
-    console.log("=== 测试强制样式是否生效 ===");
+  // 打开临时文件
+  openTempFile: function (tempFilePath, fileName) {
+    wx.openDocument({
+      filePath: tempFilePath,
+      fileType: "txt",
+      success: () => {
+        console.log("临时文件打开成功");
+      },
+      fail: (err) => {
+        console.error("打开临时文件失败:", err);
+        wx.showToast({
+          title: "无法打开文件",
+          icon: "none",
+        });
+      },
+    });
+  },
 
-    // 获取智能图片组件的计算样式
-    wx.createSelectorQuery()
-      .select(".image-test-item:first-child .test-image")
-      .boundingClientRect((rect) => {
-        console.log("智能图片组件实际尺寸:", rect);
+  // 查看下载的文件列表
+  viewDownloadedFiles: function () {
+    console.log("=== 查看下载的文件列表 ===");
 
-        if (rect) {
-          const expectedWidth = 150; // 300rpx ≈ 150px
-          const expectedHeight = 100; // 200rpx ≈ 100px
-          const widthDiff = Math.abs(rect.width - expectedWidth);
-          const heightDiff = Math.abs(rect.height - expectedHeight);
+    this.setData({
+      downloadStatus: "正在获取文件列表...",
+    });
 
-          console.log("强制样式测试:", {
-            actualWidth: rect.width,
-            actualHeight: rect.height,
-            expectedWidth: expectedWidth,
-            expectedHeight: expectedHeight,
-            widthDiff: widthDiff,
-            heightDiff: heightDiff,
-            isCorrectSize: widthDiff < 10 && heightDiff < 10,
+    const fs = wx.getFileSystemManager();
+    const downloadsPath = `${wx.env.USER_DATA_PATH}/downloads`;
+
+    try {
+      // 读取 downloads 目录
+      const files = fs.readdirSync(downloadsPath);
+      console.log("downloads 目录文件列表:", files);
+
+      const fileList = [];
+
+      // 获取每个文件的详细信息
+      files.forEach((fileName) => {
+        try {
+          const filePath = `${downloadsPath}/${fileName}`;
+          const stats = fs.statSync(filePath);
+
+          fileList.push({
+            name: fileName,
+            size: this.formatFileSize(stats.size),
+            time: this.formatTime(stats.lastAccessedTime),
+            path: filePath,
+          });
+        } catch (e) {
+          console.error("获取文件信息失败:", fileName, e);
+        }
+      });
+
+      // 按时间倒序排列
+      fileList.sort((a, b) => new Date(b.time) - new Date(a.time));
+
+      this.setData({
+        downloadedFiles: fileList,
+        downloadStatus: `找到 ${fileList.length} 个文件`,
+      });
+
+      console.log("文件列表:", fileList);
+    } catch (err) {
+      console.error("读取文件列表失败:", err);
+
+      this.setData({
+        downloadStatus: "读取文件列表失败: " + err.errMsg,
+        downloadedFiles: [],
+      });
+
+      wx.showToast({
+        title: "读取文件列表失败",
+        icon: "none",
+      });
+    }
+  },
+
+  // 格式化文件大小
+  formatFileSize: function (bytes) {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  },
+
+  // 格式化时间
+  formatTime: function (timestamp) {
+    const date = new Date(timestamp);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(date.getDate()).padStart(2, "0")} ${String(
+      date.getHours()
+    ).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+  },
+
+  // 读取文件内容
+  readFileContent: function (e) {
+    const file = e.currentTarget.dataset.file;
+    console.log("=== 读取文件内容 ===", file);
+
+    if (!file || !file.path) {
+      wx.showToast({
+        title: "文件路径无效",
+        icon: "none",
+      });
+      return;
+    }
+
+    // 显示加载状态
+    wx.showLoading({
+      title: "读取文件中...",
+    });
+
+    const fs = wx.getFileSystemManager();
+
+    // 读取文件内容
+    fs.readFile({
+      filePath: file.path,
+      encoding: "utf8",
+      success: (res) => {
+        console.log("文件读取成功:", res);
+        wx.hideLoading();
+
+        // 显示全部内容，不进行截断
+        const content = res.data;
+
+        this.setData({
+          currentFile: file,
+          fileContent: content,
+        });
+
+        wx.showToast({
+          title: "文件读取成功",
+          icon: "success",
+          duration: 1500,
+        });
+      },
+      fail: (err) => {
+        console.error("文件读取失败:", err);
+        wx.hideLoading();
+
+        // 尝试使用其他编码方式读取
+        this.tryReadFileWithDifferentEncoding(file.path, file);
+      },
+    });
+  },
+
+  // 尝试使用不同编码方式读取文件
+  tryReadFileWithDifferentEncoding: function (filePath, file) {
+    console.log("尝试使用不同编码方式读取文件");
+
+    const fs = wx.getFileSystemManager();
+
+    // 尝试使用 base64 编码读取
+    fs.readFile({
+      filePath: filePath,
+      encoding: "base64",
+      success: (res) => {
+        console.log("base64 读取成功");
+
+        // 将 base64 转换为文本
+        try {
+          const content = wx.arrayBufferToBase64(res.data);
+          const textContent = this.base64ToText(content);
+
+          // 显示全部内容，不进行截断
+          const displayContent = textContent;
+
+          this.setData({
+            currentFile: file,
+            fileContent: displayContent,
           });
 
-          if (widthDiff < 10 && heightDiff < 10) {
-            wx.showToast({
-              title: "强制样式生效",
-              icon: "success",
-              duration: 2000,
-            });
-          } else {
-            wx.showToast({
-              title: `尺寸错误: ${rect.width}x${rect.height}`,
-              icon: "none",
-              duration: 3000,
-            });
-          }
+          wx.showToast({
+            title: "文件读取成功",
+            icon: "success",
+            duration: 1500,
+          });
+        } catch (e) {
+          console.error("base64 转换失败:", e);
+          this.showReadError(file);
         }
-      })
-      .exec();
+      },
+      fail: (err) => {
+        console.error("base64 读取也失败:", err);
+        this.showReadError(file);
+      },
+    });
+  },
+
+  // base64 转文本
+  base64ToText: function (base64String) {
+    try {
+      // 简单的 base64 解码
+      const binaryString = atob(base64String);
+      let result = "";
+      for (let i = 0; i < binaryString.length; i++) {
+        result += String.fromCharCode(binaryString.charCodeAt(i));
+      }
+      return result;
+    } catch (e) {
+      console.error("base64 解码失败:", e);
+      return "无法解码文件内容";
+    }
+  },
+
+  // 显示读取错误
+  showReadError: function (file) {
+    this.setData({
+      currentFile: file,
+      fileContent: "无法读取文件内容，可能是文件格式不支持或文件损坏。",
+    });
+
+    wx.showToast({
+      title: "文件读取失败",
+      icon: "none",
+      duration: 2000,
+    });
+  },
+
+  // 跳转到文章预览页面
+  goToArticlePreview: function () {
+    if (!this.data.fileContent) {
+      wx.showToast({
+        title: "文件内容为空",
+        icon: "none",
+      });
+      return;
+    }
+
+    try {
+      // 对内容进行URL编码，避免参数过长或特殊字符问题
+      const encodedContent = encodeURIComponent(this.data.fileContent);
+
+      // 跳转到文章预览页面
+      wx.navigateTo({
+        url: `/pages/article-preview/article-preview?content=${encodedContent}`,
+        success: () => {
+          console.log("跳转到文章预览页面成功");
+        },
+        fail: (error) => {
+          console.error("跳转到文章预览页面失败:", error);
+          wx.showToast({
+            title: "页面跳转失败",
+            icon: "none",
+          });
+        },
+      });
+    } catch (error) {
+      console.error("准备跳转参数失败:", error);
+      wx.showToast({
+        title: "参数准备失败",
+        icon: "none",
+      });
+    }
   },
 });

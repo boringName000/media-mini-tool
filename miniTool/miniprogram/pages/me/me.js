@@ -35,6 +35,11 @@ Page({
         desc: "查看和管理收益情况",
       },
       {
+        icon: "📄",
+        title: "排版工具",
+        desc: "文章排版和预览工具",
+      },
+      {
         icon: "📋",
         title: "合作协议",
         desc: "查看合作协议条款",
@@ -178,6 +183,21 @@ Page({
         url: "/pages/earnings-settlement/earnings-settlement",
         success: function () {
           console.log("跳转到收益结算页面");
+        },
+        fail: function (err) {
+          console.error("跳转失败:", err);
+          wx.showToast({
+            title: "跳转失败，请重试",
+            icon: "none",
+          });
+        },
+      });
+    } else if (menu.title === "排版工具") {
+      // 跳转到排版工具页面
+      wx.navigateTo({
+        url: "/pages/layout-tool/layout-tool",
+        success: function () {
+          console.log("跳转到排版工具页面");
         },
         fail: function (err) {
           console.error("跳转失败:", err);

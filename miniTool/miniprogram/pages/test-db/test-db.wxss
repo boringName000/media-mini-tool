@@ -64,106 +64,6 @@
   line-height: 1.5;
 }
 
-/* 账户信息展示样式 */
-.account-info {
-  background-color: #fff;
-  border-radius: 8rpx;
-  padding: 20rpx;
-  margin-bottom: 20rpx;
-  border: 1rpx solid #e0e0e0;
-}
-
-.account-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
-}
-
-.account-item:last-child {
-  border-bottom: none;
-}
-
-.account-label {
-  font-size: 26rpx;
-  color: #666;
-  font-weight: 500;
-}
-
-.account-value {
-  font-size: 26rpx;
-  color: #333;
-  font-weight: bold;
-}
-
-.image-comparison {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-  margin-top: 20rpx;
-}
-
-.image-test-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background-color: #fff;
-  border-radius: 8rpx;
-  padding: 20rpx;
-  border: 1rpx solid #e0e0e0;
-}
-
-.image-label {
-  font-size: 24rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10rpx;
-  text-align: center;
-}
-
-.test-image {
-  width: 300rpx;
-  height: 200rpx;
-  border-radius: 6rpx;
-  border: 2rpx solid #ddd;
-  background-color: #f5f5f5;
-  object-fit: contain;
-}
-
-/* 强制智能图片组件使用正确的尺寸 */
-smart-image.test-image {
-  width: 300rpx !important;
-  height: 200rpx !important;
-  display: block !important;
-}
-
-/* 确保智能图片组件内的image元素也使用正确尺寸 */
-smart-image.test-image image {
-  width: 300rpx !important;
-  height: 200rpx !important;
-  display: block !important;
-}
-
-.image-status {
-  font-size: 24rpx;
-  color: #666;
-  margin-top: 10rpx;
-  text-align: center;
-}
-
-.image-url {
-  font-size: 20rpx;
-  color: #999;
-  margin-top: 10rpx;
-  word-break: break-all;
-  text-align: center;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 /* 无数据提示样式 */
 .no-data {
   display: flex;
@@ -184,4 +84,136 @@ smart-image.test-image image {
 .no-data-hint {
   font-size: 24rpx;
   color: #999;
+}
+
+/* 文件下载测试样式 */
+.download-status {
+  background: #f8f9fa;
+  padding: 20rpx;
+  margin: 20rpx 0;
+  border-radius: 8rpx;
+  border-left: 4rpx solid #007aff;
+}
+
+.status-text {
+  font-size: 26rpx;
+  color: #333;
+  font-weight: 500;
+}
+
+.file-list {
+  margin: 20rpx 0;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx;
+  margin: 10rpx 0;
+  background: #fff;
+  border-radius: 8rpx;
+  border: 1rpx solid #e9ecef;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.file-item:active {
+  background: #f8f9fa;
+  transform: translateY(1rpx);
+  box-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
+}
+
+.file-name {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  margin-right: 20rpx;
+  word-break: break-all;
+}
+
+.file-size {
+  font-size: 24rpx;
+  color: #666;
+  margin-right: 20rpx;
+  white-space: nowrap;
+}
+
+.file-time {
+  font-size: 24rpx;
+  color: #999;
+  white-space: nowrap;
+}
+
+/* 文件预览样式 */
+.file-preview {
+  margin: 20rpx 0;
+  background: #fff;
+  border-radius: 8rpx;
+  border: 1rpx solid #e9ecef;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.preview-header {
+  background: #f8f9fa;
+  padding: 20rpx;
+  border-bottom: 1rpx solid #e9ecef;
+}
+
+.preview-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 8rpx;
+}
+
+.preview-filename {
+  font-size: 24rpx;
+  color: #666;
+  display: block;
+}
+
+.preview-content {
+  padding: 20rpx;
+  max-height: 600rpx;
+  overflow-y: auto;
+  background: #fafafa;
+}
+
+.content-text {
+  font-size: 26rpx;
+  color: #333;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: "Courier New", monospace;
+}
+
+/* 预览标题行样式 */
+.preview-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+/* 查看效果按钮样式 */
+.view-effect-btn {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 6rpx;
+  padding: 8rpx 16rpx;
+  font-size: 22rpx;
+  min-width: 120rpx;
+  height: auto;
+  line-height: 1.4;
+}
+
+.view-effect-btn:active {
+  opacity: 0.8;
 }

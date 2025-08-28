@@ -1,100 +1,45 @@
-<!-- 云存储图片显示测试 -->
+<!-- 文件下载测试页面 -->
 <view class="test-container">
   <view class="test-section">
-    <view class="section-title">云存储图片显示测试</view>
-    <button class="test-btn" bindtap="getRealAccountData">获取账户数据</button>
-    <button class="test-btn" bindtap="switchAccount">切换账户</button>
-    <button class="test-btn" bindtap="testRefactoredSmartImage">测试重构组件</button>
-    <button class="test-btn" bindtap="testCloudImageDirectLoad">测试云存储加载</button>
-    <button class="test-btn" bindtap="compareComponentStyles">比较样式差异</button>
-    <button class="test-btn" bindtap="analyzeComponentStyles">详细分析样式</button>
-    <button class="test-btn" bindtap="testForceStyles">测试强制样式</button>
+    <view class="section-title">文件下载测试</view>
+    <button class="test-btn" bindtap="downloadTestFile">下载测试文件</button>
+    <button class="test-btn" bindtap="viewDownloadedFiles">查看下载文件列表</button>
     
-    <!-- 账户信息 -->
-    <view class="account-info" wx:if="{{realAccountData}}">
-      <view class="account-item">
-        <text class="account-label">账号昵称:</text>
-        <text class="account-value">{{realAccountData.accountNickname}}</text>
-      </view>
-      <view class="account-item">
-        <text class="account-label">截图URL:</text>
-        <text class="account-value">{{realAccountData.screenshotUrl || '无截图'}}</text>
+    <!-- 下载状态 -->
+    <view class="download-status" wx:if="{{downloadStatus}}">
+      <text class="status-text">{{downloadStatus}}</text>
+    </view>
+    
+    <!-- 文件列表 -->
+    <view class="file-list" wx:if="{{downloadedFiles.length > 0}}">
+      <view class="file-item" wx:for="{{downloadedFiles}}" wx:key="index" bindtap="readFileContent" data-file="{{item}}">
+        <text class="file-name">{{item.name}}</text>
+        <text class="file-size">{{item.size}}</text>
+        <text class="file-time">{{item.time}}</text>
       </view>
     </view>
     
-    <!-- 真实账户数据展示 -->
-    <view class="account-info" wx:if="{{realAccountData}}">
-      <view class="account-item">
-        <text class="account-label">账号ID:</text>
-        <text class="account-value">{{realAccountData.accountId}}</text>
+    <!-- 文件内容预览 -->
+    <view class="file-preview" wx:if="{{currentFile && fileContent}}">
+      <view class="preview-header">
+        <view class="preview-title-row">
+          <text class="preview-title">文件内容预览</text>
+          <button class="view-effect-btn" bindtap="goToArticlePreview" wx:if="{{fileContent}}">
+            查看效果
+          </button>
+        </view>
+        <text class="preview-filename">{{currentFile.name}}</text>
       </view>
-      <view class="account-item">
-        <text class="account-label">平台:</text>
-        <text class="account-value">{{realAccountData.platform}}</text>
-      </view>
-      <view class="account-item">
-        <text class="account-label">赛道类型:</text>
-        <text class="account-value">{{realAccountData.trackType}}</text>
-      </view>
-      <view class="account-item">
-        <text class="account-label">账号昵称:</text>
-        <text class="account-value">{{realAccountData.accountNickname}}</text>
-      </view>
-      <view class="account-item">
-        <text class="account-label">手机号:</text>
-        <text class="account-value">{{realAccountData.phoneNumber}}</text>
-      </view>
-      <view class="account-item">
-        <text class="account-label">是否违规:</text>
-        <text class="account-value">{{realAccountData.isViolation ? '是' : '否'}}</text>
-      </view>
-      <view class="account-item">
-        <text class="account-label">截图URL:</text>
-        <text class="account-value">{{realAccountData.screenshotUrl || '无截图'}}</text>
+      <view class="preview-content">
+        <!-- 原始文本视图 -->
+        <text class="content-text">{{fileContent}}</text>
       </view>
     </view>
     
-    <!-- 云存储图片对比测试 -->
-    <view class="image-comparison" wx:if="{{realAccountData && realAccountData.screenshotUrl}}">
-      <!-- 调试信息 -->
-      <view class="debug-info" style="background: #f0f0f0; padding: 10rpx; margin: 10rpx 0; font-size: 24rpx;">
-        <text>调试信息:</text>
-        <text>截图URL: {{realAccountData.screenshotUrl}}</text>
-        <text>URL长度: {{realAccountData.screenshotUrl.length}}</text>
-        <text>URL前10个字符: {{realAccountData.screenshotUrl.substring(0, 10)}}</text>
-      </view>
-      
-      <!-- 智能图片组件 -->
-      <view class="image-test-item">
-        <view class="image-label">智能图片组件 (smart-image)</view>
-        <smart-image 
-          class="test-image"
-          src="{{realAccountData.screenshotUrl}}"
-          mode="aspectFit"
-          bindload="onImageLoad"
-          binderror="onImageError"
-        />
-        <view class="image-status">状态: {{smartImageStatus || '加载中...'}}</view>
-      </view>
-      
-      <!-- 微信原生 image 组件 -->
-      <view class="image-test-item">
-        <view class="image-label">微信原生 image 组件</view>
-        <image 
-          class="test-image"
-          src="{{realAccountData.screenshotUrl}}"
-          mode="aspectFit"
-          bindload="onNormalImageLoad"
-          binderror="onNormalImageError"
-        />
-        <view class="image-status">状态: {{normalImageStatus || '加载中...'}}</view>
-      </view>
-    </view>
-    
-    <!-- 无数据提示 -->
-    <view class="no-data" wx:if="{{!realAccountData}}">
-      <text class="no-data-text">暂无真实账户数据</text>
-      <text class="no-data-hint">请先登录并获取账户数据</text>
+    <!-- 无文件提示 -->
+    <view class="no-data" wx:if="{{downloadedFiles.length === 0 && downloadStatus && !downloadStatus.includes('失败')}}">
+      <text class="no-data-text">暂无下载的文件</text>
+      <text class="no-data-hint">点击"下载测试文件"开始下载</text>
     </view>
   </view>
 </view> 

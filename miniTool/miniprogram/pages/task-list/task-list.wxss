@@ -156,7 +156,7 @@
 
 .task-actions {
   display: flex;
-  gap: 20rpx;
+  gap: 24rpx;
   flex-wrap: nowrap;
   justify-content: flex-end;
   margin-right: -30rpx;
@@ -164,18 +164,18 @@
 }
 
 .action-btn {
-  padding: 14rpx 22rpx;
-  border-radius: 10rpx;
+  padding: 16rpx 28rpx;
+  border-radius: 12rpx;
   font-size: 26rpx;
   font-weight: 600;
   border: none;
   transition: all 0.3s ease;
-  min-width: 70rpx;
-  max-width: 110rpx;
+  min-width: 100rpx;
+  max-width: 140rpx;
   text-align: center;
   white-space: nowrap;
   flex-shrink: 0;
-  height: 68rpx;
+  height: 72rpx;
   line-height: 40rpx;
 }
 
@@ -193,6 +193,17 @@
 
 .action-btn:active {
   transform: scale(0.95);
+}
+
+/* 按钮图标和文字 */
+.btn-icon {
+  font-size: 24rpx;
+  margin-right: 8rpx;
+}
+
+.btn-text {
+  font-size: 26rpx;
+  font-weight: 600;
 }
 
 /* 已完成任务状态 */

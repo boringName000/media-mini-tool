@@ -47,8 +47,14 @@
       
       <view class="task-footer">
         <view class="task-actions" wx:if="{{item.status === 1}}">
-          <button class="action-btn download-btn" catchtap="downloadTask" data-task="{{item}}">下载</button>
-          <button class="action-btn upload-btn" catchtap="uploadTask" data-task="{{item}}">回传</button>
+          <button class="action-btn download-btn" catchtap="downloadTask" data-task="{{item}}">
+            <text class="btn-icon">⬇️</text>
+            <text class="btn-text">下载</text>
+          </button>
+          <button class="action-btn upload-btn" catchtap="uploadTask" data-task="{{item}}">
+            <text class="btn-icon">📤</text>
+            <text class="btn-text">回传</text>
+          </button>
         </view>
         <view class="task-completed" wx:elif="{{item.status === 2}}">
           <text class="completed-text">任务已完成</text>
