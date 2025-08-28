@@ -5,18 +5,12 @@
     
     <!-- 操作按钮 -->
     <view class="action-buttons">
-      <button class="action-btn primary" bindtap="downloadTestFile">下载测试文件</button>
       <button class="action-btn secondary" bindtap="clearAllFiles" wx:if="{{downloadedFiles.length > 0}}">清空所有文件</button>
-    </view>
-    
-    <!-- 下载状态 -->
-    <view class="download-status" wx:if="{{downloadStatus}}">
-      <text class="status-text">{{downloadStatus}}</text>
     </view>
     
     <!-- 文件列表 -->
     <view class="file-list-section" wx:if="{{downloadedFiles.length > 0}}">
-      <view class="section-subtitle">已下载文件 ({{downloadedFiles.length}})</view>
+      <view class="section-subtitle">本地文件 ({{downloadedFiles.length}})</view>
       <view class="file-list">
         <view class="file-item" wx:for="{{downloadedFiles}}" wx:key="index">
           <view class="file-info">
@@ -36,13 +30,11 @@
       </view>
     </view>
     
-
-    
     <!-- 无文件提示 -->
-    <view class="no-data" wx:if="{{downloadedFiles.length === 0 && downloadStatus && !downloadStatus.includes('失败')}}">
+    <view class="no-data" wx:if="{{downloadedFiles.length === 0}}">
       <view class="no-data-icon">📄</view>
-      <text class="no-data-text">暂无下载的文件</text>
-      <text class="no-data-hint">点击"下载测试文件"开始下载</text>
+      <text class="no-data-text">暂无本地文件</text>
+      <text class="no-data-hint">文件将自动从本地存储加载</text>
     </view>
   </view>
 </view>

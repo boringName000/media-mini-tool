@@ -7,6 +7,20 @@
   flex-direction: column;
 }
 
+/* 文件名显示 */
+.file-name-container {
+  padding: 20rpx 30rpx;
+  background-color: #fff;
+  border-bottom: 1rpx solid #e0e0e0;
+}
+
+.file-name {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  word-break: break-all;
+}
+
 /* 加载状态 */
 .loading-container {
   flex: 1;
@@ -97,7 +111,7 @@
   opacity: 0.9;
 }
 
-/* 文章内容 */
+/* 文章内容容器 */
 .article-content-container {
   flex: 1;
   padding: 30rpx;
@@ -107,15 +121,8 @@
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
+/* mp-html 组件样式 */
 .article-content {
-  font-size: 28rpx;
-  color: #333;
-  line-height: 1.8;
-  word-break: break-all;
-}
-
-/* 文章内容中的样式优化 */
-.article-content rich-text {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial,
     sans-serif;
@@ -123,6 +130,10 @@
 
 /* 响应式设计 */
 @media (max-width: 750rpx) {
+  .file-name-container {
+    padding: 15rpx 20rpx;
+  }
+
   .copy-button-container {
     padding: 15rpx 20rpx;
   }

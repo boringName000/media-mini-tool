@@ -339,14 +339,14 @@ Page({
           duration: 2000,
         });
 
-        // 保存成功后，询问用户是否打开文件
+        // 保存成功后，询问用户是否跳转到排版工具页面
         setTimeout(() => {
           wx.showModal({
             title: "文件下载成功",
-            content: "文件已下载到本地，是否立即打开查看？",
+            content: "文件已下载到本地，是否跳转到排版工具页面查看？",
             success: (modalRes) => {
               if (modalRes.confirm) {
-                this.openSavedFile(savedFilePath, fileName);
+                this.goToLayoutTool();
               }
             },
           });
@@ -355,54 +355,15 @@ Page({
       fail: (err) => {
         console.error("保存文件失败:", err);
 
-        // 如果保存失败，尝试直接打开临时文件
+        // 如果保存失败，提示用户
         wx.showModal({
           title: "下载失败",
-          content: "无法保存到本地，是否直接打开文件？",
+          content: "无法保存到本地，是否复制文件ID到剪贴板？",
           success: (modalRes) => {
             if (modalRes.confirm) {
-              this.openTempFile(tempFilePath, fileName);
-            } else {
-              // 用户选择不打开，复制文件ID
               this.copyDownloadUrl(originalDownloadUrl);
             }
           },
-        });
-      },
-    });
-  },
-
-  // 打开已保存的文件
-  openSavedFile(savedFilePath, fileName) {
-    wx.openDocument({
-      filePath: savedFilePath,
-      fileType: "txt",
-      success: () => {
-        console.log("文件打开成功");
-      },
-      fail: (err) => {
-        console.error("打开保存的文件失败:", err);
-        wx.showToast({
-          title: "文件已保存，但无法打开",
-          icon: "none",
-        });
-      },
-    });
-  },
-
-  // 打开临时文件
-  openTempFile(tempFilePath, fileName) {
-    wx.openDocument({
-      filePath: tempFilePath,
-      fileType: "txt",
-      success: () => {
-        console.log("临时文件打开成功");
-      },
-      fail: (err) => {
-        console.error("打开临时文件失败:", err);
-        wx.showToast({
-          title: "无法打开文件",
-          icon: "none",
         });
       },
     });
@@ -434,23 +395,6 @@ Page({
     });
   },
 
-  // 回传任务到服务器
-  uploadTaskToServer(task) {
-    wx.showLoading({
-      title: "回传中...",
-    });
-
-    // 模拟API调用
-    setTimeout(() => {
-      wx.hideLoading();
-
-      wx.showToast({
-        title: "回传成功",
-        icon: "success",
-      });
-    }, 1500);
-  },
-
   // 刷新数据
   refreshData() {
     this.setData({
@@ -478,5 +422,22 @@ Page({
       title: "任务列表",
       path: "/pages/task-list/task-list",
     };
+  },
+
+  // 跳转到排版工具页面
+  goToLayoutTool() {
+    wx.navigateTo({
+      url: "/pages/layout-tool/layout-tool",
+      success: function () {
+        console.log("跳转到排版工具页面成功");
+      },
+      fail: function (err) {
+        console.error("跳转到排版工具页面失败:", err);
+        wx.showToast({
+          title: "跳转失败，请重试",
+          icon: "none",
+        });
+      },
+    });
   },
 });

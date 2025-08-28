@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>样式优先级测试</title>
+  </head>
+  <body>
+    <div class="article-content">
+      <!-- 1. 只有 tagStyle 会生效 -->
+      <h1>这个标题会使用 tagStyle 的红色背景</h1>
+
+      <!-- 2. 内联样式会覆盖 tagStyle -->
+      <h1 style="color: blue; background-color: yellow">
+        这个标题会使用内联样式（蓝色文字，黄色背景）
+      </h1>
+
+      <!-- 3. 自定义类名 -->
+      <div class="title">这个会使用预处理函数的样式</div>
+
+      <!-- 4. strong 标签的颜色循环 -->
+      <p><strong>第一个 strong（红色）</strong></p>
+      <p><strong>第二个 strong（黄色）</strong></p>
+      <p><strong>第三个 strong（绿色）</strong></p>
+
+      <!-- 5. 内联样式的 strong -->
+      <p><strong style="color: purple">这个 strong 会保持紫色</strong></p>
+    </div>
+  </body>
+</html>

@@ -1,5 +1,10 @@
 <!--pages/article-preview/article-preview.wxml-->
 <view class="article-preview-container">
+  <!-- 文件名显示 -->
+  <view wx:if="{{fileName}}" class="file-name-container">
+    <text class="file-name">{{fileName}}</text>
+  </view>
+
   <!-- 复制按钮 -->
   <view class="copy-button-container">
     <button class="copy-btn" bindtap="copyContent">复制内容</button>
@@ -20,10 +25,17 @@
 
   <!-- 文章内容 -->
   <view wx:else class="article-content-container">
-    <rich-text 
-      nodes="{{articleContent}}" 
+    <mp-html 
+      content="{{articleContent}}" 
       class="article-content"
-      selectable="true"
-    ></rich-text>
+      selectable="{{true}}"
+      copy-link="{{false}}"
+      show-img-menu="{{true}}"
+      preview-img="{{true}}"
+      lazy-load="{{true}}"
+      tag-style="{{tagStyle}}"
+      bindload="onHtmlLoad"
+      bindready="onHtmlReady"
+    />
   </view>
 </view>

@@ -4,5 +4,8 @@
   "navigationBarTextStyle": "black",
   "backgroundColor": "#f8f9fa",
   "enablePullDownRefresh": false,
-  "disableScroll": false
+  "disableScroll": false,
+  "usingComponents": {
+    "mp-html": "/components/mp-html/index"
+  }
 }
