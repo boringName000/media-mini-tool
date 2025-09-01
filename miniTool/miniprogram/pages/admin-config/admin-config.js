@@ -103,8 +103,6 @@ Page({
       count: 10, // 最多选择10个文件
       type: "file",
       success: function (res) {
-        console.log("选择文件成功:", res);
-
         // 过滤只允许txt文件
         const txtFiles = res.tempFiles.filter((file) => {
           const fileName = file.name.toLowerCase();
@@ -130,7 +128,6 @@ Page({
         that.processSelectedFiles(txtFiles);
       },
       fail: function (err) {
-        console.error("选择文件失败:", err);
         wx.showToast({
           title: "选择文件失败",
           icon: "none",
@@ -190,7 +187,12 @@ Page({
       const fileExtension =
         lastDotIndex > 0 ? file.name.substring(lastDotIndex) : "";
 
-      const cloudPath = `article/${platformTypeValue}/${trackTypeValue}/${fileName}-${timestamp}${fileExtension}`;
+      // 生成唯一的文件ID，避免文件名中的非法字符
+      const uniqueFileId = `file_${timestamp}_${index}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+
+      const cloudPath = `article/${platformTypeValue}/${trackTypeValue}/${uniqueFileId}${fileExtension}`;
 
       // 更新文件状态为上传中
       that.updateFileStatus(startIndex + index, "uploading");
@@ -199,15 +201,14 @@ Page({
         cloudPath: cloudPath,
         filePath: file.path,
         success: function (res) {
-          console.log("文件上传成功:", res);
-
+          console.log("✅ 文件上传成功:", file.name);
           // 调用新增文章信息云函数
           that.addArticleInfo(file, res.fileID, startIndex + index);
 
           uploadedCount++;
         },
         fail: function (err) {
-          console.error("文件上传失败:", err);
+          console.error("❌ 文件上传失败:", file.name, err);
           that.updateFileStatus(startIndex + index, "failed", null, err.errMsg);
           failedCount++;
         },
@@ -253,15 +254,12 @@ Page({
       downloadUrl: fileID,
     };
 
-    console.log("调用新增文章信息云函数:", params);
-
     wx.cloud.callFunction({
       name: "add-article-info",
       data: params,
       success: function (res) {
-        console.log("新增文章信息成功:", res);
-
         if (res.result && res.result.success) {
+          console.log("✅ 新增文章信息成功:", articleTitle);
           // 更新文件状态为成功
           that.updateFileStatus(fileIndex, "success", fileID);
 
@@ -272,8 +270,8 @@ Page({
             duration: 1500,
           });
         } else {
+          console.error("❌ 新增文章信息失败:", res.result);
           // 云函数调用失败
-          console.error("新增文章信息失败:", res.result);
           that.updateFileStatus(
             fileIndex,
             "failed",
@@ -289,7 +287,7 @@ Page({
         }
       },
       fail: function (err) {
-        console.error("调用新增文章信息云函数失败:", err);
+        console.error("❌ 调用新增文章信息云函数失败:", err);
         that.updateFileStatus(fileIndex, "failed", fileID, "网络错误");
 
         wx.showToast({

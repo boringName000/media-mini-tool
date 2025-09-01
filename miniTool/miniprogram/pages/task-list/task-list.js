@@ -16,6 +16,7 @@ const {
 const authUtils = require("../../utils/authUtils");
 const userInfoUtils = require("../../utils/userInfoUtils");
 const timeUtils = require("../../utils/timeUtils");
+const { downloadArticle } = require("../../utils/articleDownloadUtils");
 
 Page({
   data: {
@@ -205,25 +206,11 @@ Page({
   downloadTask(e) {
     const task = e.currentTarget.dataset.task;
 
-    // 检查是否有下载链接
-    if (!task.downloadUrl) {
-      wx.showToast({
-        title: "文章下载链接不可用",
-        icon: "none",
-      });
-      return;
-    }
-
-    wx.showModal({
-      title: "确认下载",
-      content: `确定要下载文章"${
-        task.articleTitle || task.articleId
-      }"到本地吗？`,
-      success: (res) => {
-        if (res.confirm) {
-          this.downloadTaskToServer(task);
-        }
-      },
+    downloadArticle({
+      downloadUrl: task.downloadUrl,
+      articleTitle: task.articleTitle || task.articleId,
+      trackType: task.trackTypeEnum,
+      platformType: task.platformEnum,
     });
   },
 
@@ -257,144 +244,6 @@ Page({
     });
   },
 
-  // 下载任务到服务器
-  downloadTaskToServer(task) {
-    wx.showLoading({
-      title: "下载中...",
-    });
-
-    // 使用真实的下载链接
-    if (task.downloadUrl) {
-      // 保存原始下载链接，用于失败时回退
-      const originalDownloadUrl = task.downloadUrl;
-
-      // 下载云存储文件到本地
-      wx.cloud.downloadFile({
-        fileID: task.downloadUrl,
-        success: (res) => {
-          wx.hideLoading();
-
-          // 云存储下载成功，保存文件到本地
-          this.saveFileToLocal(
-            res.tempFilePath,
-            task.articleTitle,
-            originalDownloadUrl
-          );
-        },
-        fail: (err) => {
-          wx.hideLoading();
-          console.error("下载失败:", err);
-
-          // 如果云存储下载失败，回退到复制链接的方式
-          wx.showModal({
-            title: "下载失败",
-            content: "云存储文件下载失败，是否复制文件ID到剪贴板？",
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                this.copyDownloadUrl(originalDownloadUrl);
-              }
-            },
-          });
-        },
-      });
-    } else {
-      // 如果没有下载链接，显示错误
-      wx.hideLoading();
-      wx.showToast({
-        title: "下载链接不可用",
-        icon: "none",
-      });
-    }
-  },
-
-  // 保存文件到本地
-  saveFileToLocal(tempFilePath, fileName, originalDownloadUrl) {
-    // 生成保存的文件名
-    const savedFileName = `${fileName || "文档"}_${Date.now()}.txt`;
-
-    // 构建完整的保存路径
-    const savedFilePath = `${wx.env.USER_DATA_PATH}/downloads/${savedFileName}`;
-
-    // 使用文件系统管理器保存文件到本地
-    const fs = wx.getFileSystemManager();
-
-    // 先确保 downloads 目录存在
-    try {
-      fs.mkdirSync(`${wx.env.USER_DATA_PATH}/downloads`, true);
-    } catch (e) {
-      // 目录可能已存在，忽略错误
-      console.log("downloads 目录已存在或创建失败:", e);
-    }
-
-    // 使用新的文件系统 API 保存文件
-    fs.saveFile({
-      tempFilePath: tempFilePath,
-      filePath: savedFilePath,
-      success: (res) => {
-        console.log("文件保存成功:", savedFilePath);
-
-        wx.showToast({
-          title: "文件已下载到本地",
-          icon: "success",
-          duration: 2000,
-        });
-
-        // 保存成功后，询问用户是否跳转到排版工具页面
-        setTimeout(() => {
-          wx.showModal({
-            title: "文件下载成功",
-            content: "文件已下载到本地，是否跳转到排版工具页面查看？",
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                this.goToLayoutTool();
-              }
-            },
-          });
-        }, 1000);
-      },
-      fail: (err) => {
-        console.error("保存文件失败:", err);
-
-        // 如果保存失败，提示用户
-        wx.showModal({
-          title: "下载失败",
-          content: "无法保存到本地，是否复制文件ID到剪贴板？",
-          success: (modalRes) => {
-            if (modalRes.confirm) {
-              this.copyDownloadUrl(originalDownloadUrl);
-            }
-          },
-        });
-      },
-    });
-  },
-
-  // 获取文件扩展名
-  getFileExtension(filePath) {
-    const lastDotIndex = filePath.lastIndexOf(".");
-    if (lastDotIndex === -1) return "";
-    return filePath.substring(lastDotIndex + 1).toLowerCase();
-  },
-
-  // 复制文件ID到剪贴板
-  copyDownloadUrl(fileID) {
-    wx.setClipboardData({
-      data: fileID,
-      success: () => {
-        wx.showToast({
-          title: "文件ID已复制",
-          icon: "success",
-        });
-      },
-      fail: () => {
-        wx.showToast({
-          title: "复制失败",
-          icon: "none",
-        });
-      },
-    });
-  },
-
   // 刷新数据
   refreshData() {
     this.setData({
@@ -422,22 +271,5 @@ Page({
       title: "任务列表",
       path: "/pages/task-list/task-list",
     };
-  },
-
-  // 跳转到排版工具页面
-  goToLayoutTool() {
-    wx.navigateTo({
-      url: "/pages/layout-tool/layout-tool",
-      success: function () {
-        console.log("跳转到排版工具页面成功");
-      },
-      fail: function (err) {
-        console.error("跳转到排版工具页面失败:", err);
-        wx.showToast({
-          title: "跳转失败，请重试",
-          icon: "none",
-        });
-      },
-    });
   },
 });

@@ -6,6 +6,7 @@ const {
 
 const { PlatformEnum, getPlatformName } = require("../../utils/platformUtils");
 const timeUtils = require("../../utils/timeUtils");
+const { downloadArticle } = require("../../utils/articleDownloadUtils");
 
 Page({
   data: {
@@ -32,9 +33,7 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
-    console.log("文章列表页面接收到的参数:", options);
-
-    // 检查是否有赛道类型和平台类型参数
+    // 接收参数
     if (options.trackType && options.platformType) {
       const trackType = parseInt(options.trackType);
       const platformType = parseInt(options.platformType);
@@ -72,7 +71,6 @@ Page({
 
     // 生成缓存key
     const cacheKey = `${trackType}-${platformType}`;
-    console.log("检查缓存，key:", cacheKey);
 
     // 检查缓存中是否已有数据
     if (this.articleCache.has(cacheKey)) {
@@ -84,16 +82,10 @@ Page({
         filteredArticleList: cachedData,
         isLoading: false,
       });
-
-      console.log("缓存数据加载完成，共", cachedData.length, "篇");
       return;
     }
 
-    console.log("缓存中无数据，调用云函数获取文章数据:", {
-      trackType,
-      platformType,
-    });
-
+    console.log("调用云函数获取文章数据");
     wx.cloud.callFunction({
       name: "get-article-info",
       data: {
@@ -101,11 +93,9 @@ Page({
         platformType: platformType,
       },
       success: function (res) {
-        console.log("云函数调用成功:", res);
-
         if (res.result && res.result.success) {
+          console.log("✅ 云函数调用成功");
           const articles = res.result.data.articles || [];
-          console.log("获取到文章数据:", articles);
 
           // 处理文章数据，添加显示名称
           const processedArticles = articles.map((article) => {
@@ -123,17 +113,14 @@ Page({
 
           // 将数据存储到缓存中
           that.articleCache.set(cacheKey, processedArticles);
-          console.log("文章数据已缓存，key:", cacheKey);
 
           that.setData({
             articleList: processedArticles,
             filteredArticleList: processedArticles,
             isLoading: false,
           });
-
-          console.log("文章数据加载完成，共", processedArticles.length, "篇");
         } else {
-          console.error("云函数返回错误:", res.result);
+          console.error("❌ 云函数返回错误:", res.result);
           that.setData({
             isLoading: false,
           });
@@ -145,7 +132,7 @@ Page({
         }
       },
       fail: function (err) {
-        console.error("云函数调用失败:", err);
+        console.error("❌ 云函数调用失败:", err);
         that.setData({
           isLoading: false,
         });
@@ -178,7 +165,6 @@ Page({
     const cacheKey = `${trackType}-${platformType}`;
     if (this.articleCache.has(cacheKey)) {
       this.articleCache.delete(cacheKey);
-      console.log("已清除缓存，key:", cacheKey);
     }
   },
 
@@ -187,7 +173,6 @@ Page({
    */
   clearAllCache: function () {
     this.articleCache.clear();
-    console.log("已清除所有缓存");
   },
 
   /**
@@ -319,22 +304,6 @@ Page({
   },
 
   /**
-   * 点击文章项
-   */
-  onArticleTap: function (e) {
-    const index = e.currentTarget.dataset.index;
-    const article = this.data.filteredArticleList[index];
-
-    wx.showToast({
-      title: `查看文章: ${article.articleTitle}`,
-      icon: "none",
-    });
-
-    // 这里可以添加跳转到文章详情页面的逻辑
-    console.log("点击了文章:", article);
-  },
-
-  /**
    * 点击下载按钮
    */
   onDownloadTap: function (e) {
@@ -343,16 +312,16 @@ Page({
     const article = this.data.filteredArticleList[index];
 
     if (type === "title") {
-      // 下载标题
+      // 复制标题
       this.downloadTitle(article);
     } else if (type === "article") {
-      // 下载文章
+      // 下载文章文件
       this.downloadArticle(article);
     }
   },
 
   /**
-   * 下载标题
+   * 复制标题
    */
   downloadTitle: function (article) {
     wx.setClipboardData({
@@ -376,22 +345,11 @@ Page({
    * 下载文章
    */
   downloadArticle: function (article) {
-    const content = `文章标题：${article.articleTitle}\n\n平台：${article.platform}\n赛道：${article.trackTypeName}\n上传时间：${article.uploadTimeFormatted}\n下载地址：${article.downloadUrl}`;
-
-    wx.setClipboardData({
-      data: content,
-      success: function () {
-        wx.showToast({
-          title: "文章信息已复制到剪贴板",
-          icon: "success",
-        });
-      },
-      fail: function () {
-        wx.showToast({
-          title: "复制失败",
-          icon: "none",
-        });
-      },
+    downloadArticle({
+      downloadUrl: article.downloadUrl,
+      articleTitle: article.articleTitle,
+      trackType: this.data.currentTrackType,
+      platformType: this.data.currentPlatformType,
     });
   },
 
@@ -404,6 +362,44 @@ Page({
    * 生命周期函数--监听页面卸载
    */
   onUnload: function () {},
+
+  /**
+   * 查找文件的最新版本
+   */
+  findLatestFileVersion: function (originalFileID, callback) {
+    // 从原始文件ID中提取路径信息
+    const pathMatch = originalFileID.match(/cloud:\/\/[^\/]+\/(.+)/);
+    if (!pathMatch) {
+      callback(false);
+      return;
+    }
+
+    const filePath = pathMatch[1];
+    const pathParts = filePath.split("/");
+    const fileName = pathParts[pathParts.length - 1];
+
+    // 尝试查找同目录下的最新文件（未来可扩展）
+    this.searchLatestFileInDirectory(
+      pathParts.slice(0, -1).join("/"),
+      fileName,
+      callback
+    );
+  },
+
+  /**
+   * 在目录中搜索最新文件
+   */
+  searchLatestFileInDirectory: function (directory, baseFileName, callback) {
+    wx.showModal({
+      title: "文件已更新",
+      content:
+        "云存储中的文件已更新，但数据库中的记录还未同步。\n\n请联系管理员更新文件记录，或稍后重试。",
+      showCancel: false,
+      confirmText: "知道了",
+    });
+
+    callback(false);
+  },
 
   /**
    * 页面相关事件处理函数--监听用户下拉动作

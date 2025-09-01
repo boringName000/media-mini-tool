@@ -17,6 +17,8 @@
     </view>
   </view>
   
+
+  
   <!-- 赛道类型标题 -->
   <view class="track-type-header" wx:if="{{currentTrackName}}">
     <view class="track-type-title">{{currentTrackName}}</view>
@@ -30,7 +32,6 @@
         wx:for="{{filteredArticleList}}"
         wx:key="id"
         data-index="{{index}}"
-        bind:tap="onArticleTap"
       >
         <!-- 文章主要信息 -->
         <view class="article-main">
@@ -54,8 +55,8 @@
               <text class="download-text">复制标题</text>
             </view>
             <view class="download-btn" data-index="{{index}}" data-type="article" catchtap="onDownloadTap">
-              <text class="download-icon">📱</text>
-              <text class="download-text">下载文章</text>
+              <text class="download-icon">📥</text>
+              <text class="download-text">下载文件</text>
             </view>
           </view>
         </view>

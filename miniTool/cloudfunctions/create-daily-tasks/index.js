@@ -201,9 +201,13 @@ exports.main = async (event, context) => {
         let selectedArticle = null;
 
         if (!isTaskCompleted) {
-          // 如果任务未完成，继续使用当前文章，只更新时间
+          // 如果任务未完成，直接使用原有任务对象中的完整信息
           selectedArticle = {
-            articleId: currentTaskArticleId,
+            articleId: task.articleId,
+            articleTitle: task.articleTitle,
+            trackType: task.trackType,
+            platformType: task.platformType,
+            downloadUrl: task.downloadUrl,
           };
           tasksContinued++;
         } else {

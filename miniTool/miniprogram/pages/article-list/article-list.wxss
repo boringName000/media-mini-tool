@@ -165,29 +165,48 @@
   align-items: center;
   padding-top: 20rpx;
   border-top: 1px solid #f0f0f0;
+  gap: 20rpx;
 }
 
 .publish-time {
   font-size: 22rpx;
   color: #999;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .download-actions {
   display: flex;
   gap: 12rpx;
+  justify-content: flex-end;
+}
+
+/* 复制标题按钮特殊样式 */
+.download-btn[data-type="title"] {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  box-shadow: 0 2rpx 8rpx rgba(40, 167, 69, 0.3);
+}
+
+/* 下载文件按钮样式 */
+.download-btn[data-type="article"] {
+  background: linear-gradient(135deg, #007aff 0%, #0056cc 100%);
+  box-shadow: 0 2rpx 8rpx rgba(0, 122, 255, 0.3);
 }
 
 .download-btn {
   display: flex;
   align-items: center;
   gap: 6rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #007aff 0%, #0056cc 100%);
   color: white;
-  font-size: 20rpx;
+  font-size: 22rpx;
   font-weight: 600;
-  padding: 8rpx 16rpx;
+  padding: 12rpx 20rpx;
   border-radius: 12rpx;
   transition: all 0.3s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 122, 255, 0.3);
+  min-width: 140rpx;
+  justify-content: center;
 }
 
 .download-btn:active {
@@ -196,11 +215,12 @@
 }
 
 .download-icon {
-  font-size: 24rpx;
+  font-size: 20rpx;
 }
 
 .download-text {
   font-size: 20rpx;
+  font-weight: 600;
 }
 
 /* 搜索结果为空时的样式 */
