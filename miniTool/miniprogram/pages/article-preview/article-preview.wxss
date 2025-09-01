@@ -7,18 +7,19 @@
   flex-direction: column;
 }
 
-/* 文件名显示 */
-.file-name-container {
+/* 文章标题显示 */
+.article-title-container {
   padding: 20rpx 30rpx;
   background-color: #fff;
   border-bottom: 1rpx solid #e0e0e0;
 }
 
-.file-name {
-  font-size: 28rpx;
+.article-title {
+  font-size: 32rpx;
   color: #333;
-  font-weight: 500;
+  font-weight: 600;
   word-break: break-all;
+  line-height: 1.4;
 }
 
 /* 加载状态 */
@@ -65,11 +66,18 @@
   padding: 100rpx 40rpx;
 }
 
-.error-icon {
+.error-icon-placeholder {
   width: 120rpx;
   height: 120rpx;
   margin-bottom: 30rpx;
-  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80rpx;
+  color: #ff6b6b;
+  background-color: #fff5f5;
+  border-radius: 50%;
+  border: 4rpx solid #ff6b6b;
 }
 
 .error-text {
@@ -91,6 +99,9 @@
 /* 复制按钮 */
 .copy-button-container {
   padding: 20rpx 30rpx;
+  display: flex;
+  gap: 20rpx;
+  justify-content: center;
   background-color: #fff;
   border-bottom: 1rpx solid #e0e0e0;
 }
@@ -103,7 +114,8 @@
   padding: 16rpx 32rpx;
   font-size: 28rpx;
   font-weight: 600;
-  width: 100%;
+  flex: 1;
+  max-width: 300rpx;
 }
 
 .copy-btn:active {
@@ -130,12 +142,19 @@
 
 /* 响应式设计 */
 @media (max-width: 750rpx) {
-  .file-name-container {
+  .article-title-container {
     padding: 15rpx 20rpx;
   }
 
   .copy-button-container {
     padding: 15rpx 20rpx;
+    gap: 15rpx;
+  }
+
+  .copy-btn {
+    max-width: 250rpx;
+    padding: 14rpx 24rpx;
+    font-size: 26rpx;
   }
 
   .article-content-container {

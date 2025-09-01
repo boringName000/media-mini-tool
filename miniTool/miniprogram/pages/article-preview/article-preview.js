@@ -1,31 +1,23 @@
 // pages/article-preview/article-preview.js
+const { getArticleTitle } = require("../../utils/articleDownloadUtils.js");
+
 Page({
   data: {
     articleContent: "",
     isLoading: true,
     errorMessage: "",
     fileName: "",
+    articleTitle: "", // 新增：文章标题（从元数据读取）
     tagStyle: {
-      // 基础样式配置，不覆盖原始 HTML 样式
-      h1: "color: #ffffff; background-color: #ff595e; padding: 20rpx; margin: 30rpx 0 20rpx; border-radius: 8rpx; font-size: 48rpx; font-weight: bold;",
-      h2: "color: #ffffff; background-color: #ff595e; padding: 16rpx; margin: 24rpx 0 16rpx; border-radius: 6rpx; font-size: 40rpx; font-weight: bold;",
-      h3: "color: #ff595e; font-size: 36rpx; margin: 20rpx 0; font-weight: bold;",
-      h4: "color: #ff595e; font-size: 32rpx; margin: 16rpx 0; font-weight: bold;",
-      strong: "font-weight: bold; padding: 0 4rpx;",
-      em: "color: #1982c4; font-style: italic;",
-      code: "color: #6a4c93; background-color: #fdf9ff; padding: 4rpx 8rpx; border-radius: 6rpx; font-family: Consolas, Monaco, 'Courier New', monospace; font-size: 0.9em;",
-      blockquote:
-        "color: #333333; background-color: #fff5f5; border-left: 8rpx solid #ffcccf; padding: 20rpx 30rpx; margin: 20rpx 0; border-radius: 0 8rpx 8rpx 0;",
-      a: "color: #1982c4; text-decoration: none; border-bottom: 2rpx solid #1982c4;",
+      // 最小化的基础样式，只在HTML没有定义时作为兜底
+      // 这些样式会被HTML文件中的样式覆盖
       img: "max-width: 100%; height: auto; display: block; margin: 20rpx auto; border-radius: 10rpx;",
-      p: "font-size: 32rpx; margin: 24rpx 0; color: #333333; line-height: 1.8;",
+      a: "text-decoration: none;",
     },
   },
 
   onLoad: function (options) {
-    console.log("文章预览页面参数:", options);
-
-    // 检查文件路径参数
+    // 参数解析
     if (options.filePath) {
       this.loadFileFromPath(options);
     } else {
@@ -42,23 +34,27 @@ Page({
       const filePath = decodeURIComponent(options.filePath);
       const fileName = decodeURIComponent(options.fileName || "未知文件");
 
-      console.log("=== 从文件路径加载 ===");
-      console.log("文件路径:", filePath);
-      console.log("文件名称:", fileName);
-
       this.setData({
         fileName: fileName,
       });
 
+      // 获取文章标题（优先从元数据，回退到文件名）
+      const articleTitle = getArticleTitle(filePath);
+      this.setData({ articleTitle });
+
       // 设置页面标题
       wx.setNavigationBarTitle({
-        title: `预览 - ${fileName}`,
+        title: articleTitle,
       });
 
-      // 读取文件内容
-      this.readFileContent(filePath);
+      // 检查是否是HTTP URL
+      if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+        this.downloadAndReadFile(filePath, fileName);
+      } else {
+        // 读取文件内容
+        this.readFileContent(filePath);
+      }
     } catch (error) {
-      console.error("解析文件路径失败:", error);
       this.setData({
         isLoading: false,
         errorMessage: "文件路径解析失败",
@@ -66,29 +62,115 @@ Page({
     }
   },
 
+  // 下载并读取文件
+  downloadAndReadFile: function (url, fileName) {
+    wx.downloadFile({
+      url: url,
+      success: (res) => {
+        if (res.statusCode === 200) {
+          console.log("✅ 文件下载成功");
+          // 下载成功后读取临时文件
+          this.readFileContent(res.tempFilePath);
+        } else {
+          console.error("❌ 文件下载失败，状态码:", res.statusCode);
+          this.setData({
+            isLoading: false,
+            errorMessage: "文件下载失败",
+          });
+        }
+      },
+      fail: (err) => {
+        console.error("❌ 文件下载失败:", err);
+        this.setData({
+          isLoading: false,
+          errorMessage: "文件下载失败: " + (err.errMsg || "未知错误"),
+        });
+      },
+    });
+  },
+
   // 读取文件内容
   readFileContent: function (filePath) {
+    // 先检查文件是否存在和获取文件信息
+    const fs = wx.getFileSystemManager();
+
+    try {
+      // 获取文件统计信息
+      const stats = fs.statSync(filePath);
+
+      // 检查文件大小
+      if (stats.size === 0) {
+        this.setData({
+          isLoading: false,
+          errorMessage: "文件大小为0字节，无法读取内容",
+        });
+        return;
+      }
+
+      if (!stats.isFile()) {
+        this.setData({
+          isLoading: false,
+          errorMessage: "指定路径不是文件",
+        });
+        return;
+      }
+    } catch (statError) {
+      this.setData({
+        isLoading: false,
+        errorMessage: "无法获取文件信息: " + statError.message,
+      });
+      return;
+    }
+
     wx.showLoading({
       title: "正在读取文件...",
     });
 
-    const fs = wx.getFileSystemManager();
+    // 首先尝试UTF-8编码
+    this.tryReadFileWithEncoding(
+      fs,
+      filePath,
+      "utf8",
+      (success, data, encoding) => {
+        if (success) {
+          wx.hideLoading();
+          this.renderArticle(data);
+        } else {
+          // 如果UTF-8失败，尝试其他编码
+          this.tryReadFileWithEncoding(
+            fs,
+            filePath,
+            "gbk",
+            (success2, data2, encoding2) => {
+              if (success2) {
+                wx.hideLoading();
+                this.renderArticle(data2);
+              } else {
+                wx.hideLoading();
+                this.setData({
+                  isLoading: false,
+                  errorMessage: "文件编码不支持，请检查文件格式",
+                });
+              }
+            }
+          );
+        }
+      }
+    );
+  },
 
+  // 尝试使用指定编码读取文件
+  tryReadFileWithEncoding: function (fs, filePath, encoding, callback) {
     fs.readFile({
       filePath: filePath,
-      encoding: "utf8",
+      encoding: encoding,
       success: (res) => {
-        console.log("文件读取成功，内容长度:", res.data.length);
-        wx.hideLoading();
-        this.renderArticle(res.data);
+        console.log(`✅ 使用${encoding}编码读取成功`);
+        callback(true, res.data, encoding);
       },
       fail: (err) => {
-        console.error("文件读取失败:", err);
-        wx.hideLoading();
-        this.setData({
-          isLoading: false,
-          errorMessage: "文件读取失败: " + (err.errMsg || "未知错误"),
-        });
+        console.log(`❌ 使用${encoding}编码读取失败:`, err.errMsg);
+        callback(false, null, encoding);
       },
     });
   },
@@ -108,11 +190,7 @@ Page({
         title: "正在解析...",
       });
 
-      console.log("=== HTML 内容信息 ===");
-      console.log("内容长度:", htmlContent.length);
-      console.log("内容预览:", htmlContent.substring(0, 500));
-
-      // 预处理 HTML 内容，处理颜色样式
+      // 预处理 HTML 内容，智能转换不支持的CSS样式
       const processedContent = this.preprocessHtml(htmlContent);
 
       // 使用处理后的 HTML 内容
@@ -121,9 +199,10 @@ Page({
         isLoading: false,
       });
 
+      console.log("✅ 文章解析成功");
       wx.hideLoading();
     } catch (error) {
-      console.error("文章解析失败:", error);
+      console.error("❌ 文章解析失败:", error);
       wx.hideLoading();
       this.setData({
         isLoading: false,
@@ -132,124 +211,185 @@ Page({
     }
   },
 
-  // 预处理 HTML 内容，处理不支持的选择器
+  // 预处理 HTML 内容，主要依赖 mp-html 组件的内置功能
   preprocessHtml: function (htmlContent) {
-    let processed = htmlContent;
+    // 只做最基本的处理：提取CSS样式到tagStyle配置中
+    const extractedStyles = this.extractStylesForTagStyle(htmlContent);
 
-    // 处理 nth-of-type 选择器，将其转换为内联样式
-    // 例如：nth-of-type(5n+1) 表示每5个元素中的第1个
-    processed = this.processNthOfType(processed);
-
-    console.log("预处理后的HTML长度:", processed.length);
-    console.log("预处理后的HTML预览:", processed.substring(0, 500));
-    return processed;
-  },
-
-  // 处理 nth-of-type 选择器
-  processNthOfType: function (htmlContent) {
-    let processed = htmlContent;
-
-    // 常见的 nth-of-type 模式
-    const nthPatterns = [
-      // 每5个元素循环颜色
-      {
-        selector: /nth-of-type\(5n\+1\)/gi,
-        colors: ["#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93"],
-        description: "每5个元素循环颜色",
+    // 更新tagStyle配置，HTML文件中的样式优先级最高
+    // 兜底样式只在HTML没有定义时生效
+    this.setData({
+      tagStyle: {
+        ...this.data.tagStyle, // 兜底样式（低优先级）
+        ...extractedStyles, // HTML文件样式（高优先级）
       },
-      // 每3个元素循环颜色
-      {
-        selector: /nth-of-type\(3n\+1\)/gi,
-        colors: ["#ff595e", "#ffca3a", "#8ac926"],
-        description: "每3个元素循环颜色",
-      },
-      // 每4个元素循环颜色
-      {
-        selector: /nth-of-type\(4n\+1\)/gi,
-        colors: ["#ff595e", "#ffca3a", "#8ac926", "#1982c4"],
-        description: "每4个元素循环颜色",
-      },
-    ];
-
-    // 为每种 nth-of-type 模式处理对应的元素
-    nthPatterns.forEach((pattern, patternIndex) => {
-      const tagName = this.getTagNameFromContext(processed, pattern.selector);
-      if (tagName) {
-        processed = this.applyNthOfTypeColors(
-          processed,
-          tagName,
-          pattern.colors,
-          pattern.description
-        );
-      }
     });
 
-    return processed;
+    // 处理图片路径问题（可选，保持HTML内容完整性）
+    const processedContent = this.handleImagePaths(htmlContent);
+
+    // 验证HTML内容完整性
+    this.validateHtmlIntegrity(htmlContent, processedContent);
+
+    return processedContent;
   },
 
-  // 从上下文中获取标签名
-  getTagNameFromContext: function (htmlContent, selector) {
-    // 这里可以根据实际需要扩展，目前返回常见的标签
-    const commonTags = [
-      "strong",
-      "p",
-      "div",
-      "span",
-      "h1",
-      "h2",
-      "h3",
-      "h4",
-      "h5",
-      "h6",
-    ];
+  // 处理图片路径问题
+  handleImagePaths: function (htmlContent) {
+    // 如果HTML中没有图片，直接返回
+    if (!htmlContent.includes("<img")) {
+      return htmlContent;
+    }
 
-    // 检查哪个标签在内容中出现
-    for (let tag of commonTags) {
-      if (htmlContent.includes(`<${tag}`)) {
-        return tag;
+    // 处理相对路径的图片，避免加载错误
+    let processedContent = htmlContent.replace(
+      /<img([^>]*?)src=["']([^"']*?)["']([^>]*?)>/gi,
+      (match, beforeSrc, src, afterSrc) => {
+        if (src && !src.startsWith("http") && !src.startsWith("data:")) {
+          return `<img${beforeSrc}src="${src}"${afterSrc} onerror="this.style.display='none';" alt="图片加载失败">`;
+        }
+        return match;
+      }
+    );
+
+    return processedContent;
+  },
+
+  // 提取CSS样式，转换为mp-html的tagStyle格式
+  extractStylesForTagStyle: function (htmlContent) {
+    const extractedStyles = {};
+    const allRules = [];
+
+    // 匹配<style>标签中的CSS规则
+    const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
+    let styleMatch;
+
+    while ((styleMatch = styleRegex.exec(htmlContent)) !== null) {
+      const cssContent = styleMatch[1];
+
+      // 解析CSS规则
+      const ruleRegex = /([^{}]+)\s*\{([^{}]+(?:\{[^{}]*\}[^{}]*)*)\}/gi;
+      let ruleMatch;
+
+      while ((ruleMatch = ruleRegex.exec(cssContent)) !== null) {
+        const selector = ruleMatch[1].trim();
+        const styles = ruleMatch[2].trim();
+
+        // 收集所有规则，稍后按优先级处理
+        allRules.push({
+          selector: selector,
+          styles: styles,
+          priority: this.calculateSelectorPriority(selector),
+        });
       }
     }
 
-    return "strong"; // 默认返回 strong
-  },
+    // 按优先级排序，优先级高的在后面（会覆盖前面的）
+    allRules.sort((a, b) => a.priority - b.priority);
 
-  // 应用 nth-of-type 颜色循环
-  applyNthOfTypeColors: function (htmlContent, tagName, colors, description) {
-    let processed = htmlContent;
-    let count = 0;
+    // 处理排序后的规则
+    allRules.forEach((rule) => {
+      const { selector, styles } = rule;
 
-    // 匹配指定标签
-    const tagRegex = new RegExp(`<${tagName}([^>]*)>`, "gi");
+      // 处理复合选择器（如 .article-content h1）
+      if (selector.includes(" ") && !selector.includes(":")) {
+        const parts = selector.split(" ").filter((part) => part.trim());
+        if (parts.length === 2) {
+          const parentSelector = parts[0].trim();
+          const childSelector = parts[1].trim();
 
-    processed = processed.replace(tagRegex, (match, attributes) => {
-      count++;
-      const colorIndex = (count - 1) % colors.length;
-      const color = colors[colorIndex];
-
-      console.log(
-        `${description}: 第${count}个${tagName}标签使用颜色 ${color}`
-      );
-
-      // 如果已经有 style 属性，添加颜色
-      if (attributes.includes("style=")) {
-        return match.replace(/style="([^"]*)"/, `style="$1; color: ${color};"`);
-      } else {
-        // 如果没有 style 属性，添加颜色样式
-        return `<${tagName}${attributes} style="color: ${color};">`;
+          // 如果父选择器是类选择器，子选择器是标签
+          if (
+            parentSelector.startsWith(".") &&
+            !childSelector.includes(".") &&
+            !childSelector.includes(":")
+          ) {
+            const tagName = childSelector.trim();
+            if (tagName) {
+              extractedStyles[tagName] = styles;
+            }
+          }
+        }
+      }
+      // 处理简单标签选择器
+      else if (
+        !selector.includes(" ") &&
+        !selector.includes(":") &&
+        !selector.includes(".")
+      ) {
+        const tagName = selector.trim();
+        if (tagName && !extractedStyles[tagName]) {
+          extractedStyles[tagName] = styles;
+        }
       }
     });
 
-    return processed;
+    return extractedStyles;
+  },
+
+  // 计算选择器优先级
+  calculateSelectorPriority: function (selector) {
+    let priority = 0;
+
+    // 类选择器优先级更高
+    if (selector.includes(".")) {
+      priority += 10;
+    }
+
+    // 复合选择器优先级更高
+    if (selector.includes(" ")) {
+      priority += 5;
+    }
+
+    // 标签选择器优先级最低
+    if (
+      !selector.includes(".") &&
+      !selector.includes("#") &&
+      !selector.includes(":")
+    ) {
+      priority += 1;
+    }
+
+    return priority;
   },
 
   // mp-html 加载完成事件
-  onHtmlLoad: function (e) {
-    console.log("mp-html 加载完成:", e);
-  },
+  onHtmlLoad: function (e) {},
 
   // mp-html 渲染完成事件
-  onHtmlReady: function (e) {
-    console.log("mp-html 渲染完成:", e);
+  onHtmlReady: function (e) {},
+
+  // 图片点击事件
+  onImgTap: function (e) {},
+
+  // 图片加载错误事件
+  onImgError: function (e) {
+    // 静默处理图片加载错误，不影响整体渲染
+  },
+
+  // 复制标题
+  copyTitle: function () {
+    const articleTitle = this.data.articleTitle || "未知标题";
+
+    wx.setClipboardData({
+      data: articleTitle,
+      success: () => {
+        wx.showToast({
+          title: "标题已复制",
+          icon: "success",
+          duration: 2000,
+        });
+        console.log("✅ 文章标题已复制到剪贴板:", articleTitle);
+      },
+      fail: () => {
+        wx.showToast({
+          title: "复制失败",
+          icon: "error",
+          duration: 2000,
+        });
+        console.error("❌ 复制标题失败");
+      },
+    });
   },
 
   // 复制内容
@@ -265,6 +405,7 @@ Page({
           icon: "success",
           duration: 2000,
         });
+        console.log("✅ 文章内容已复制到剪贴板，长度:", originalContent.length);
       },
       fail: () => {
         wx.showToast({
@@ -272,6 +413,7 @@ Page({
           icon: "error",
           duration: 2000,
         });
+        console.error("❌ 复制内容失败");
       },
     });
   },
@@ -280,6 +422,16 @@ Page({
   getOriginalContent: function () {
     // 使用当前渲染的内容
     return this.data.articleContent || "";
+  },
+
+  // 验证HTML内容完整性（调试用）
+  validateHtmlIntegrity: function (originalContent, processedContent) {
+    return originalContent === processedContent;
+  },
+
+  // 查找内容差异（调试用）
+  findContentDifference: function (original, processed) {
+    return "";
   },
 
   // 返回按钮
