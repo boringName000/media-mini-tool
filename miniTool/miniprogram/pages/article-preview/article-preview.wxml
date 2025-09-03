@@ -1,44 +1,37 @@
 <!--pages/article-preview/article-preview.wxml-->
 <view class="article-preview-container">
-  <!-- 文章标题显示 -->
-  <view wx:if="{{articleTitle}}" class="article-title-container">
-    <text class="article-title">{{articleTitle}}</text>
-  </view>
 
-  <!-- 复制按钮 -->
-  <view class="copy-button-container">
-    <button class="copy-btn copy-title-btn" bindtap="copyTitle">复制标题</button>
-    <button class="copy-btn copy-content-btn" bindtap="copyContent">复制内容</button>
-  </view>
-
-  <!-- 加载状态 -->
-  <view wx:if="{{isLoading}}" class="loading-container">
-    <view class="loading-spinner"></view>
-    <text class="loading-text">正在解析文章...</text>
-  </view>
 
   <!-- 错误状态 -->
-  <view wx:elif="{{errorMessage}}" class="error-container">
-    <view class="error-icon-placeholder">⚠️</view>
+  <view wx:if="{{errorMessage}}" class="error-container">
+    <view class="error-icon">⚠️</view>
     <text class="error-text">{{errorMessage}}</text>
-    <button class="retry-btn" bindtap="onBackTap">返回重试</button>
+    <button class="retry-btn" bindtap="onRetryTap">重试</button>
   </view>
 
-  <!-- 文章内容 -->
-  <view wx:else class="article-content-container">
-    <mp-html 
-      content="{{articleContent}}" 
-      class="article-content"
-      selectable="{{true}}"
-      copy-link="{{false}}"
-      show-img-menu="{{true}}"
-      preview-img="{{true}}"
-      lazy-load="{{true}}"
-      tag-style="{{tagStyle}}"
-      bindload="onHtmlLoad"
-      bindready="onHtmlReady"
-      bindimgtap="onImgTap"
-      binderror="onImgError"
+  <!-- web-view 准备状态 -->
+  <view wx:elif="{{isPreparing}}" class="preparing-container">
+    <view class="preparing-icon">🎨</view>
+    <text class="preparing-title">正在准备预览效果</text>
+    <text class="preparing-subtitle">请耐心等待，页面正在初始化中...</text>
+    <view class="preparing-status">
+      <text class="status-text">正在获取下载链接...</text>
+    </view>
+  </view>
+
+  <!-- web-view 内容区域 -->
+  <view wx:elif="{{webViewUrl && !isPreparing}}" class="webview-container">
+    <web-view 
+      src="{{webViewUrl}}" 
+      bindload="onWebViewLoad"
+      bindloadfinish="onWebViewLoadFinish"
+      binderror="onWebViewLoadError"
     />
+  </view>
+
+  <!-- 默认等待状态 -->
+  <view wx:else class="waiting-container">
+    <view class="waiting-icon">⏳</view>
+    <text class="waiting-text">准备中...</text>
   </view>
 </view>

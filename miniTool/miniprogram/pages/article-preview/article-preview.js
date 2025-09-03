@@ -1,443 +1,198 @@
 // pages/article-preview/article-preview.js
-const { getArticleTitle } = require("../../utils/articleDownloadUtils.js");
+// 文章预览页面 - 重构版本
 
 Page({
   data: {
-    articleContent: "",
-    isLoading: true,
-    errorMessage: "",
-    fileName: "",
-    articleTitle: "", // 新增：文章标题（从元数据读取）
-    tagStyle: {
-      // 最小化的基础样式，只在HTML没有定义时作为兜底
-      // 这些样式会被HTML文件中的样式覆盖
-      img: "max-width: 100%; height: auto; display: block; margin: 20rpx auto; border-radius: 10rpx;",
-      a: "text-decoration: none;",
-    },
+    // 页面数据
+    articleTitle: "", // 文章标题
+    downloadUrl: "", // 云存储文章ID
+    tempDownloadUrl: "", // 临时下载URL
+    errorMessage: "", // 错误信息
+    isPreparing: false, // 准备状态
+
+    // web-view 配置
+    webViewUrl: "", // web-view 要打开的URL
+    defaultDomain: "cloud1-5g6ik91va74262bb-1367027189.tcloudbaseapp.com", // 默认域名
   },
 
   onLoad: function (options) {
-    // 参数解析
-    if (options.filePath) {
-      this.loadFileFromPath(options);
+    console.log("文章预览页面加载，接收参数:", options);
+
+    // 解析传递的参数
+    if (options.articleTitle && options.downloadUrl) {
+      const articleTitle = decodeURIComponent(options.articleTitle);
+      const downloadUrl = decodeURIComponent(options.downloadUrl);
+
+      this.setData({
+        articleTitle: articleTitle,
+        downloadUrl: downloadUrl,
+        isPreparing: true, // 直接显示准备界面
+      });
+
+      console.log("✅ 参数解析成功:", {
+        articleTitle: articleTitle,
+        downloadUrl: downloadUrl,
+      });
+
+      // 在准备界面显示期间，后台开始处理
+      this.startBackgroundProcess();
     } else {
       this.setData({
-        isLoading: false,
-        errorMessage: "未找到文件路径",
+        errorMessage: "缺少必要参数：文章标题或云存储文章ID",
       });
+      console.error("❌ 缺少必要参数:", options);
     }
   },
 
-  // 从文件路径加载内容
-  loadFileFromPath: function (options) {
+  // 获取临时下载URL
+  getTempDownloadUrl: function () {
+    const { downloadUrl } = this.data;
+
+    if (!downloadUrl) {
+      this.setData({
+        errorMessage: "云存储文章ID无效",
+      });
+      return;
+    }
+
+    console.log("🔄 开始获取临时下载URL...");
+    console.log("📥 云存储文章ID:", downloadUrl);
+
     try {
-      const filePath = decodeURIComponent(options.filePath);
-      const fileName = decodeURIComponent(options.fileName || "未知文件");
+      // 直接使用传递来的云存储文章ID
+      const fileId = downloadUrl;
 
-      this.setData({
-        fileName: fileName,
-      });
-
-      // 获取文章标题（优先从元数据，回退到文件名）
-      const articleTitle = getArticleTitle(filePath);
-      this.setData({ articleTitle });
-
-      // 设置页面标题
-      wx.setNavigationBarTitle({
-        title: articleTitle,
-      });
-
-      // 检查是否是HTTP URL
-      if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
-        this.downloadAndReadFile(filePath, fileName);
-      } else {
-        // 读取文件内容
-        this.readFileContent(filePath);
+      if (!fileId || fileId.trim() === "") {
+        throw new Error("云存储文章ID无效");
       }
+
+      console.log("📁 云存储文章ID:", fileId);
+
+      // 调用云存储API获取临时下载URL
+      this.callCloudStorageAPI(fileId);
     } catch (error) {
+      console.error("❌ 获取临时下载URL失败:", error);
+      wx.hideLoading();
       this.setData({
-        isLoading: false,
-        errorMessage: "文件路径解析失败",
+        errorMessage: "获取下载链接失败: " + error.message,
       });
     }
   },
 
-  // 下载并读取文件
-  downloadAndReadFile: function (url, fileName) {
-    wx.downloadFile({
-      url: url,
+  // 调用云存储API获取临时下载URL
+  callCloudStorageAPI: function (fileId) {
+    console.log("☁️ 调用云存储API，文件ID:", fileId);
+
+    // 使用微信小程序的云存储API获取临时下载URL
+    wx.cloud.getTempFileURL({
+      fileList: [fileId],
       success: (res) => {
-        if (res.statusCode === 200) {
-          console.log("✅ 文件下载成功");
-          // 下载成功后读取临时文件
-          this.readFileContent(res.tempFilePath);
+        console.log("✅ 云存储API调用成功:", res);
+
+        if (res.fileList && res.fileList.length > 0) {
+          const fileInfo = res.fileList[0];
+
+          if (fileInfo.status === 0 && fileInfo.tempFileURL) {
+            // 成功获取临时下载URL
+            const tempUrl = fileInfo.tempFileURL;
+            console.log("✅ 成功获取临时下载URL:", tempUrl);
+
+            this.setData({
+              tempDownloadUrl: tempUrl,
+              isPreparing: true, // 进入准备状态
+            });
+
+            console.log("🎨 进入准备状态，显示友好等待界面");
+
+            // 构建web-view的URL
+            this.buildWebViewUrl();
+          } else {
+            // 获取临时URL失败
+            const errorMsg = fileInfo.errMsg || "获取临时下载URL失败";
+            console.error("❌ 获取临时下载URL失败:", errorMsg);
+            this.setData({
+              isLoading: false,
+              errorMessage: errorMsg,
+            });
+          }
         } else {
-          console.error("❌ 文件下载失败，状态码:", res.statusCode);
+          console.error("❌ 云存储API返回数据异常");
           this.setData({
-            isLoading: false,
-            errorMessage: "文件下载失败",
+            errorMessage: "云存储API返回数据异常",
           });
         }
+
+        wx.hideLoading();
       },
-      fail: (err) => {
-        console.error("❌ 文件下载失败:", err);
+      fail: (error) => {
+        console.error("❌ 云存储API调用失败:", error);
+        wx.hideLoading();
         this.setData({
-          isLoading: false,
-          errorMessage: "文件下载失败: " + (err.errMsg || "未知错误"),
+          errorMessage: "云存储API调用失败: " + (error.errMsg || "未知错误"),
         });
       },
     });
   },
 
-  // 读取文件内容
-  readFileContent: function (filePath) {
-    // 先检查文件是否存在和获取文件信息
-    const fs = wx.getFileSystemManager();
+  // 后台处理函数
+  startBackgroundProcess: function () {
+    console.log("🔄 开始后台处理：获取临时下载URL");
 
-    try {
-      // 获取文件统计信息
-      const stats = fs.statSync(filePath);
-
-      // 检查文件大小
-      if (stats.size === 0) {
-        this.setData({
-          isLoading: false,
-          errorMessage: "文件大小为0字节，无法读取内容",
-        });
-        return;
-      }
-
-      if (!stats.isFile()) {
-        this.setData({
-          isLoading: false,
-          errorMessage: "指定路径不是文件",
-        });
-        return;
-      }
-    } catch (statError) {
-      this.setData({
-        isLoading: false,
-        errorMessage: "无法获取文件信息: " + statError.message,
-      });
-      return;
-    }
-
-    wx.showLoading({
-      title: "正在读取文件...",
-    });
-
-    // 首先尝试UTF-8编码
-    this.tryReadFileWithEncoding(
-      fs,
-      filePath,
-      "utf8",
-      (success, data, encoding) => {
-        if (success) {
-          wx.hideLoading();
-          this.renderArticle(data);
-        } else {
-          // 如果UTF-8失败，尝试其他编码
-          this.tryReadFileWithEncoding(
-            fs,
-            filePath,
-            "gbk",
-            (success2, data2, encoding2) => {
-              if (success2) {
-                wx.hideLoading();
-                this.renderArticle(data2);
-              } else {
-                wx.hideLoading();
-                this.setData({
-                  isLoading: false,
-                  errorMessage: "文件编码不支持，请检查文件格式",
-                });
-              }
-            }
-          );
-        }
-      }
-    );
+    // 获取临时下载URL
+    this.getTempDownloadUrl();
   },
 
-  // 尝试使用指定编码读取文件
-  tryReadFileWithEncoding: function (fs, filePath, encoding, callback) {
-    fs.readFile({
-      filePath: filePath,
-      encoding: encoding,
-      success: (res) => {
-        console.log(`✅ 使用${encoding}编码读取成功`);
-        callback(true, res.data, encoding);
-      },
-      fail: (err) => {
-        console.log(`❌ 使用${encoding}编码读取失败:`, err.errMsg);
-        callback(false, null, encoding);
-      },
-    });
-  },
+  // 构建web-view的URL
+  buildWebViewUrl: function () {
+    const { defaultDomain, tempDownloadUrl, articleTitle } = this.data;
 
-  // 渲染文章内容
-  renderArticle: function (htmlContent) {
-    if (!htmlContent) {
-      this.setData({
-        isLoading: false,
-        errorMessage: "文件内容为空",
-      });
-      return;
-    }
+    // 构建完整的web-view URL，包含必要的参数
+    const webViewUrl = `https://${defaultDomain}/miniWeb/index.html?tempUrl=${encodeURIComponent(
+      tempDownloadUrl
+    )}&fileName=${encodeURIComponent(articleTitle)}`;
 
-    try {
-      wx.showLoading({
-        title: "正在解析...",
-      });
+    console.log("🌐 构建web-view URL:", webViewUrl);
 
-      // 预处理 HTML 内容，智能转换不支持的CSS样式
-      const processedContent = this.preprocessHtml(htmlContent);
-
-      // 使用处理后的 HTML 内容
-      this.setData({
-        articleContent: processedContent,
-        isLoading: false,
-      });
-
-      console.log("✅ 文章解析成功");
-      wx.hideLoading();
-    } catch (error) {
-      console.error("❌ 文章解析失败:", error);
-      wx.hideLoading();
-      this.setData({
-        isLoading: false,
-        errorMessage: "文章解析失败: " + error.message,
-      });
-    }
-  },
-
-  // 预处理 HTML 内容，主要依赖 mp-html 组件的内置功能
-  preprocessHtml: function (htmlContent) {
-    // 只做最基本的处理：提取CSS样式到tagStyle配置中
-    const extractedStyles = this.extractStylesForTagStyle(htmlContent);
-
-    // 更新tagStyle配置，HTML文件中的样式优先级最高
-    // 兜底样式只在HTML没有定义时生效
+    // 设置web-view URL并退出准备状态
     this.setData({
-      tagStyle: {
-        ...this.data.tagStyle, // 兜底样式（低优先级）
-        ...extractedStyles, // HTML文件样式（高优先级）
-      },
+      webViewUrl: webViewUrl,
+      isPreparing: false, // 直接退出准备状态
     });
 
-    // 处理图片路径问题（可选，保持HTML内容完整性）
-    const processedContent = this.handleImagePaths(htmlContent);
-
-    // 验证HTML内容完整性
-    this.validateHtmlIntegrity(htmlContent, processedContent);
-
-    return processedContent;
+    console.log("✅ web-view URL构建完成，页面准备就绪");
+    console.log("🎨 准备状态结束，显示web-view内容");
   },
 
-  // 处理图片路径问题
-  handleImagePaths: function (htmlContent) {
-    // 如果HTML中没有图片，直接返回
-    if (!htmlContent.includes("<img")) {
-      return htmlContent;
-    }
-
-    // 处理相对路径的图片，避免加载错误
-    let processedContent = htmlContent.replace(
-      /<img([^>]*?)src=["']([^"']*?)["']([^>]*?)>/gi,
-      (match, beforeSrc, src, afterSrc) => {
-        if (src && !src.startsWith("http") && !src.startsWith("data:")) {
-          return `<img${beforeSrc}src="${src}"${afterSrc} onerror="this.style.display='none';" alt="图片加载失败">`;
-        }
-        return match;
-      }
-    );
-
-    return processedContent;
+  // web-view 加载开始
+  onWebViewLoad: function (e) {
+    console.log("🌐 web-view 开始加载:", e.detail.url);
   },
 
-  // 提取CSS样式，转换为mp-html的tagStyle格式
-  extractStylesForTagStyle: function (htmlContent) {
-    const extractedStyles = {};
-    const allRules = [];
-
-    // 匹配<style>标签中的CSS规则
-    const styleRegex = /<style[^>]*>([\s\S]*?)<\/style>/gi;
-    let styleMatch;
-
-    while ((styleMatch = styleRegex.exec(htmlContent)) !== null) {
-      const cssContent = styleMatch[1];
-
-      // 解析CSS规则
-      const ruleRegex = /([^{}]+)\s*\{([^{}]+(?:\{[^{}]*\}[^{}]*)*)\}/gi;
-      let ruleMatch;
-
-      while ((ruleMatch = ruleRegex.exec(cssContent)) !== null) {
-        const selector = ruleMatch[1].trim();
-        const styles = ruleMatch[2].trim();
-
-        // 收集所有规则，稍后按优先级处理
-        allRules.push({
-          selector: selector,
-          styles: styles,
-          priority: this.calculateSelectorPriority(selector),
-        });
-      }
-    }
-
-    // 按优先级排序，优先级高的在后面（会覆盖前面的）
-    allRules.sort((a, b) => a.priority - b.priority);
-
-    // 处理排序后的规则
-    allRules.forEach((rule) => {
-      const { selector, styles } = rule;
-
-      // 处理复合选择器（如 .article-content h1）
-      if (selector.includes(" ") && !selector.includes(":")) {
-        const parts = selector.split(" ").filter((part) => part.trim());
-        if (parts.length === 2) {
-          const parentSelector = parts[0].trim();
-          const childSelector = parts[1].trim();
-
-          // 如果父选择器是类选择器，子选择器是标签
-          if (
-            parentSelector.startsWith(".") &&
-            !childSelector.includes(".") &&
-            !childSelector.includes(":")
-          ) {
-            const tagName = childSelector.trim();
-            if (tagName) {
-              extractedStyles[tagName] = styles;
-            }
-          }
-        }
-      }
-      // 处理简单标签选择器
-      else if (
-        !selector.includes(" ") &&
-        !selector.includes(":") &&
-        !selector.includes(".")
-      ) {
-        const tagName = selector.trim();
-        if (tagName && !extractedStyles[tagName]) {
-          extractedStyles[tagName] = styles;
-        }
-      }
-    });
-
-    return extractedStyles;
+  // web-view 加载完成
+  onWebViewLoadFinish: function (e) {
+    console.log("✅ web-view 加载完成:", e.detail.url);
   },
 
-  // 计算选择器优先级
-  calculateSelectorPriority: function (selector) {
-    let priority = 0;
-
-    // 类选择器优先级更高
-    if (selector.includes(".")) {
-      priority += 10;
-    }
-
-    // 复合选择器优先级更高
-    if (selector.includes(" ")) {
-      priority += 5;
-    }
-
-    // 标签选择器优先级最低
-    if (
-      !selector.includes(".") &&
-      !selector.includes("#") &&
-      !selector.includes(":")
-    ) {
-      priority += 1;
-    }
-
-    return priority;
-  },
-
-  // mp-html 加载完成事件
-  onHtmlLoad: function (e) {},
-
-  // mp-html 渲染完成事件
-  onHtmlReady: function (e) {},
-
-  // 图片点击事件
-  onImgTap: function (e) {},
-
-  // 图片加载错误事件
-  onImgError: function (e) {
-    // 静默处理图片加载错误，不影响整体渲染
-  },
-
-  // 复制标题
-  copyTitle: function () {
-    const articleTitle = this.data.articleTitle || "未知标题";
-
-    wx.setClipboardData({
-      data: articleTitle,
-      success: () => {
-        wx.showToast({
-          title: "标题已复制",
-          icon: "success",
-          duration: 2000,
-        });
-        console.log("✅ 文章标题已复制到剪贴板:", articleTitle);
-      },
-      fail: () => {
-        wx.showToast({
-          title: "复制失败",
-          icon: "error",
-          duration: 2000,
-        });
-        console.error("❌ 复制标题失败");
-      },
+  // web-view 加载失败
+  onWebViewLoadError: function (e) {
+    console.error("❌ web-view 加载失败:", e.detail);
+    this.setData({
+      errorMessage: "页面加载失败: " + (e.detail.errMsg || "未知错误"),
     });
   },
 
-  // 复制内容
-  copyContent: function () {
-    // 获取原始内容用于复制
-    const originalContent = this.getOriginalContent();
-
-    wx.setClipboardData({
-      data: originalContent,
-      success: () => {
-        wx.showToast({
-          title: "内容已复制",
-          icon: "success",
-          duration: 2000,
-        });
-        console.log("✅ 文章内容已复制到剪贴板，长度:", originalContent.length);
-      },
-      fail: () => {
-        wx.showToast({
-          title: "复制失败",
-          icon: "error",
-          duration: 2000,
-        });
-        console.error("❌ 复制内容失败");
-      },
+  // 重试按钮
+  onRetryTap: function () {
+    this.setData({
+      errorMessage: "",
+      tempDownloadUrl: "",
+      webViewUrl: "",
+      isPreparing: true, // 重新显示准备界面
     });
-  },
 
-  // 获取原始内容（用于复制功能）
-  getOriginalContent: function () {
-    // 使用当前渲染的内容
-    return this.data.articleContent || "";
-  },
+    console.log("🔄 用户点击重试，重新开始后台处理");
 
-  // 验证HTML内容完整性（调试用）
-  validateHtmlIntegrity: function (originalContent, processedContent) {
-    return originalContent === processedContent;
-  },
-
-  // 查找内容差异（调试用）
-  findContentDifference: function (original, processed) {
-    return "";
-  },
-
-  // 返回按钮
-  onBackTap: function () {
-    wx.navigateBack({
-      delta: 1,
-    });
+    // 重新开始后台处理
+    this.startBackgroundProcess();
   },
 });

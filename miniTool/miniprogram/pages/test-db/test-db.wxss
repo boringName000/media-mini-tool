@@ -1,16 +1,15 @@
-/* pages/test-db/test-db.wxss */
+/* 测试数据库页面样式 - 预留页面 */
 
 .test-container {
-  min-height: 100vh;
-  background-color: #f8f9fa;
   padding: 20rpx;
+  background-color: #f5f5f5;
+  min-height: 100vh;
 }
 
 .test-section {
   background-color: #fff;
-  border-radius: 12rpx;
-  padding: 30rpx;
-  margin-bottom: 20rpx;
+  border-radius: 16rpx;
+  padding: 40rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
@@ -18,297 +17,77 @@
   font-size: 36rpx;
   font-weight: 600;
   color: #333;
-  margin-bottom: 30rpx;
   text-align: center;
+  margin-bottom: 40rpx;
+}
+
+/* 预留内容区域 */
+.content-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 40rpx;
+  margin-bottom: 40rpx;
+}
+
+.placeholder-icon {
+  font-size: 120rpx;
+  margin-bottom: 30rpx;
+  opacity: 0.6;
+}
+
+.placeholder-title {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.placeholder-subtitle {
+  font-size: 28rpx;
+  color: #999;
+  text-align: center;
+  line-height: 1.5;
+  max-width: 400rpx;
 }
 
 /* 操作按钮 */
 .action-buttons {
-  margin-bottom: 30rpx;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  gap: 20rpx;
+  margin-top: 40rpx;
 }
 
 .action-btn {
-  background-color: #6c757d;
-  color: #fff;
-  border: none;
+  padding: 24rpx 48rpx;
   border-radius: 8rpx;
-  padding: 16rpx 24rpx;
   font-size: 28rpx;
-  font-weight: 500;
+  border: none;
+  min-width: 160rpx;
+  transition: all 0.3s ease;
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.action-btn.primary:active {
+  transform: scale(0.98);
+  opacity: 0.9;
 }
 
 .action-btn.secondary {
   background-color: #6c757d;
+  color: #fff;
 }
 
-.action-btn:hover {
+.action-btn.secondary:active {
+  transform: scale(0.98);
   opacity: 0.9;
-}
-
-/* 文件列表区域 */
-.file-list-section {
-  margin-bottom: 30rpx;
-}
-
-.section-subtitle {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 20rpx;
-  padding-bottom: 10rpx;
-  border-bottom: 2rpx solid #e0e0e0;
-}
-
-.file-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-
-.file-item {
-  background-color: #fff;
-  border: 1rpx solid #e0e0e0;
-  border-radius: 12rpx;
-  padding: 24rpx;
-  transition: all 0.3s ease;
-  margin-bottom: 20rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
-}
-
-.file-item:last-child {
-  margin-bottom: 0;
-}
-
-.file-item:hover {
-  border-color: #667eea;
-  box-shadow: 0 4rpx 16rpx rgba(102, 126, 234, 0.15);
-  transform: translateY(-2rpx);
-}
-
-.file-info {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
-}
-
-.file-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20rpx;
-  flex-wrap: wrap;
-}
-
-.file-name {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333;
-  flex: 1;
-  min-width: 0;
-  word-break: break-all;
-  line-height: 1.4;
-  margin-bottom: 10rpx;
-}
-
-.file-actions {
-  display: flex;
-  gap: 15rpx;
-  flex-shrink: 0;
-  align-items: center;
-}
-
-.file-action-btn {
-  border: none;
-  border-radius: 8rpx;
-  padding: 14rpx 24rpx;
-  font-size: 26rpx;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  min-width: 90rpx;
-  text-align: center;
-  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
-}
-
-.file-action-btn:active {
-  transform: translateY(1rpx);
-  box-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
-}
-
-.preview-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-}
-
-.preview-btn:hover:not(:disabled) {
-  transform: translateY(-1rpx);
-  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.4);
-}
-
-.preview-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.delete-btn {
-  background-color: #dc3545;
-  color: #fff;
-}
-
-.delete-btn:hover {
-  background-color: #c82333;
-}
-
-.file-details {
-  display: flex;
-  gap: 20rpx;
-  align-items: center;
-  font-size: 24rpx;
-  color: #666;
-  flex-wrap: wrap;
-  margin-top: 10rpx;
-  padding-top: 15rpx;
-  border-top: 1rpx solid #f0f0f0;
-}
-
-.file-size {
-  padding: 8rpx 16rpx;
-  background-color: #f8f9fa;
-  border-radius: 8rpx;
-  border: 1rpx solid #e9ecef;
-  font-weight: 500;
-}
-
-.file-size-empty {
-  color: #dc3545;
-  background-color: #fff5f5;
-  border-color: #ffebee;
-}
-
-.file-time {
-  color: #666;
-  padding: 8rpx 16rpx;
-  background-color: #f8f9fa;
-  border-radius: 8rpx;
-  border: 1rpx solid #e9ecef;
-  font-weight: 500;
-}
-
-.file-warning {
-  color: #ffc107;
-  font-weight: 500;
-  padding: 8rpx 16rpx;
-  background-color: #fffbf0;
-  border-radius: 8rpx;
-  border: 1rpx solid #ffeaa7;
-}
-
-/* 无数据提示 */
-.no-data {
-  text-align: center;
-  padding: 60rpx 20rpx;
-  color: #666;
-}
-
-.no-data-icon {
-  font-size: 80rpx;
-  margin-bottom: 20rpx;
-  opacity: 0.6;
-}
-
-.no-data-text {
-  font-size: 32rpx;
-  font-weight: 600;
-  margin-bottom: 10rpx;
-  color: #333;
-}
-
-.no-data-hint {
-  font-size: 26rpx;
-  color: #999;
-}
-
-/* WebView控制 */
-.webview-controls {
-  margin: 30rpx 0;
-  text-align: center;
-}
-
-.test-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  border: none;
-  border-radius: 8rpx;
-  padding: 20rpx 40rpx;
-  font-size: 30rpx;
-  font-weight: 600;
-  transition: all 0.3s ease;
-}
-
-.test-btn:hover {
-  transform: translateY(-2rpx);
-  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.4);
-}
-
-.test-btn.close-btn {
-  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-}
-
-.info-text {
-  font-size: 26rpx;
-  color: #666;
-  line-height: 1.6;
-  text-align: center;
-}
-
-.domain-text {
-  color: #667eea;
-  font-weight: 600;
-  font-family: monospace;
-}
-
-/* WebView容器 */
-.webview-container {
-  background-color: #fff;
-  border-radius: 12rpx;
-  overflow: hidden;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.15);
-}
-
-.webview-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20rpx 30rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-}
-
-.webview-title {
-  font-size: 30rpx;
-  font-weight: 600;
-}
-
-.webview-header .close-btn {
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
-  border: none;
-  border-radius: 6rpx;
-  padding: 8rpx 16rpx;
-  font-size: 24rpx;
-  font-weight: 500;
-}
-
-.webview-header .close-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.webview {
-  width: 100%;
-  height: 800rpx;
 }
 
 /* 响应式设计 */
@@ -318,26 +97,28 @@
   }
 
   .test-section {
-    padding: 20rpx;
+    padding: 30rpx 20rpx;
   }
 
-  .file-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 15rpx;
+  .content-area {
+    padding: 60rpx 20rpx;
   }
 
-  .file-actions {
-    width: 100%;
-    justify-content: flex-end;
+  .placeholder-icon {
+    font-size: 100rpx;
   }
 
-  .file-details {
-    flex-wrap: wrap;
-    gap: 15rpx;
+  .placeholder-title {
+    font-size: 30rpx;
   }
 
-  .webview {
-    height: 600rpx;
+  .placeholder-subtitle {
+    font-size: 26rpx;
+  }
+
+  .action-btn {
+    padding: 20rpx 40rpx;
+    font-size: 26rpx;
+    min-width: 140rpx;
   }
 }

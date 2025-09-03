@@ -1,124 +1,112 @@
-# Test-DB 页面
+# 测试数据库页面 - 预留页面
 
-## 功能概述
+## 概述
 
-这是一个 WebView 测试页面，主要用于测试微信小程序与 Web 页面的双向通信功能。页面集成了文件管理功能，可以从微信内存读取文件列表，并通过 WebView 预览文件内容。
+这是一个预留的测试页面，用于后续开发测试功能。当前页面已清空所有测试逻辑，保留基本的页面结构。
 
-## 主要功能
+## 页面结构
 
-### 1. 文件管理
-
-- **文件列表显示**: 自动从 `downloads` 目录读取已下载的文件
-- **文件信息展示**: 显示文件名、大小、修改时间等详细信息
-- **文件操作**: 支持删除单个文件和清空所有文件
-- **元数据读取**: 自动读取文章标题和下载时间等元数据
-
-### 2. WebView 集成
-
-- **WebView 控制**: 可以打开和关闭 WebView 窗口
-- **页面导航**: 自动导航到转换页面 (`#converter`)
-- **实时通信**: 通过 postMessage 实现与 Web 页面的双向通信
-
-### 3. 文件预览
-
-- **预览按钮**: 每个文件都有预览按钮，点击后打开 WebView
-- **内容传输**: 自动读取文件内容并通过 postMessage 发送到 Web 页面
-- **实时渲染**: Web 页面接收数据后在预览框中显示实际渲染效果
-
-## 技术实现
-
-### 文件读取
-
-```javascript
-// 读取 downloads 目录下的文件
-const fs = wx.getFileSystemManager();
-const downloadsPath = `${wx.env.USER_DATA_PATH}/downloads`;
-fs.readdir({
-  dirPath: downloadsPath,
-  success: (res) => {
-    // 处理文件列表
-  },
-});
+```
+test-db/
+├── test-db.js      # 页面逻辑（预留）
+├── test-db.wxml    # 页面结构（预留）
+├── test-db.wxss    # 页面样式（预留）
+├── test-db.json    # 页面配置
+└── README.md       # 说明文档
 ```
 
-### WebView 通信
+## 当前状态
+
+### ✅ **已清空的内容**
+
+- WebView 测试功能
+- 文件管理功能
+- 文件预览功能
+- 复杂的文件操作逻辑
+- 云存储 API 调用
+- 本地文件系统操作
+
+### 🎯 **保留的内容**
+
+- 基本页面结构
+- 预留数据字段
+- 预留测试方法
+- 预留清理方法
+- 基本样式布局
+
+## 预留功能
+
+### 1. **预留数据字段**
 
 ```javascript
-// 发送文件内容到 WebView
-const message = {
-  type: "SET_HTML_CONTENT",
-  content: fileContent,
-  fileName: file.displayName,
-  fileSize: file.size,
-  timestamp: Date.now(),
-};
-
-webView.postMessage({
-  data: message,
-});
-```
-
-### 消息监听
-
-```javascript
-// 监听 WebView 发送的消息
-onWebViewMessage: function (e) {
-  const message = e.detail.data;
-  switch (message.type) {
-    case "PAGE_READY":
-      // 页面加载完成
-      break;
-    case "HTML_CONTENT_UPDATE":
-      // HTML 内容更新
-      break;
-  }
+data: {
+  testData: null,  // 预留测试数据字段
 }
 ```
 
-## 使用流程
+### 2. **预留方法**
 
-1. **页面加载**: 自动加载本地文件列表
-2. **选择文件**: 在文件列表中选择要预览的文件
-3. **点击预览**: 点击文件的"预览"按钮
-4. **WebView 打开**: 自动打开 WebView 并导航到转换页面
-5. **内容传输**: 通过 postMessage 发送文件内容
-6. **预览显示**: Web 页面接收数据并显示预览效果
+- `runTest()`: 预留测试方法
+- `clearTestData()`: 预留清理方法
 
-## 通信协议
+### 3. **预留 UI 元素**
 
-### 发送到 Web 页面的消息
+- 页面标题
+- 预留内容区域（显示"测试功能待开发"）
+- 操作按钮（运行测试、清理数据）
 
-- `SET_HTML_CONTENT`: 设置 HTML 内容
-  ```javascript
-  {
-    type: "SET_HTML_CONTENT",
-    content: "HTML内容",
-    fileName: "文件名",
-    fileSize: "文件大小",
-    timestamp: 时间戳
-  }
-  ```
+## 使用方法
 
-### 从 Web 页面接收的消息
+### 1. **页面访问**
 
-- `PAGE_READY`: 页面加载完成通知
-- `HTML_CONTENT_UPDATE`: HTML 内容更新通知
+通过小程序导航访问：`/pages/test-db/test-db`
 
-## 依赖组件
+### 2. **当前功能**
 
-- `timeUtils.js`: 时间格式化工具
-- `articleDownloadUtils.js`: 文章下载和文件管理工具
+- 显示预留页面内容
+- 点击"运行测试"显示"测试功能待开发"提示
+- 点击"清理数据"清理预留数据并显示成功提示
+
+## 开发计划
+
+### 🚧 **待开发功能**
+
+- 数据库连接测试
+- 数据查询测试
+- 性能测试
+- 其他测试需求
+
+### 📝 **开发建议**
+
+1. 根据具体测试需求添加相应的测试逻辑
+2. 保持页面结构清晰，便于后续扩展
+3. 添加必要的错误处理和用户反馈
 
 ## 注意事项
 
-1. **文件权限**: 确保小程序有读取本地文件的权限
-2. **WebView 加载**: 需要等待 WebView 完全加载后再发送消息
-3. **内容安全**: 对 HTML 内容进行安全过滤，防止 XSS 攻击
-4. **错误处理**: 完善的错误处理机制，包括文件读取失败、WebView 加载失败等
+### 1. **当前限制**
 
-## 扩展功能
+- 页面功能有限，主要用于展示
+- 没有实际的测试逻辑
+- 按钮点击后只显示提示信息
 
-- 支持更多文件格式
-- 添加文件搜索和过滤功能
-- 实现文件分类管理
-- 添加文件预览历史记录
+### 2. **扩展建议**
+
+- 根据实际测试需求逐步添加功能
+- 保持代码结构清晰
+- 添加适当的日志和错误处理
+
+## 更新日志
+
+### v2.0.0 (当前版本)
+
+- 清空所有测试逻辑
+- 保留基本页面结构
+- 添加预留功能框架
+- 更新文档说明
+
+### v1.0.0 (原版本)
+
+- WebView 测试功能
+- 文件管理功能
+- 文件预览功能

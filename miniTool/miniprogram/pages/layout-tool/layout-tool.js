@@ -70,16 +70,36 @@ Page({
     }
   },
 
-  // 预览文章（暂时为空，等待功能提示）
+  // 预览文章
   previewArticle: function (e) {
     const article = e.currentTarget.dataset.article;
 
-    wx.showToast({
-      title: "预览功能开发中",
-      icon: "none",
-    });
+    if (!article || !article.downloadUrl) {
+      wx.showToast({
+        title: "文章下载地址无效",
+        icon: "none",
+      });
+      return;
+    }
 
     console.log("预览文章:", article);
+
+    // 跳转到文章预览页面，传递文章标题和下载地址
+    wx.navigateTo({
+      url: `/pages/article-preview/article-preview?articleTitle=${encodeURIComponent(
+        article.title
+      )}&downloadUrl=${encodeURIComponent(article.downloadUrl)}`,
+      success: () => {
+        console.log("✅ 跳转到文章预览页面成功");
+      },
+      fail: (err) => {
+        console.error("❌ 跳转到文章预览页面失败:", err);
+        wx.showToast({
+          title: "页面跳转失败",
+          icon: "none",
+        });
+      },
+    });
   },
 
   // 删除文章信息

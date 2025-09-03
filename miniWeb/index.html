@@ -35,7 +35,7 @@
       .header {
         background-color: #fff;
         border-bottom: 1px solid #e0e0e0;
-        padding: 1rem 0;
+        padding: 0.5rem 0; /* 减少上下内边距 */
         position: sticky;
         top: 0;
         z-index: 100;
@@ -45,7 +45,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 1rem 20px;
+        padding: 0.5rem 20px; /* 减少上下内边距 */
       }
 
       .logo {
@@ -62,7 +62,7 @@
       /* 主要内容区域 */
       .main {
         min-height: calc(100vh - 140px);
-        padding: 2rem 0;
+        padding: 1rem 0; /* 减少上下内边距 */
       }
 
       /* 转换页面样式 */
@@ -72,16 +72,21 @@
         padding: 0;
         background-color: #f8f9fa;
         min-height: 100vh;
+        position: relative; /* 为sticky定位提供参考 */
       }
 
       /* 复制按钮区域 */
       .copy-button-container {
-        padding: 20px 40px; /* 增加左右边距 */
+        padding: 15px 40px; /* 减少上下边距，保持左右边距 */
         display: flex;
         gap: 20px;
         justify-content: center;
         background-color: #fff;
         border-bottom: 1px solid #e0e0e0;
+        position: sticky; /* 固定定位 */
+        top: 0; /* 固定在顶部 */
+        z-index: 50; /* 确保在其他内容之上 */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
       }
 
       .copy-btn {
@@ -135,7 +140,7 @@
       .preview-container {
         padding: 30px;
         background-color: #fff;
-        margin: 20px;
+        margin: 10px 20px 20px 20px; /* 减少上边距，保持左右下边距 */
         border-radius: 12px;
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
         min-height: 400px;
@@ -175,7 +180,7 @@
       /* 响应式设计 */
       @media (max-width: 768px) {
         .copy-button-container {
-          padding: 15px 25px; /* 移动端保持合适的左右边距 */
+          padding: 10px 25px; /* 移动端减少上下边距 */
           gap: 15px;
         }
 
@@ -187,7 +192,7 @@
 
         /* 移动端2按钮模式特殊样式 */
         .copy-button-container.two-buttons {
-          padding: 15px 25px; /* 移动端2按钮模式下的边距 */
+          padding: 10px 25px; /* 移动端2按钮模式下的边距 */
           gap: 15px; /* 移动端按钮间距 */
         }
 
@@ -196,7 +201,7 @@
         }
 
         .preview-container {
-          margin: 10px;
+          margin: 5px 10px 10px 10px; /* 移动端减少上边距 */
           padding: 20px;
         }
       }

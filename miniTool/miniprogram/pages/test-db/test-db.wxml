@@ -1,65 +1,19 @@
-<!-- WebView测试页面 -->
+<!-- 测试数据库页面 - 预留页面 -->
 <view class="test-container">
   <view class="test-section">
-    <view class="section-title">WebView测试</view>
+    <view class="section-title">测试数据库页面</view>
     
-    <!-- 操作按钮 -->
+    <!-- 预留内容区域 -->
+    <view class="content-area">
+      <view class="placeholder-icon">🧪</view>
+      <text class="placeholder-title">测试功能待开发</text>
+      <text class="placeholder-subtitle">此页面预留用于后续测试功能开发</text>
+    </view>
+    
+    <!-- 预留操作按钮 -->
     <view class="action-buttons">
-      <button class="action-btn secondary" bindtap="clearAllFiles" wx:if="{{downloadedFiles.length > 0}}">清空所有文件</button>
+      <button class="action-btn primary" bindtap="runTest">运行测试</button>
+      <button class="action-btn secondary" bindtap="clearTestData">清理数据</button>
     </view>
-    
-    <!-- 文件列表 -->
-    <view class="file-list-section" wx:if="{{downloadedFiles.length > 0}}">
-      <view class="section-subtitle">本地文件 ({{downloadedFiles.length}})</view>
-      <view class="file-list">
-        <view class="file-item" wx:for="{{downloadedFiles}}" wx:key="index">
-          <view class="file-info">
-            <view class="file-header">
-              <text class="file-name">{{item.displayName}}</text>
-              <view class="file-actions">
-                <button class="file-action-btn preview-btn" bindtap="previewFileInWebView" data-file="{{item}}" disabled="{{item.isEmpty}}">预览</button>
-                <button class="file-action-btn delete-btn" bindtap="deleteFile" data-file="{{item}}">删除</button>
-              </view>
-            </view>
-            <view class="file-details">
-              <text class="file-size {{item.isEmpty ? 'file-size-empty' : ''}}">{{item.size}}</text>
-              <text class="file-time">{{item.time}}</text>
-              <text class="file-warning" wx:if="{{item.isEmpty}}">⚠️ 空文件</text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </view>
-    
-    <!-- 无文件提示 -->
-    <view class="no-data" wx:if="{{downloadedFiles.length === 0}}">
-      <view class="no-data-icon">📄</view>
-      <text class="no-data-text">暂无本地文件</text>
-      <text class="no-data-hint">文件将自动从本地存储加载</text>
-    </view>
-    
-    <!-- WebView控制 -->
-    <view class="webview-controls">
-      <button class="test-btn" bindtap="openWebView" wx:if="{{!showWebView}}">打开WebView</button>
-      <button class="test-btn close-btn" bindtap="closeWebView" wx:if="{{showWebView}}">关闭WebView</button>
-    </view>
-    
-    <view class="info-text">
-      <text>点击预览按钮将通过WebView显示文件内容，访问域名：</text>
-      <text class="domain-text">{{defaultDomain}}</text>
-    </view>
-  </view>
-
-  <!-- WebView窗口 -->
-  <view class="webview-container" wx:if="{{showWebView}}">
-    <view class="webview-header">
-      <text class="webview-title">文件预览 - {{currentFileName}}</text>
-      <button class="close-btn" bindtap="closeWebView">关闭</button>
-    </view>
-    <web-view 
-      id="myWebView"
-      class="webview" 
-      src="{{webViewUrl}}"
-    ></web-view>
   </view>
 </view> 
