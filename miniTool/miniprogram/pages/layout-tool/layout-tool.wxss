@@ -81,18 +81,18 @@
   color: #1976d2;
 }
 
-/* 文件列表 */
-.file-list-section {
+/* 文章信息列表 */
+.article-list-section {
   margin-bottom: 30rpx;
 }
 
-.file-list {
+.article-list {
   display: flex;
   flex-direction: column;
   gap: 16rpx;
 }
 
-.file-item {
+.article-item {
   background-color: #fff;
   border-radius: 12rpx;
   border: 1rpx solid #e0e0e0;
@@ -102,23 +102,23 @@
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
-.file-item:active {
+.article-item:active {
   transform: translateY(2rpx);
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
 }
 
-.file-info {
+.article-info {
   padding: 24rpx;
 }
 
-.file-header {
+.article-header {
   display: flex;
   flex-direction: column;
   gap: 16rpx;
   margin-bottom: 12rpx;
 }
 
-.file-name {
+.article-title {
   font-size: 28rpx;
   font-weight: 600;
   color: #333;
@@ -128,17 +128,17 @@
   line-height: 1.4;
 }
 
-.file-name:active {
+.article-title:active {
   color: #667eea;
 }
 
-.file-actions {
+.article-actions {
   display: flex;
   gap: 12rpx;
   justify-content: flex-end;
 }
 
-.file-action-btn {
+.article-action-btn {
   padding: 12rpx 20rpx;
   border-radius: 8rpx;
   font-size: 24rpx;
@@ -166,48 +166,21 @@
   background-color: #d32f2f;
 }
 
-.file-details {
+.article-details {
   display: flex;
-  gap: 20rpx;
+  flex-direction: column;
+  gap: 8rpx;
   margin-top: 8rpx;
 }
 
-.file-size,
-.file-time {
+.article-track,
+.article-platform,
+.article-time {
   font-size: 24rpx;
   color: #999;
   background-color: #f8f9fa;
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
-}
-
-/* 空文件样式 */
-.file-size-empty {
-  color: #ff6b6b !important;
-  background-color: #fff5f5 !important;
-  border: 1rpx solid #ff6b6b;
-}
-
-.file-warning {
-  font-size: 22rpx;
-  color: #ff6b6b;
-  background-color: #fff5f5;
-  padding: 4rpx 12rpx;
-  border-radius: 6rpx;
-  border: 1rpx solid #ff6b6b;
-  font-weight: 500;
-}
-
-/* 禁用状态的预览按钮 */
-.preview-btn:disabled {
-  background-color: #ccc !important;
-  color: #999 !important;
-  cursor: not-allowed;
-}
-
-.preview-btn:disabled:active {
-  transform: none !important;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05) !important;
 }
 
 /* 文件预览 */
@@ -309,16 +282,16 @@
     flex-direction: column;
   }
 
-  .file-header {
+  .article-header {
     gap: 12rpx;
   }
 
-  .file-actions {
+  .article-actions {
     width: 100%;
     justify-content: flex-end;
   }
 
-  .file-details {
+  .article-details {
     flex-direction: column;
     gap: 8rpx;
   }

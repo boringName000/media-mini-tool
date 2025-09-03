@@ -47,7 +47,7 @@
       
       <view class="task-footer">
         <view class="task-actions" wx:if="{{item.status === 1}}">
-          <button class="action-btn download-btn" catchtap="downloadTask" data-task="{{item}}">
+          <button class="action-btn save-btn" catchtap="saveTaskInfo" data-task="{{item}}">
             <text class="btn-icon">⬇️</text>
             <text class="btn-text">下载</text>
           </button>

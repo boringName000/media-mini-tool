@@ -3,37 +3,37 @@
   <view class="tool-section">
     <!-- 操作按钮 -->
     <view class="action-buttons">
-      <button class="action-btn secondary" bindtap="clearAllFiles" wx:if="{{downloadedFiles.length > 0}}">清空所有文件</button>
+      <button class="action-btn secondary" bindtap="clearAllArticles" wx:if="{{articleInfoList.length > 0}}">清空所有文章</button>
     </view>
     
-    <!-- 文件列表 -->
-    <view class="file-list-section" wx:if="{{downloadedFiles.length > 0}}">
-      <view class="section-subtitle">本地文件 ({{downloadedFiles.length}})</view>
-      <view class="file-list">
-        <view class="file-item" wx:for="{{downloadedFiles}}" wx:key="index">
-          <view class="file-info">
-            <view class="file-header">
-              <text class="file-name" bindtap="readFileContent" data-file="{{item}}">{{item.displayName}}</text>
-              <view class="file-actions">
-                <button class="file-action-btn preview-btn" bindtap="readFileContent" data-file="{{item}}" disabled="{{item.isEmpty}}">预览</button>
-                <button class="file-action-btn delete-btn" bindtap="deleteFile" data-file="{{item}}">删除</button>
+    <!-- 文章列表 -->
+    <view class="article-list-section" wx:if="{{articleInfoList.length > 0}}">
+      <view class="section-subtitle">文章列表 ({{articleInfoList.length}})</view>
+      <view class="article-list">
+        <view class="article-item" wx:for="{{articleInfoList}}" wx:key="id">
+          <view class="article-info">
+            <view class="article-header">
+              <text class="article-title">{{item.title}}</text>
+              <view class="article-actions">
+                <button class="article-action-btn preview-btn" bindtap="previewArticle" data-article="{{item}}">预览</button>
+                <button class="article-action-btn delete-btn" bindtap="deleteArticle" data-article="{{item}}">删除</button>
               </view>
             </view>
-            <view class="file-details">
-              <text class="file-size" class="{{item.isEmpty ? 'file-size-empty' : ''}}">{{item.size}}</text>
-              <text class="file-time">{{item.time}}</text>
-              <text class="file-warning" wx:if="{{item.isEmpty}}">⚠️ 空文件</text>
+            <view class="article-details">
+              <text class="article-track">赛道: {{item.trackTypeName}}</text>
+              <text class="article-platform">平台: {{item.platformTypeName}}</text>
+              <text class="article-time">保存时间: {{item.downloadTimeFormatted}}</text>
             </view>
           </view>
         </view>
       </view>
     </view>
     
-    <!-- 无文件提示 -->
-    <view class="no-data" wx:if="{{downloadedFiles.length === 0}}">
+    <!-- 无文章提示 -->
+    <view class="no-data" wx:if="{{articleInfoList.length === 0}}">
       <view class="no-data-icon">📄</view>
-      <text class="no-data-text">暂无本地文件</text>
-      <text class="no-data-hint">文件将自动从本地存储加载</text>
+      <text class="no-data-text">暂无本地文章</text>
+      <text class="no-data-hint">文章信息将自动从本地存储加载</text>
     </view>
   </view>
 </view>

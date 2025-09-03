@@ -16,7 +16,7 @@ const {
 const authUtils = require("../../utils/authUtils");
 const userInfoUtils = require("../../utils/userInfoUtils");
 const timeUtils = require("../../utils/timeUtils");
-const { downloadArticle } = require("../../utils/articleDownloadUtils");
+const { saveArticleInfo } = require("../../utils/articleInfoManager");
 
 Page({
   data: {
@@ -202,13 +202,14 @@ Page({
     return allTasks;
   },
 
-  // 下载任务
-  downloadTask(e) {
+  // 保存任务信息
+  saveTaskInfo(e) {
     const task = e.currentTarget.dataset.task;
 
-    downloadArticle({
+    saveArticleInfo({
       downloadUrl: task.downloadUrl,
       articleTitle: task.articleTitle || task.articleId,
+      articleId: task.articleId, // 传递文章自己的ID
       trackType: task.trackTypeEnum,
       platformType: task.platformEnum,
     });

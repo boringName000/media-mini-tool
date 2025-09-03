@@ -6,7 +6,7 @@ const {
 
 const { PlatformEnum, getPlatformName } = require("../../utils/platformUtils");
 const timeUtils = require("../../utils/timeUtils");
-const { downloadArticle } = require("../../utils/articleDownloadUtils");
+const { saveArticleInfo } = require("../../utils/articleInfoManager");
 
 Page({
   data: {
@@ -315,8 +315,8 @@ Page({
       // 复制标题
       this.downloadTitle(article);
     } else if (type === "article") {
-      // 下载文章文件
-      this.downloadArticle(article);
+      // 保存文章信息
+      this.saveArticleInfo(article);
     }
   },
 
@@ -342,12 +342,13 @@ Page({
   },
 
   /**
-   * 下载文章
+   * 保存文章信息
    */
-  downloadArticle: function (article) {
-    downloadArticle({
+  saveArticleInfo: function (article) {
+    saveArticleInfo({
       downloadUrl: article.downloadUrl,
       articleTitle: article.articleTitle,
+      articleId: article.articleId, // 使用正确的文章ID字段
       trackType: this.data.currentTrackType,
       platformType: this.data.currentPlatformType,
     });
@@ -429,16 +430,6 @@ Page({
         icon: "success",
       });
     }, 1000);
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom: function () {
-    wx.showToast({
-      title: "加载更多...",
-      icon: "loading",
-    });
   },
 
   /**

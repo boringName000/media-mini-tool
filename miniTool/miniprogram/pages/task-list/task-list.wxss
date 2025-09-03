@@ -179,7 +179,7 @@
   line-height: 40rpx;
 }
 
-.download-btn {
+.save-btn {
   background: linear-gradient(135deg, #007aff 0%, #0056cc 100%);
   color: #fff;
   box-shadow: 0 2rpx 8rpx rgba(0, 122, 255, 0.3);
