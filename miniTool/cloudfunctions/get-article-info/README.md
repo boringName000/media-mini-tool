@@ -36,7 +36,7 @@ wx.cloud.callFunction({
   name: "get-article-info",
   data: {
     trackType: 1, // 美食赛道
-    platformType: 2, // 小红书平台
+    platformType: 1, // 微信公众号平台
   },
 });
 ```
@@ -55,7 +55,7 @@ wx.cloud.callFunction({
         "articleTitle": "文章标题",
         "downloadUrl": "cloud://xxx/article/1/美食文章-1703123456789.txt",
         "trackType": 1,
-        "platformType": 2,
+        "platformType": 1,
         "uploadTime": "2024-01-15T10:30:00.000Z"
       }
     ],

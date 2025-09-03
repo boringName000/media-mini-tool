@@ -149,7 +149,7 @@ const accountUtils = require("../../utils/accountUtils");
 // 准备账号数据
 const accountData = {
   trackType: { type: "FOOD_TRACK", name: "美食赛道", icon: "🍔" },
-  platform: { type: "XIAOHONGSHU", name: "小红书", icon: "📱" },
+  platform: { type: "WECHAT_MP", name: "公众号", icon: "📰" },
   phoneNumber: "13800138000",
   accountNickname: "美食达人",
   accountId: "food_lover_123",
@@ -178,7 +178,7 @@ wx.cloud
     name: "add-user-account",
     data: {
       trackType: { type: "FOOD_TRACK", name: "美食赛道" },
-      platform: { type: "XIAOHONGSHU", name: "小红书" },
+      platform: { type: "WECHAT_MP", name: "公众号" },
       phoneNumber: "13800138000",
       accountNickname: "美食达人",
       accountId: "food_lover_123",

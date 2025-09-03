@@ -91,7 +91,7 @@ AC + 账号索引（5位数字，从00001开始）
 {
   accountId: "AC00001",  // 生成的账号ID
   trackType: { type: "FOOD_TRACK", name: "美食赛道", icon: "🍔" },
-  platform: { type: "XIAOHONGSHU", name: "小红书", icon: "📱" },
+  platform: { type: "WECHAT_MP", name: "公众号", icon: "📰" },
   phoneNumber: "13800138000",
   accountNickname: "美食达人",
   originalAccountId: "food_lover_123",  // 用户输入的原始ID

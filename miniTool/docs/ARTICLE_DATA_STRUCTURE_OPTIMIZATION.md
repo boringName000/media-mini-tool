@@ -93,7 +93,7 @@ const articleData = {
   "articleTitle": "美食文章",
   "uploadTime": "2023-12-21T10:30:45.123Z",
   "trackType": 1,
-  "platformType": 2,
+  "platformType": 1,
   "downloadUrl": "cloud://xxx/article/1/美食文章-1703123456789.txt",
   "createTime": "2023-12-21T10:30:45.123Z",
   "updateTime": "2023-12-21T10:30:45.123Z"
@@ -108,7 +108,7 @@ const articleData = {
   "articleTitle": "美食文章",
   "uploadTime": "2023-12-21T10:30:45.123Z",
   "trackType": 1,
-  "platformType": 2,
+  "platformType": 1,
   "downloadUrl": "cloud://xxx/article/1/美食文章-1703123456789.txt",
   "createTime": "2023-12-21T10:30:45.123Z"
 }
@@ -233,7 +233,7 @@ const testCreateArticle = async () => {
     data: {
       articleTitle: "测试文章",
       trackType: 1,
-      platformType: 2,
+      platformType: 1,
       downloadUrl: "test-url",
     },
   });

@@ -70,24 +70,8 @@ initTrackTypeOptions: function () {
 initPlatformOptions: function () {
   const options = [
     {
-      value: PlatformEnum.XIAOHONGSHU,
-      label: getPlatformName(PlatformEnum.XIAOHONGSHU),
-    },
-    {
       value: PlatformEnum.WECHAT_MP,
       label: getPlatformName(PlatformEnum.WECHAT_MP),
-    },
-    {
-      value: PlatformEnum.DOUYIN,
-      label: getPlatformName(PlatformEnum.DOUYIN),
-    },
-    {
-      value: PlatformEnum.KUAISHOU,
-      label: getPlatformName(PlatformEnum.KUAISHOU),
-    },
-    {
-      value: PlatformEnum.BILIBILI,
-      label: getPlatformName(PlatformEnum.BILIBILI),
     },
   ];
 
@@ -171,17 +155,13 @@ initPlatformOptions: function () {
   // ... 更多赛道类型
 ][
   // getPlatformList() 返回的数据结构
-  ({
-    type: PlatformEnum.XIAOHONGSHU,
-    name: "小红书",
-    icon: "📱",
-  },
-  {
-    type: PlatformEnum.WECHAT_MP,
-    name: "公众号",
-    icon: "📰",
-  })
-  // ... 更多平台类型
+  [
+    {
+      type: PlatformEnum.WECHAT_MP,
+      name: "公众号",
+      icon: "📰",
+    },
+  ]
 ];
 ```
 

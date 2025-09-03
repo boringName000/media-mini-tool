@@ -13,13 +13,6 @@ const { PlatformEnum } = require("../type/type");
 function getPlatformName(platformEnum) {
   const platformMap = {
     [PlatformEnum.WECHAT_MP]: "公众号",
-    [PlatformEnum.XIAOHONGSHU]: "小红书",
-    [PlatformEnum.DOUYIN]: "抖音",
-    [PlatformEnum.KUAISHOU]: "快手",
-    [PlatformEnum.BILIBILI]: "B站",
-    [PlatformEnum.WEIBO]: "微博",
-    [PlatformEnum.ZHIHU]: "知乎",
-    [PlatformEnum.TIKTOK]: "TikTok",
   };
 
   return platformMap[platformEnum] || "未知平台";
@@ -33,13 +26,6 @@ function getPlatformName(platformEnum) {
 function getPlatformIcon(platformEnum) {
   const platformIconMap = {
     [PlatformEnum.WECHAT_MP]: "📰",
-    [PlatformEnum.XIAOHONGSHU]: "📱",
-    [PlatformEnum.DOUYIN]: "🎵",
-    [PlatformEnum.KUAISHOU]: "⚡",
-    [PlatformEnum.BILIBILI]: "📺",
-    [PlatformEnum.WEIBO]: "🌐",
-    [PlatformEnum.ZHIHU]: "❓",
-    [PlatformEnum.TIKTOK]: "🎬",
   };
 
   return platformIconMap[platformEnum] || "📋";
@@ -62,19 +48,11 @@ function getPlatformIconPath(platformEnum) {
  */
 function getPlatformEnum(platformName) {
   const reverseMap = {
-    小红书: PlatformEnum.XIAOHONGSHU,
     公众号: PlatformEnum.WECHAT_MP,
     微信公众号: PlatformEnum.WECHAT_MP,
-    抖音: PlatformEnum.DOUYIN,
-    快手: PlatformEnum.KUAISHOU,
-    B站: PlatformEnum.BILIBILI,
-    bilibili: PlatformEnum.BILIBILI,
-    微博: PlatformEnum.WEIBO,
-    知乎: PlatformEnum.ZHIHU,
-    TikTok: PlatformEnum.TIKTOK,
   };
 
-  return reverseMap[platformName] || PlatformEnum.XIAOHONGSHU;
+  return reverseMap[platformName] || PlatformEnum.WECHAT_MP;
 }
 
 /**
@@ -84,13 +62,6 @@ function getPlatformEnum(platformName) {
 function getAllPlatforms() {
   return {
     [PlatformEnum.WECHAT_MP]: "公众号",
-    [PlatformEnum.XIAOHONGSHU]: "小红书",
-    [PlatformEnum.DOUYIN]: "抖音",
-    [PlatformEnum.KUAISHOU]: "快手",
-    [PlatformEnum.BILIBILI]: "B站",
-    [PlatformEnum.WEIBO]: "微博",
-    [PlatformEnum.ZHIHU]: "知乎",
-    [PlatformEnum.TIKTOK]: "TikTok",
   };
 }
 
@@ -105,41 +76,6 @@ function getPlatformList() {
       type: PlatformEnum.WECHAT_MP,
       name: getPlatformName(PlatformEnum.WECHAT_MP),
       icon: getPlatformIcon(PlatformEnum.WECHAT_MP),
-    },
-    {
-      type: PlatformEnum.XIAOHONGSHU,
-      name: getPlatformName(PlatformEnum.XIAOHONGSHU),
-      icon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
-    },
-    {
-      type: PlatformEnum.DOUYIN,
-      name: getPlatformName(PlatformEnum.DOUYIN),
-      icon: getPlatformIcon(PlatformEnum.DOUYIN),
-    },
-    {
-      type: PlatformEnum.KUAISHOU,
-      name: getPlatformName(PlatformEnum.KUAISHOU),
-      icon: getPlatformIcon(PlatformEnum.KUAISHOU),
-    },
-    {
-      type: PlatformEnum.BILIBILI,
-      name: getPlatformName(PlatformEnum.BILIBILI),
-      icon: getPlatformIcon(PlatformEnum.BILIBILI),
-    },
-    {
-      type: PlatformEnum.WEIBO,
-      name: getPlatformName(PlatformEnum.WEIBO),
-      icon: getPlatformIcon(PlatformEnum.WEIBO),
-    },
-    {
-      type: PlatformEnum.ZHIHU,
-      name: getPlatformName(PlatformEnum.ZHIHU),
-      icon: getPlatformIcon(PlatformEnum.ZHIHU),
-    },
-    {
-      type: PlatformEnum.TIKTOK,
-      name: getPlatformName(PlatformEnum.TIKTOK),
-      icon: getPlatformIcon(PlatformEnum.TIKTOK),
     },
   ];
 }

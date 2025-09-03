@@ -39,9 +39,9 @@ const getAccountId = (accountName) => {
 const getAccountList = () => [
   {
     accountId: "ACC001",
-    platformEnum: PlatformEnum.XIAOHONGSHU,
-    platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-    platformIcon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
+    platformEnum: PlatformEnum.WECHAT_MP,
+    platform: getPlatformName(PlatformEnum.WECHAT_MP),
+    platformIcon: getPlatformIcon(PlatformEnum.WECHAT_MP),
     accountName: "美食达人小红",
     trackTypeEnum: TrackTypeEnum.FOOD_TRACK,
     trackType: getTrackTypeName(TrackTypeEnum.FOOD_TRACK),
@@ -59,9 +59,9 @@ const getAccountList = () => [
   },
   {
     accountId: "ACC003",
-    platformEnum: PlatformEnum.XIAOHONGSHU,
-    platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-    platformIcon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
+    platformEnum: PlatformEnum.WECHAT_MP,
+    platform: getPlatformName(PlatformEnum.WECHAT_MP),
+    platformIcon: getPlatformIcon(PlatformEnum.WECHAT_MP),
     accountName: "书法艺术家",
     trackTypeEnum: TrackTypeEnum.CALLIGRAPHY,
     trackType: getTrackTypeName(TrackTypeEnum.CALLIGRAPHY),
@@ -79,9 +79,9 @@ const getAccountList = () => [
   },
   {
     accountId: "ACC005",
-    platformEnum: PlatformEnum.XIAOHONGSHU,
-    platform: getPlatformName(PlatformEnum.XIAOHONGSHU),
-    platformIcon: getPlatformIcon(PlatformEnum.XIAOHONGSHU),
+    platformEnum: PlatformEnum.WECHAT_MP,
+    platform: getPlatformName(PlatformEnum.WECHAT_MP),
+    platformIcon: getPlatformIcon(PlatformEnum.WECHAT_MP),
     accountName: "古董收藏家",
     trackTypeEnum: TrackTypeEnum.ANTIQUE,
     trackType: getTrackTypeName(TrackTypeEnum.ANTIQUE),

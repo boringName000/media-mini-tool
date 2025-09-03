@@ -58,13 +58,6 @@ const TrackTypeEnum = {
 ```javascript
 const PlatformEnum = {
   WECHAT_MP: 1, // 微信公众号
-  XIAOHONGSHU: 2, // 小红书
-  DOUYIN: 3, // 抖音
-  KUAISHOU: 4, // 快手
-  BILIBILI: 5, // B站
-  WEIBO: 6, // 微博
-  ZHIHU: 7, // 知乎
-  TIKTOK: 8, // TikTok
 };
 ```
 
@@ -87,7 +80,7 @@ wx.cloud.callFunction({
   data: {
     articleTitle: "美食文章",
     trackType: 1, // FOOD_TRACK
-    platformType: 2, // XIAOHONGSHU
+    platformType: 1, // WECHAT_MP
     downloadUrl: "cloud://xxx/article/1/美食文章-1703123456789.txt",
   },
 });
@@ -108,7 +101,7 @@ wx.cloud.callFunction({
         "articleTitle": "美食文章",
         "uploadTime": "2023-12-21T10:30:45.123Z",
         "trackType": 1,
-        "platformType": 2,
+        "platformType": 1,
         "downloadUrl": "cloud://xxx/article/1/美食文章-1703123456789.txt",
         "createTime": "2023-12-21T10:30:45.123Z"
       }

@@ -113,8 +113,7 @@ const foodTasks = dailyTasks.filter((task) => task.trackType === 1);
 const travelTasks = dailyTasks.filter((task) => task.trackType === 2);
 
 // 按平台类型分类
-const xiaohongshuTasks = dailyTasks.filter((task) => task.platformType === 1);
-const douyinTasks = dailyTasks.filter((task) => task.platformType === 2);
+const wechatTasks = dailyTasks.filter((task) => task.platformType === 1);
 ```
 
 ### **场景 3: 直接下载**

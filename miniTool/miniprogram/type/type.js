@@ -33,13 +33,6 @@ const TrackTypeEnum = {
 const PlatformEnum = {
   // 主流平台
   WECHAT_MP: 1, // 微信公众号
-  XIAOHONGSHU: 2, // 小红书
-  DOUYIN: 3, // 抖音
-  KUAISHOU: 4, // 快手
-  BILIBILI: 5, // B站
-  WEIBO: 6, // 微博
-  ZHIHU: 7, // 知乎
-  TIKTOK: 8, // TikTok
 };
 
 const SettlementStatusEnum = {

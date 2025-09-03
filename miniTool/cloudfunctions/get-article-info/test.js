@@ -11,7 +11,7 @@ const testEvent1 = {
 // 模拟事件数据 - 类型查询
 const testEvent2 = {
   trackType: 1, // 美食赛道
-  platformType: 2, // 小红书平台
+  platformType: 1, // 微信公众号平台
 };
 
 // 模拟上下文

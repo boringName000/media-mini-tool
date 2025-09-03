@@ -125,7 +125,7 @@ Page({
       const platformEnum =
         parseInt(account.platform) ||
         account.platform ||
-        PlatformEnum.XIAOHONGSHU;
+        PlatformEnum.WECHAT_MP;
       const platformName = getPlatformName(platformEnum);
       const platformIcon = getPlatformIcon(platformEnum);
 
