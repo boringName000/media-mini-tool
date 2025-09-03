@@ -710,5 +710,4 @@ callCloudStorageAPI: function (fileId) {
 ### v1.0.0 (原版本)
 
 - 本地 HTML 渲染
-- mp-html 组件集成
 - 基础复制功能

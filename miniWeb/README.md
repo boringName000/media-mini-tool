@@ -9,14 +9,14 @@
 - **复制功能**: 支持复制标题和内容到剪贴板
 - **微信集成**: 专为微信小程序 WebView 设计
 - **响应式**: 支持各种设备尺寸
+- **智能布局**: 粘性定位的标题和按钮组，始终可见
+- **调试支持**: 集成 vConsole 移动端调试工具
 
 ## 📁 项目结构
 
 ```
 miniWeb/
 ├── index.html              # 主入口文件（包含所有样式和脚本）
-├── pages/                  # 页面文件夹（保留结构，当前未使用）
-├── start-server.sh         # 启动脚本
 └── README.md               # 项目说明文档
 ```
 
@@ -27,18 +27,28 @@ miniWeb/
 - **HTML 渲染**: 实时显示从小程序接收的 HTML 内容
 - **内容解析**: 自动解析 HTML 标签并显示实际效果
 - **安全过滤**: 基础的安全过滤，防止 XSS 攻击
+- **文件下载**: 支持通过 URL 参数下载和显示文件内容
 
 ### 2. 复制功能
 
-- **复制标题**: 复制从小程序接收的页面标题
-- **复制内容**: 复制从小程序接收的 HTML 内容
+- **复制标题**: 从 URL 参数获取并复制文件名作为标题
+- **复制内容**: 复制预览框内的 HTML 内容（包含格式和样式）
 - **智能提示**: 根据内容状态显示相应的提示信息
+- **降级支持**: 支持现代 Clipboard API 和传统 execCommand 方案
 
 ### 3. 微信小程序集成
 
-- **双向通信**: 使用 postMessage API 实现数据交换
-- **自动接收**: 自动接收小程序发送的 HTML 内容
-- **状态通知**: 通知小程序页面加载完成
+- **URL 参数通信**: 通过 URL 查询参数接收文件下载链接和文件名
+- **自动下载**: 自动检测并下载通过 URL 参数传递的文件内容
+- **状态通知**: 通过 Toast 提示显示下载和操作状态
+- **调试信息**: 通过 vConsole 查看详细的调试日志
+
+### 4. 用户界面
+
+- **粘性布局**: 标题和按钮组使用粘性定位，滚动时始终可见
+- **渐变设计**: 蓝紫色渐变主题，现代化视觉体验
+- **响应式设计**: 完美适配移动端和桌面端
+- **交互反馈**: 按钮悬停效果和操作状态提示
 
 ## 🛠️ 使用方法
 
@@ -51,12 +61,11 @@ miniWeb/
 推荐使用本地服务器来避免 CORS 问题：
 
 ```bash
-# 使用启动脚本
-cd miniWeb
-./start-server.sh
-
-# 或手动启动
+# 使用 Python 启动
 python3 -m http.server 8000
+
+# 或使用 Node.js
+npx http-server -p 8000
 ```
 
 然后在浏览器中访问：
@@ -65,103 +74,61 @@ python3 -m http.server 8000
 
 ### 3. 微信小程序集成
 
-在微信小程序中使用 WebView 组件打开此页面：
-
-```xml
-<web-view src="https://your-domain.com/miniWeb/index.html"></web-view>
-```
-
-## 🔗 微信小程序通信
-
-### 通信原理
-
-使用 `postMessage` API 实现微信小程序和 Web 页面的双向通信：
-
-1. **Web 页面 → 小程序**: 使用 `window.parent.postMessage()`
-2. **小程序 → Web 页面**: 小程序通过 WebView 的 `postMessage` 方法发送消息
-
-### 消息格式
-
-#### 从小程序接收的消息：
+#### 通过 URL 参数传递文件信息：
 
 ```javascript
-{
-  type: "SET_HTML_CONTENT",
-  content: "HTML内容字符串",
-  fileName: "文件名",
-  fileSize: "文件大小",
-  timestamp: 时间戳
-}
+// 在微信小程序中构建 WebView URL
+const webViewUrl = `https://your-domain.com/miniWeb/index.html?tempUrl=${encodeURIComponent(
+  fileUrl
+)}&fileName=${encodeURIComponent(fileName)}`;
+
+// 使用 WebView 组件打开
+<web-view src="{{webViewUrl}}"></web-view>;
 ```
 
-#### 发送到小程序的消息：
+#### URL 参数说明：
 
-```javascript
-{
-  type: "MESSAGE_TYPE",
-  content: "消息内容",
-  timestamp: 时间戳
-}
+- `tempUrl`: 文件的临时下载链接
+- `fileName`: 文件名（用于显示标题和复制功能）
+
+## 🔗 通信机制
+
+### 1. URL 参数通信
+
+当前版本主要通过 URL 查询参数进行通信：
+
+```
+https://your-domain.com/miniWeb/index.html?tempUrl=https://example.com/file.html&fileName=示例文章.html
 ```
 
-### 支持的消息类型
+### 2. 文件下载流程
 
-#### 从小程序接收：
+1. **参数检测**: 页面加载时自动检测 URL 参数
+2. **文件下载**: 如果存在 `tempUrl` 参数，自动下载文件内容
+3. **内容渲染**: 将下载的 HTML 内容渲染到预览区域
+4. **状态更新**: 更新页面状态和用户提示
 
-- `SET_HTML_CONTENT`: 设置 HTML 内容（主要消息类型）
-- `SET_TITLE`: 设置页面标题
-- `GET_CONTENT`: 获取当前内容
+### 3. 复制功能
 
-#### 发送到小程序：
-
-- `PAGE_READY`: 页面加载完成通知
-- `HTML_CONTENT_UPDATE`: HTML 内容更新通知
-
-### 使用示例
-
-#### 在微信小程序中发送 HTML 内容：
-
-```javascript
-// 发送HTML内容到Web页面
-webView.postMessage({
-  data: {
-    type: "SET_HTML_CONTENT",
-    content: "<h1>文章标题</h1><p>这是文章内容...</p>",
-    fileName: "示例文章",
-    fileSize: "2.5 KB",
-    timestamp: Date.now(),
-  },
-});
-```
-
-#### 在微信小程序中接收消息：
-
-```javascript
-// 监听Web页面消息
-webView.addEventListener("message", function (e) {
-  console.log("收到Web页面消息:", e.detail.data);
-
-  if (e.detail.data.type === "HTML_CONTENT_UPDATE") {
-    // 处理HTML内容更新
-    console.log("HTML内容已更新:", e.detail.data.content);
-  }
-});
-```
+- **标题复制**: 从 `fileName` 参数获取文件名并复制
+- **内容复制**: 复制预览区域内的完整 HTML 内容
+- **格式保持**: 支持 HTML 格式和纯文本格式的复制
 
 ## 🎨 界面设计
 
 ### 页面布局
 
-1. **顶部标题**: "文章预览-创作者工具"
-2. **页面标题**: 显示从小程序接收的文件名
-3. **复制按钮**: 两个横排按钮，支持复制标题和内容
-4. **预览区域**: 大容器显示 HTML 内容的渲染效果
+1. **顶部标题**: "文章预览-创作者工具"（粘性定位）
+2. **复制按钮**: 两个横排按钮，支持复制标题和内容（粘性定位）
+3. **预览区域**: 大容器显示 HTML 内容的渲染效果
+4. **调试面板**: 右下角 vConsole 按钮（开发环境）
 
 ### 样式特点
 
-- **渐变色彩**: 使用蓝紫色渐变主题
+- **渐变色彩**: 蓝紫色渐变主题 (`#667eea` → `#764ba2`)
 - **卡片设计**: 圆角边框和阴影效果
-- **响应式**: 支持移动端和桌面端
+- **粘性定位**: 标题和按钮组在滚动时始终可见
+- **响应式**: 完美支持移动端和桌面端
 - **交互反馈**: 按钮悬停和点击效果
 
 ## 🔧 技术实现
@@ -169,15 +136,24 @@ webView.addEventListener("message", function (e) {
 ### 核心功能
 
 - **HTML 解析**: 使用 `innerHTML` 渲染 HTML 内容
+- **文件下载**: 基于 Fetch API 的文件下载功能
 - **剪贴板操作**: 支持现代浏览器的 Clipboard API 和降级方案
-- **消息处理**: 基于 postMessage 的消息路由系统
+- **URL 解析**: 使用 URLSearchParams 解析查询参数
 - **状态管理**: 全局变量存储接收到的数据
 
-### 安全考虑
+### 布局技术
 
-- **内容过滤**: 基础的安全过滤机制
-- **XSS 防护**: 建议在生产环境使用 DOMPurify 等库
-- **消息验证**: 验证消息格式和内容
+- **粘性定位**: 使用 `position: sticky` 实现始终可见的头部
+- **Flexbox**: 灵活的按钮布局和居中对齐
+- **CSS Grid**: 响应式网格布局
+- **媒体查询**: 移动端和桌面端的适配
+
+### 调试支持
+
+- **vConsole 集成**: 移动端调试面板
+- **配置开关**: 通过 `CONFIG.ENABLE_VCONSOLE` 控制调试功能
+- **详细日志**: 下载过程、复制操作等关键操作的日志记录
+- **错误处理**: 完善的异常处理和用户提示
 
 ## 📱 浏览器支持
 
@@ -194,6 +170,32 @@ webView.addEventListener("message", function (e) {
 2. **错误处理**: 完善的异常处理机制
 3. **用户体验**: 清晰的状态提示和反馈
 4. **性能优化**: 避免频繁的 DOM 操作
+5. **调试友好**: 开发环境启用 vConsole，生产环境关闭
+
+## 🔧 配置说明
+
+### 开发环境配置
+
+```javascript
+const CONFIG = {
+  ENABLE_VCONSOLE: true, // 启用调试面板
+};
+```
+
+### 生产环境配置
+
+```javascript
+const CONFIG = {
+  ENABLE_VCONSOLE: false, // 关闭调试功能
+};
+```
+
+## 🚀 部署说明
+
+1. **上传文件**: 将 `index.html` 上传到 Web 服务器
+2. **配置域名**: 确保域名支持 HTTPS（微信小程序要求）
+3. **测试功能**: 验证文件下载和复制功能
+4. **性能优化**: 生产环境关闭调试功能
 
 ## 🤝 贡献
 
@@ -207,6 +209,6 @@ MIT License - 可自由使用和修改
 
 **开始使用**: 直接打开 `index.html` 文件，或者启动本地服务器来查看完整效果。
 
-**微信小程序集成**: 参考上述通信说明，实现与小程序的数据交换功能。
+**微信小程序集成**: 通过 URL 参数传递文件下载链接和文件名，实现文件内容的自动下载和预览。
 
-**核心功能**: 专注于文章预览和内容复制，为创作者提供简洁高效的工具。
+**核心功能**: 专注于文章预览和内容复制，为创作者提供简洁高效的工具，支持粘性布局和响应式设计。
