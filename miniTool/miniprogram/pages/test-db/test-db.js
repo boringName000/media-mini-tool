@@ -1,227 +1,402 @@
-// 文件下载测试页面
+// WebView测试页面 - 文件预览功能
+const timeUtils = require("../../utils/timeUtils.js");
+const {
+  cleanupOrphanedFiles,
+  readArticleMetadata,
+  deleteArticleFilePair,
+  deleteArticleFilePairs,
+} = require("../../utils/articleDownloadUtils.js");
+
 Page({
   data: {
-    // 文件下载相关
-    downloadStatus: "",
+    // 默认域名
+    defaultDomain: "cloud1-5g6ik91va74262bb-1367027189.tcloudbaseapp.com",
+    // 控制WebView显示
+    showWebView: false,
+    // WebView的URL
+    webViewUrl: "",
+    // 当前预览的文件名
+    currentFileName: "",
+    // 文件管理相关
     downloadedFiles: [],
-    // 测试文件地址
-    testFileUrl:
-      "cloud://cloud1-5g6ik91va74262bb.636c-cloud1-5g6ik91va74262bb-1367027189/article/1/1/前_1-1756294175589.txt",
-    // 文件预览相关
-    currentFile: null,
-    fileContent: "",
   },
 
   onLoad: function (options) {
-    console.log("文件下载测试页面加载");
+    console.log("WebView测试页面加载");
+    // 页面加载时自动获取已下载的文件列表
+    this.loadDownloadedFiles();
   },
 
-  // 下载测试文件
-  downloadTestFile: function () {
-    console.log("=== 开始下载测试文件 ===");
-
-    this.setData({
-      downloadStatus: "开始下载...",
-    });
-
-    wx.showLoading({
-      title: "下载中...",
-    });
-
-    // 使用云存储下载文件
-    wx.cloud.downloadFile({
-      fileID: this.data.testFileUrl,
-      success: (res) => {
-        console.log("云存储下载成功:", res);
-        wx.hideLoading();
-
-        // 保存文件到本地
-        this.saveFileToLocal(res.tempFilePath, "测试文档");
-      },
-      fail: (err) => {
-        console.error("云存储下载失败:", err);
-        wx.hideLoading();
-
-        this.setData({
-          downloadStatus: "下载失败: " + err.errMsg,
-        });
-
-        wx.showToast({
-          title: "下载失败",
-          icon: "none",
-        });
-      },
-    });
+  onShow: function () {
+    // 页面显示时刷新文件列表
+    this.loadDownloadedFiles();
   },
 
-  // 保存文件到本地
-  saveFileToLocal: function (tempFilePath, fileName) {
-    console.log("=== 保存文件到本地 ===");
-
-    this.setData({
-      downloadStatus: "保存文件中...",
-    });
-
-    // 生成保存的文件名
-    const savedFileName = `${fileName}_${Date.now()}.txt`;
-
-    // 构建完整的保存路径
-    const savedFilePath = `${wx.env.USER_DATA_PATH}/downloads/${savedFileName}`;
-
-    // 使用文件系统管理器保存文件到本地
-    const fs = wx.getFileSystemManager();
-
-    // 先确保 downloads 目录存在
-    try {
-      fs.mkdirSync(`${wx.env.USER_DATA_PATH}/downloads`, true);
-    } catch (e) {
-      console.log("downloads 目录已存在或创建失败:", e);
-    }
-
-    // 使用新的文件系统 API 保存文件
-    fs.saveFile({
-      tempFilePath: tempFilePath,
-      filePath: savedFilePath,
-      success: (res) => {
-        console.log("文件保存成功:", savedFilePath);
-
-        this.setData({
-          downloadStatus: "文件已保存到本地",
-        });
-
-        wx.showToast({
-          title: "文件已下载到本地",
-          icon: "success",
-          duration: 2000,
-        });
-
-        // 保存成功后，询问用户是否打开文件
-        setTimeout(() => {
-          wx.showModal({
-            title: "文件下载成功",
-            content: "文件已下载到本地，是否立即打开查看？",
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                this.openSavedFile(savedFilePath, fileName);
-              }
-            },
-          });
-        }, 1000);
-      },
-      fail: (err) => {
-        console.error("保存文件失败:", err);
-
-        this.setData({
-          downloadStatus: "保存失败: " + err.errMsg,
-        });
-
-        // 如果保存失败，尝试直接打开临时文件
-        wx.showModal({
-          title: "下载失败",
-          content: "无法保存到本地，是否直接打开文件？",
-          success: (modalRes) => {
-            if (modalRes.confirm) {
-              this.openTempFile(tempFilePath, fileName);
-            }
-          },
-        });
-      },
-    });
-  },
-
-  // 打开已保存的文件
-  openSavedFile: function (savedFilePath, fileName) {
-    wx.openDocument({
-      filePath: savedFilePath,
-      fileType: "txt",
-      success: () => {
-        console.log("文件打开成功");
-      },
-      fail: (err) => {
-        console.error("打开保存的文件失败:", err);
-        wx.showToast({
-          title: "文件已保存，但无法打开",
-          icon: "none",
-        });
-      },
-    });
-  },
-
-  // 打开临时文件
-  openTempFile: function (tempFilePath, fileName) {
-    wx.openDocument({
-      filePath: tempFilePath,
-      fileType: "txt",
-      success: () => {
-        console.log("临时文件打开成功");
-      },
-      fail: (err) => {
-        console.error("打开临时文件失败:", err);
-        wx.showToast({
-          title: "无法打开文件",
-          icon: "none",
-        });
-      },
-    });
-  },
-
-  // 查看下载的文件列表
-  viewDownloadedFiles: function () {
-    console.log("=== 查看下载的文件列表 ===");
-
-    this.setData({
-      downloadStatus: "正在获取文件列表...",
-    });
+  // 加载已下载的文件列表
+  loadDownloadedFiles: function () {
+    console.log("加载本地文件列表");
 
     const fs = wx.getFileSystemManager();
     const downloadsPath = `${wx.env.USER_DATA_PATH}/downloads`;
 
     try {
-      // 读取 downloads 目录
-      const files = fs.readdirSync(downloadsPath);
-      console.log("downloads 目录文件列表:", files);
+      // 检查 downloads 目录是否存在
+      fs.accessSync(downloadsPath);
+    } catch (e) {
+      try {
+        fs.mkdirSync(downloadsPath, true);
+      } catch (mkdirErr) {
+        console.error("创建 downloads 目录失败:", mkdirErr);
+        this.setData({
+          downloadedFiles: [],
+        });
+        return;
+      }
+    }
 
-      const fileList = [];
+    // 读取 downloads 目录下的所有文件
+    fs.readdir({
+      dirPath: downloadsPath,
+      success: (res) => {
+        const files = res.files
+          .filter((file) => {
+            // 只显示主文件，排除元数据文件
+            return (
+              (file.endsWith(".txt") || file.endsWith(".html")) &&
+              !file.endsWith(".meta.json")
+            );
+          })
+          .map((file) => {
+            const filePath = `${downloadsPath}/${file}`;
 
-      // 获取每个文件的详细信息
-      files.forEach((fileName) => {
-        try {
-          const filePath = `${downloadsPath}/${fileName}`;
-          const stats = fs.statSync(filePath);
+            const stats = fs.statSync(filePath);
+            // 使用更可靠的时间属性，优先使用修改时间
+            const fileTime =
+              stats.lastModifiedTime || stats.lastAccessedTime || Date.now();
 
-          fileList.push({
-            name: fileName,
-            size: this.formatFileSize(stats.size),
-            time: this.formatTime(stats.lastAccessedTime),
-            path: filePath,
-          });
-        } catch (e) {
-          console.error("获取文件信息失败:", fileName, e);
-        }
-      });
+            // 尝试从元数据文件获取文章标题与下载时间
+            let displayName = file;
+            let articleTitle = "未知文章";
+            let metadata = null;
+            let effectiveTimestamp = fileTime;
 
-      // 按时间倒序排列
-      fileList.sort((a, b) => new Date(b.time) - new Date(a.time));
+            try {
+              if (stats.size > 0) {
+                // 使用工具函数读取元数据
+                const metadata = readArticleMetadata(filePath);
 
-      this.setData({
-        downloadedFiles: fileList,
-        downloadStatus: `找到 ${fileList.length} 个文件`,
-      });
+                if (metadata) {
+                  if (metadata.originalTitle) {
+                    articleTitle = metadata.originalTitle;
+                    displayName = metadata.originalTitle;
+                  }
+                  if (
+                    metadata.downloadTime &&
+                    typeof metadata.downloadTime === "number"
+                  ) {
+                    effectiveTimestamp = metadata.downloadTime;
+                  }
+                }
+              }
+            } catch (metaError) {
+              console.error(`处理元数据时发生错误: ${file}`, metaError);
+            }
 
-      console.log("文件列表:", fileList);
-    } catch (err) {
-      console.error("读取文件列表失败:", err);
+            // 添加详细的文件信息
+            const fileInfo = {
+              name: file, // 实际文件名（唯一ID）
+              displayName: displayName, // UI显示名称（文章标题）
+              path: filePath,
+              size: this.formatFileSize(stats.size),
+              rawSize: stats.size, // 原始字节数
+              // 排序使用下载时间戳（若有），否则文件修改时间
+              timestamp: effectiveTimestamp,
+              time: timeUtils.formatTime(
+                effectiveTimestamp,
+                "YYYY-MM-DD HH:mm",
+                {
+                  defaultValue: "未知时间",
+                }
+              ),
+              lastModified: stats.lastModifiedTime,
+              lastAccessed: stats.lastAccessedTime,
+              isFile: stats.isFile(),
+              isDirectory: stats.isDirectory(),
+              isEmpty: stats.size === 0, // 标记是否为空文件
+            };
 
-      this.setData({
-        downloadStatus: "读取文件列表失败: " + err.errMsg,
-        downloadedFiles: [],
-      });
+            return fileInfo;
+          })
+          .sort((a, b) => b.timestamp - a.timestamp); // 按时间戳倒序排列
 
+        this.setData({
+          downloadedFiles: files,
+        });
+      },
+      fail: (err) => {
+        console.error("读取目录失败:", err);
+        this.setData({
+          downloadedFiles: [],
+        });
+      },
+    });
+  },
+
+  // 在WebView中预览文件
+  previewFileInWebView: function (e) {
+    const file = e.currentTarget.dataset.file;
+
+    if (!file || !file.path) {
       wx.showToast({
-        title: "读取文件列表失败",
+        title: "文件信息无效",
+        icon: "none",
+      });
+      return;
+    }
+
+    // 检查是否为空文件
+    if (file.isEmpty) {
+      wx.showModal({
+        title: "文件为空",
+        content: `文件 "${file.name}" 大小为0字节，无法预览。\n\n可能的原因：\n• 文件下载不完整\n• 文件保存时出错\n• 文件被损坏`,
+        showCancel: false,
+        confirmText: "知道了",
+      });
+      return;
+    }
+
+    wx.showLoading({
+      title: "获取下载地址...",
+    });
+
+    // 尝试从元数据获取原始文件ID
+    try {
+      const metadata = readArticleMetadata(file.path);
+      if (metadata && metadata.originalFileId) {
+        console.log("✅ 找到原始文件ID:", metadata.originalFileId);
+
+        // 获取临时下载URL
+        wx.cloud.getTempFileURL({
+          fileList: [metadata.originalFileId],
+          success: (res) => {
+            wx.hideLoading();
+
+            if (res.fileList && res.fileList.length > 0) {
+              const fileInfo = res.fileList[0];
+              if (fileInfo.status === 0 && fileInfo.tempFileURL) {
+                console.log("✅ 获取到临时下载URL:", fileInfo.tempFileURL);
+
+                // 打开WebView并传递临时URL
+                this.openWebViewWithTempUrl(file, fileInfo.tempFileURL);
+              } else {
+                console.error(
+                  "❌ 获取临时URL失败:",
+                  fileInfo.status,
+                  fileInfo.errMsg
+                );
+                wx.showToast({
+                  title: "获取下载地址失败",
+                  icon: "none",
+                });
+              }
+            } else {
+              wx.showToast({
+                title: "获取下载地址失败",
+                icon: "none",
+              });
+            }
+          },
+          fail: (err) => {
+            wx.hideLoading();
+            console.error("获取临时URL失败:", err);
+            wx.showToast({
+              title: "获取下载地址失败",
+              icon: "none",
+            });
+          },
+        });
+      } else {
+        wx.hideLoading();
+        console.log("❌ 未找到原始文件ID，无法预览");
+        wx.showToast({
+          title: "无法预览：缺少文件信息",
+          icon: "none",
+        });
+      }
+    } catch (error) {
+      wx.hideLoading();
+      console.error("处理文件预览失败:", error);
+      wx.showToast({
+        title: "处理失败",
         icon: "none",
       });
     }
+  },
+
+  // 打开WebView并传递临时下载URL
+  openWebViewWithTempUrl: function (file, tempFileURL) {
+    try {
+      // 构建WebView URL，包含临时下载URL作为参数
+      const url = `https://${
+        this.data.defaultDomain
+      }/miniWeb/index.html?tempUrl=${encodeURIComponent(
+        tempFileURL
+      )}&fileName=${encodeURIComponent(file.displayName || file.name)}`;
+
+      this.setData({
+        webViewUrl: url,
+        showWebView: true,
+        currentFileName: file.displayName || file.name,
+      });
+
+      console.log("✅ WebView已打开，临时下载URL已通过URL参数传递");
+      console.log("📝 WebView页面将自动下载并显示文件内容");
+      console.log("🔗 临时URL:", tempFileURL);
+    } catch (error) {
+      console.error("打开WebView失败:", error);
+      wx.showToast({
+        title: "打开WebView失败",
+        icon: "none",
+      });
+    }
+  },
+
+  // 打开WebView（普通模式）
+  openWebView: function () {
+    console.log("=== 打开WebView ===");
+
+    const url = `https://${this.data.defaultDomain}/miniWeb/index.html#converter`;
+
+    this.setData({
+      webViewUrl: url,
+      showWebView: true,
+      currentFileName: "WebView测试",
+    });
+  },
+
+  // 关闭WebView
+  closeWebView: function () {
+    this.setData({
+      showWebView: false,
+      webViewUrl: "",
+      currentFileName: "",
+    });
+  },
+
+  // 删除文件
+  deleteFile: function (e) {
+    const file = e.currentTarget.dataset.file;
+
+    if (!file || !file.path) {
+      wx.showToast({
+        title: "文件信息无效",
+        icon: "none",
+      });
+      return;
+    }
+
+    wx.showModal({
+      title: "确认删除",
+      content: `确定要删除文章 "${file.displayName || file.name}" 吗？`,
+      success: (res) => {
+        if (res.confirm) {
+          const fs = wx.getFileSystemManager();
+
+          // 使用工具函数删除文件对
+          const result = deleteArticleFilePair(file.path);
+
+          if (result.articleDeleted) {
+            console.log("✅ 文件删除成功");
+
+            // 静默清理可能产生的孤立文件
+            const downloadsPath = `${wx.env.USER_DATA_PATH}/downloads`;
+            const orphanedCount = cleanupOrphanedFiles(downloadsPath);
+            if (orphanedCount > 0) {
+              console.log(
+                `🔧 删除文件后自动清理了 ${orphanedCount} 个孤立文件`
+              );
+            }
+
+            wx.showToast({
+              title: "文件已删除",
+              icon: "success",
+            });
+
+            // 刷新文件列表
+            this.loadDownloadedFiles();
+          } else {
+            wx.showToast({
+              title: "删除失败",
+              icon: "none",
+            });
+          }
+        }
+      },
+    });
+  },
+
+  // 清空所有文件
+  clearAllFiles: function () {
+    wx.showModal({
+      title: "确认清空",
+      content: "确定要删除所有下载的文件吗？此操作不可恢复。",
+      success: (res) => {
+        if (res.confirm) {
+          const fs = wx.getFileSystemManager();
+          const downloadsPath = `${wx.env.USER_DATA_PATH}/downloads`;
+
+          try {
+            console.log("🧹 开始清空所有文件操作");
+
+            // 静默清理孤立文件
+            const orphanedCount = cleanupOrphanedFiles(downloadsPath);
+            if (orphanedCount > 0) {
+              console.log(`🔧 清空前自动清理了 ${orphanedCount} 个孤立文件`);
+            }
+
+            // 读取目录下的所有文件
+            const files = fs.readdirSync(downloadsPath);
+            let deletedCount = 0;
+            let deletedMetaCount = 0;
+
+            // 收集需要删除的文章文件路径
+            const articleFiles = files.filter(
+              (file) => file.endsWith(".txt") || file.endsWith(".html")
+            );
+            const articlePaths = articleFiles.map(
+              (file) => `${downloadsPath}/${file}`
+            );
+
+            console.log(`📂 发现 ${articleFiles.length} 个文章文件，开始删除`);
+
+            // 使用工具函数批量删除文章文件对
+            const deleteStats = deleteArticleFilePairs(articlePaths, {
+              silent: false,
+            });
+            deletedCount = deleteStats.success;
+            deletedMetaCount = deleteStats.total; // 每个文章文件对应一个元数据文件
+
+            // 刷新文件列表
+            this.loadDownloadedFiles();
+
+            const totalDeleted = deletedCount + deletedMetaCount;
+            console.log(
+              `✅ 清空文件操作完成！共删除 ${deletedCount} 个主文件和 ${deletedMetaCount} 个元数据文件，总计 ${totalDeleted} 个文件`
+            );
+            wx.showToast({
+              title: `已删除 ${totalDeleted} 个文件`,
+              icon: "success",
+            });
+          } catch (err) {
+            console.error("❌ 清空文件失败:", err);
+            wx.showToast({
+              title: "清空失败",
+              icon: "none",
+            });
+          }
+        }
+      },
+    });
   },
 
   // 格式化文件大小
@@ -231,178 +406,5 @@ Page({
     const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  },
-
-  // 格式化时间
-  formatTime: function (timestamp) {
-    const date = new Date(timestamp);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}-${String(date.getDate()).padStart(2, "0")} ${String(
-      date.getHours()
-    ).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-  },
-
-  // 读取文件内容
-  readFileContent: function (e) {
-    const file = e.currentTarget.dataset.file;
-    console.log("=== 读取文件内容 ===", file);
-
-    if (!file || !file.path) {
-      wx.showToast({
-        title: "文件路径无效",
-        icon: "none",
-      });
-      return;
-    }
-
-    // 显示加载状态
-    wx.showLoading({
-      title: "读取文件中...",
-    });
-
-    const fs = wx.getFileSystemManager();
-
-    // 读取文件内容
-    fs.readFile({
-      filePath: file.path,
-      encoding: "utf8",
-      success: (res) => {
-        console.log("文件读取成功:", res);
-        wx.hideLoading();
-
-        // 显示全部内容，不进行截断
-        const content = res.data;
-
-        this.setData({
-          currentFile: file,
-          fileContent: content,
-        });
-
-        wx.showToast({
-          title: "文件读取成功",
-          icon: "success",
-          duration: 1500,
-        });
-      },
-      fail: (err) => {
-        console.error("文件读取失败:", err);
-        wx.hideLoading();
-
-        // 尝试使用其他编码方式读取
-        this.tryReadFileWithDifferentEncoding(file.path, file);
-      },
-    });
-  },
-
-  // 尝试使用不同编码方式读取文件
-  tryReadFileWithDifferentEncoding: function (filePath, file) {
-    console.log("尝试使用不同编码方式读取文件");
-
-    const fs = wx.getFileSystemManager();
-
-    // 尝试使用 base64 编码读取
-    fs.readFile({
-      filePath: filePath,
-      encoding: "base64",
-      success: (res) => {
-        console.log("base64 读取成功");
-
-        // 将 base64 转换为文本
-        try {
-          const content = wx.arrayBufferToBase64(res.data);
-          const textContent = this.base64ToText(content);
-
-          // 显示全部内容，不进行截断
-          const displayContent = textContent;
-
-          this.setData({
-            currentFile: file,
-            fileContent: displayContent,
-          });
-
-          wx.showToast({
-            title: "文件读取成功",
-            icon: "success",
-            duration: 1500,
-          });
-        } catch (e) {
-          console.error("base64 转换失败:", e);
-          this.showReadError(file);
-        }
-      },
-      fail: (err) => {
-        console.error("base64 读取也失败:", err);
-        this.showReadError(file);
-      },
-    });
-  },
-
-  // base64 转文本
-  base64ToText: function (base64String) {
-    try {
-      // 简单的 base64 解码
-      const binaryString = atob(base64String);
-      let result = "";
-      for (let i = 0; i < binaryString.length; i++) {
-        result += String.fromCharCode(binaryString.charCodeAt(i));
-      }
-      return result;
-    } catch (e) {
-      console.error("base64 解码失败:", e);
-      return "无法解码文件内容";
-    }
-  },
-
-  // 显示读取错误
-  showReadError: function (file) {
-    this.setData({
-      currentFile: file,
-      fileContent: "无法读取文件内容，可能是文件格式不支持或文件损坏。",
-    });
-
-    wx.showToast({
-      title: "文件读取失败",
-      icon: "none",
-      duration: 2000,
-    });
-  },
-
-  // 跳转到文章预览页面
-  goToArticlePreview: function () {
-    if (!this.data.fileContent) {
-      wx.showToast({
-        title: "文件内容为空",
-        icon: "none",
-      });
-      return;
-    }
-
-    try {
-      // 对内容进行URL编码，避免参数过长或特殊字符问题
-      const encodedContent = encodeURIComponent(this.data.fileContent);
-
-      // 跳转到文章预览页面
-      wx.navigateTo({
-        url: `/pages/article-preview/article-preview?content=${encodedContent}`,
-        success: () => {
-          console.log("跳转到文章预览页面成功");
-        },
-        fail: (error) => {
-          console.error("跳转到文章预览页面失败:", error);
-          wx.showToast({
-            title: "页面跳转失败",
-            icon: "none",
-          });
-        },
-      });
-    } catch (error) {
-      console.error("准备跳转参数失败:", error);
-      wx.showToast({
-        title: "参数准备失败",
-        icon: "none",
-      });
-    }
   },
 });

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="文章预览创作者工具" />
+    <title>文章预览-创作者工具</title>
+
+    <!-- 引入vConsole用于移动端调试 -->
+    <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
+
+    <style>
+      /* 基础样式 */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        line-height: 1.6;
+        color: #1f2937;
+        background-color: #f8f9fa;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* 头部样式 */
+      .header {
+        background-color: #fff;
+        border-bottom: 1px solid #e0e0e0;
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem 20px;
+      }
+
+      .logo {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      /* 主要内容区域 */
+      .main {
+        min-height: calc(100vh - 140px);
+        padding: 2rem 0;
+      }
+
+      /* 转换页面样式 */
+      .converter-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+      }
+
+      /* 复制按钮区域 */
+      .copy-button-container {
+        padding: 20px 40px; /* 增加左右边距 */
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        background-color: #fff;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .copy-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 16px 24px;
+        font-size: 15px;
+        font-weight: 600;
+        flex: 0 0 auto; /* 固定宽度，不伸缩 */
+        width: 180px; /* 固定宽度，确保文字不换行 */
+        height: 56px; /* 固定高度 */
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+        white-space: nowrap; /* 防止文字换行 */
+        overflow: hidden; /* 隐藏溢出内容 */
+      }
+
+      .copy-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .copy-btn:active {
+        transform: translateY(0);
+      }
+
+      .btn-icon {
+        font-size: 18px;
+      }
+
+      /* 当只有2个按钮时的特殊样式 */
+      .copy-button-container.two-buttons {
+        justify-content: center;
+        gap: 40px; /* 调整按钮间距 */
+        padding: 20px 50px; /* 2按钮模式下的左右边距 */
+      }
+
+      .copy-button-container.two-buttons .copy-btn {
+        flex: 0 0 auto; /* 固定宽度，不伸缩 */
+        width: 180px; /* 固定宽度，确保文字不换行 */
+      }
+
+      /* 预览容器 */
+      .preview-container {
+        padding: 30px;
+        background-color: #fff;
+        margin: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        min-height: 400px;
+      }
+
+      .preview-content {
+        width: 100%;
+        min-height: 300px;
+        padding: 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        background-color: #fff;
+        overflow: auto;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue",
+          Helvetica, Arial, sans-serif;
+        line-height: 1.6;
+      }
+
+      .preview-placeholder {
+        text-align: center;
+        color: #6c757d;
+        padding: 40px 20px;
+      }
+
+      .placeholder-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.6;
+      }
+
+      .preview-placeholder p {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      /* 响应式设计 */
+      @media (max-width: 768px) {
+        .copy-button-container {
+          padding: 15px 25px; /* 移动端保持合适的左右边距 */
+          gap: 15px;
+        }
+
+        .copy-btn {
+          max-width: 150px;
+          padding: 14px 24px;
+          font-size: 14px;
+        }
+
+        /* 移动端2按钮模式特殊样式 */
+        .copy-button-container.two-buttons {
+          padding: 15px 25px; /* 移动端2按钮模式下的边距 */
+          gap: 15px; /* 移动端按钮间距 */
+        }
+
+        .copy-button-container.two-buttons .copy-btn {
+          width: 150px; /* 移动端按钮宽度，确保文字不换行 */
+        }
+
+        .preview-container {
+          margin: 10px;
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 页面头部 -->
+    <header class="header">
+      <div class="container">
+        <h1 class="logo">文章预览-创作者工具</h1>
+      </div>
+    </header>
+
+    <!-- 主要内容区域 -->
+    <main class="main">
+      <div class="converter-container">
+        <!-- 复制按钮区域 -->
+        <div class="copy-button-container">
+          <button class="copy-btn copy-title-btn" id="copyTitleBtn">
+            <span class="btn-icon">📋</span>
+            复制文章标题
+          </button>
+          <button class="copy-btn copy-content-btn" id="copyContentBtn">
+            <span class="btn-icon">📋</span>
+            复制预览效果
+          </button>
+        </div>
+
+        <!-- HTML预览区域 -->
+        <div class="preview-container">
+          <div class="preview-content" id="previewContent">
+            <div class="preview-placeholder">
+              <div class="placeholder-icon">👁️</div>
+              <p>等待接收小程序发送的HTML内容...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // ===== 全局配置开关 =====
+      const CONFIG = {
+        // 是否启用vConsole调试面板 (发布时设置为false)
+        // 启用时自动启用详细日志，关闭时自动关闭详细日志
+        ENABLE_VCONSOLE: true,
+      };
+
+      // 💡 配置说明：
+      // - 开发环境：设置 ENABLE_VCONSOLE: true，自动启用详细日志和vConsole
+      // - 生产环境：设置 ENABLE_VCONSOLE: false，自动关闭所有调试功能
+      // - 所有调试信息通过vConsole查看，页面保持简洁
+
+      // 全局变量存储从小程序接收的数据
+      let receivedData = {
+        title: "",
+        content: "",
+        fileName: "",
+        fileSize: "",
+        timestamp: null,
+      };
+
+      // 初始化页面
+      function initPage() {
+        console.log("文章预览创作者工具页面已加载");
+        initEventListeners();
+        initWechatCommunication();
+      }
+
+      // 初始化事件监听器
+      function initEventListeners() {
+        // 复制标题按钮
+        const copyTitleBtn = document.getElementById("copyTitleBtn");
+        if (copyTitleBtn) {
+          copyTitleBtn.addEventListener("click", copyTitle);
+        }
+
+        // 复制内容按钮
+        const copyContentBtn = document.getElementById("copyContentBtn");
+        if (copyContentBtn) {
+          copyContentBtn.addEventListener("click", copyContent);
+        }
+
+        // 由于删除了调试按钮，现在总是只有2个按钮，应用2按钮样式
+        const buttonContainer = document.querySelector(
+          ".copy-button-container"
+        );
+        if (buttonContainer) {
+          buttonContainer.classList.add("two-buttons");
+        }
+      }
+
+      // 复制标题功能
+      function copyTitle() {
+        // 从URL参数中获取文件名作为标题
+        const urlParams = new URLSearchParams(window.location.search);
+        const fileName = urlParams.get("fileName");
+
+        if (fileName) {
+          const title = decodeURIComponent(fileName);
+          copyToClipboard(title);
+          showToast("文章标题已复制到剪贴板", "success");
+          if (CONFIG.ENABLE_VCONSOLE) {
+            console.log("✅ 复制标题成功:", title);
+          }
+        } else {
+          showToast("暂无文章标题可复制", "warning");
+        }
+      }
+
+      // 复制预览效果功能
+      function copyContent() {
+        // 获取预览框容器
+        const previewContent = document.getElementById("previewContent");
+
+        if (!previewContent) {
+          showToast("预览内容不存在", "error");
+          return;
+        }
+
+        try {
+          // 直接复制预览框内的HTML内容（包含所有格式和样式）
+          const htmlContent = previewContent.innerHTML;
+
+          if (!htmlContent || htmlContent.trim() === "") {
+            showToast("预览内容为空，无法复制", "warning");
+            return;
+          }
+
+          // 使用现代Clipboard API复制HTML格式
+          if (navigator.clipboard && window.ClipboardItem) {
+            const clipboardItem = new ClipboardItem({
+              "text/html": new Blob([htmlContent], { type: "text/html" }),
+              "text/plain": new Blob([previewContent.textContent || ""], {
+                type: "text/plain",
+              }),
+            });
+
+            navigator.clipboard
+              .write([clipboardItem])
+              .then(() => {
+                showToast("预览效果已复制到剪贴板", "success");
+                if (CONFIG.ENABLE_VCONSOLE) {
+                  console.log("✅ 复制预览效果成功");
+                }
+              })
+              .catch(() => {
+                // 降级方案
+                copyWithExecCommand(htmlContent);
+              });
+          } else {
+            // 降级方案
+            copyWithExecCommand(htmlContent);
+          }
+        } catch (error) {
+          console.error("复制预览效果失败:", error);
+          showToast("复制失败，请手动选择内容", "error");
+        }
+      }
+
+      // 降级复制方案
+      function copyWithExecCommand(htmlContent) {
+        try {
+          // 创建临时容器并复制内容
+          const tempDiv = document.createElement("div");
+          tempDiv.style.position = "absolute";
+          tempDiv.style.left = "-9999px";
+          tempDiv.innerHTML = htmlContent;
+          document.body.appendChild(tempDiv);
+
+          // 选择并复制
+          const range = document.createRange();
+          range.selectNodeContents(tempDiv);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+
+          const success = document.execCommand("copy");
+          selection.removeAllRanges();
+          document.body.removeChild(tempDiv);
+
+          if (success) {
+            showToast("预览效果已复制到剪贴板", "success");
+            if (CONFIG.ENABLE_VCONSOLE) {
+              console.log("✅ 降级方案复制成功");
+            }
+          } else {
+            showToast("复制失败，请手动选择内容", "error");
+          }
+        } catch (error) {
+          console.error("降级复制失败:", error);
+          showToast("复制失败，请手动选择内容", "error");
+        }
+      }
+
+      // 复制到剪贴板
+      async function copyToClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (err) {
+          // 降级方案
+          const textArea = document.createElement("textarea");
+          textArea.value = text;
+          document.body.appendChild(textArea);
+          textArea.select();
+          try {
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            return true;
+          } catch (err) {
+            document.body.removeChild(textArea);
+            return false;
+          }
+        }
+      }
+
+      // 显示提示消息
+      function showToast(message, type = "info") {
+        // 创建toast元素
+        const toast = document.createElement("div");
+        toast.className = `toast toast-${type}`;
+        toast.textContent = message;
+
+        // 添加样式
+        Object.assign(toast.style, {
+          position: "fixed",
+          top: "20px",
+          right: "20px",
+          padding: "12px 20px",
+          borderRadius: "6px",
+          color: "white",
+          fontSize: "14px",
+          fontWeight: "500",
+          zIndex: "10000",
+          opacity: "0",
+          transform: "translateX(100%)",
+          transition: "all 0.3s ease",
+        });
+
+        // 根据类型设置背景色
+        const colors = {
+          success: "#28a745",
+          error: "#dc3545",
+          warning: "#ffc107",
+          info: "#17a2b8",
+        };
+
+        toast.style.backgroundColor = colors[type] || colors.info;
+
+        // 添加到页面
+        document.body.appendChild(toast);
+
+        // 显示动画
+        setTimeout(() => {
+          toast.style.opacity = "1";
+          toast.style.transform = "translateX(0)";
+        }, 100);
+
+        // 自动隐藏
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          toast.style.transform = "translateX(100%)";
+          setTimeout(() => {
+            if (document.body.contains(toast)) {
+              document.body.removeChild(toast);
+            }
+          }, 300);
+        }, 3000);
+      }
+
+      // 初始化页面
+      function initWechatCommunication() {
+        // 检查URL参数中是否有临时下载URL
+        checkURLParameters();
+      }
+
+      // 检查URL参数
+      function checkURLParameters() {
+        if (CONFIG.ENABLE_VCONSOLE) {
+          console.log("=== 开始检查URL参数 ===");
+          console.log("当前页面URL:", window.location.href);
+          console.log("URL查询字符串:", window.location.search);
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (CONFIG.ENABLE_VCONSOLE) {
+          console.log("所有URL参数:", Object.fromEntries(urlParams.entries()));
+        }
+
+        const tempUrl = urlParams.get("tempUrl");
+        const fileName = urlParams.get("fileName");
+
+        if (tempUrl) {
+          if (CONFIG.ENABLE_VCONSOLE) {
+            console.log("✅ 从URL参数获取到临时下载URL:", tempUrl);
+            console.log("📁 文件名:", fileName);
+          }
+
+          // 下载文件内容
+          downloadAndDisplayFile(tempUrl, fileName);
+        } else {
+          if (CONFIG.ENABLE_VCONSOLE) {
+            console.log("ℹ️ 未找到URL参数，等待其他方式获取内容");
+          }
+
+          // 显示等待状态
+          const previewContent = document.getElementById("previewContent");
+          if (previewContent) {
+            previewContent.innerHTML = `
+              <div class="preview-placeholder">
+                <div class="placeholder-icon">⏳</div>
+                <p>等待获取文件内容...</p>
+                <p style="font-size: 14px; color: #666; margin-top: 10px;">请通过vConsole查看详细调试信息</p>
+              </div>
+            `;
+          }
+        }
+      }
+
+      // 下载并显示文件内容
+      async function downloadAndDisplayFile(tempUrl, fileName) {
+        try {
+          if (CONFIG.ENABLE_VCONSOLE) {
+            console.log("🔄 开始下载文件...");
+            console.log("📥 下载URL:", tempUrl);
+            console.log("📁 文件名:", fileName);
+            console.log("⏰ 开始时间:", new Date().toLocaleString());
+          }
+
+          // 下载状态信息通过vConsole查看
+          showToast("正在下载文件内容...", "info");
+
+          const startTime = Date.now();
+          const response = await fetch(tempUrl);
+          const endTime = Date.now();
+
+          if (CONFIG.ENABLE_VCONSOLE) {
+            console.log(
+              "📡 HTTP响应状态:",
+              response.status,
+              response.statusText
+            );
+            console.log("⏱️ 下载耗时:", endTime - startTime, "ms");
+          }
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          if (CONFIG.ENABLE_VCONSOLE) {
+            console.log("📖 开始读取响应内容...");
+          }
+          const content = await response.text();
+
+          if (CONFIG.ENABLE_VCONSOLE) {
+            console.log("✅ 文件下载成功！");
+            console.log("📊 内容长度:", content.length, "字符");
+            console.log(
+              "📊 内容大小:",
+              ((content.length * 2) / 1024).toFixed(2),
+              "KB"
+            );
+            console.log("⏰ 完成时间:", new Date().toLocaleString());
+          }
+
+          // 下载成功状态通过vConsole查看
+
+          // 设置HTML内容
+          const messageData = {
+            type: "SET_HTML_CONTENT",
+            content: content,
+            fileName: fileName || "下载的文件",
+            fileSize: content.length,
+            timestamp: Date.now(),
+          };
+
+          setHTMLContent(messageData);
+          showToast("文件内容已加载完成", "success");
+        } catch (error) {
+          if (CONFIG.ENABLE_VCONSOLE) {
+            console.error("❌ 文件下载失败:", error);
+            console.error("❌ 错误详情:", error.stack);
+          }
+          showToast("文件下载失败: " + error.message, "error");
+
+          // 下载失败状态通过vConsole查看
+
+          // 显示错误信息
+          const previewContent = document.getElementById("previewContent");
+          if (previewContent) {
+            previewContent.innerHTML = `
+              <div class="preview-placeholder">
+                <div class="placeholder-icon">⚠️</div>
+                <p>文件下载失败</p>
+                <p style="font-size: 14px; color: #666; margin-top: 10px;">${error.message}</p>
+                <p style="font-size: 14px; color: #666; margin-top: 10px;">详细错误信息请查看vConsole</p>
+              </div>
+            `;
+          }
+        }
+      }
+
+      // 设置HTML内容
+      function setHTMLContent(data) {
+        // 保存接收到的数据
+        receivedData = {
+          title: data.fileName || data.title || "",
+          content: data.content || "",
+          fileName: data.fileName || "",
+          fileSize: data.fileSize || "",
+          timestamp: data.timestamp || Date.now(),
+        };
+
+        // 更新预览内容
+        updatePreview(receivedData.content);
+
+        showToast("已接收小程序发送的内容", "success");
+      }
+
+      // 更新预览
+      function updatePreview(content) {
+        const previewContent = document.getElementById("previewContent");
+
+        if (!previewContent) return;
+
+        if (content && content.trim()) {
+          try {
+            // 直接渲染内容，保持简单统一
+            previewContent.innerHTML = content;
+          } catch (error) {
+            console.error("内容渲染错误:", error);
+            previewContent.innerHTML = `
+              <div class="preview-placeholder">
+                <div class="placeholder-icon">⚠️</div>
+                <p>内容渲染失败，请检查格式</p>
+              </div>
+            `;
+          }
+        } else {
+          previewContent.innerHTML = `
+            <div class="preview-placeholder">
+              <div class="placeholder-icon">👁️</div>
+              <p>等待接收文件内容...</p>
+            </div>
+          `;
+        }
+      }
+
+      // 导出函数供外部调用
+      window.ConverterPage = {
+        setHTMLContent,
+        getContent: () => receivedData.content || "",
+        getTitle: () => receivedData.title || "",
+        getData: () => receivedData,
+      };
+
+      // 初始化vConsole
+      function initVConsole() {
+        // 检查配置开关
+        if (!CONFIG.ENABLE_VCONSOLE) {
+          console.log("ℹ️ vConsole 已通过配置关闭");
+          return null;
+        }
+
+        try {
+          // 检查是否在微信小程序环境中
+          if (typeof window !== "undefined" && window.VConsole) {
+            // 创建vConsole实例
+            const vConsole = new window.VConsole({
+              theme: "dark", // 深色主题
+              maxLogNumber: 1000, // 最大日志数量
+              onReady: function () {
+                if (CONFIG.ENABLE_VCONSOLE) {
+                  console.log("🎉 vConsole 已准备就绪，可以查看移动端日志了！");
+                  console.log("📱 点击右下角的 vConsole 按钮打开调试面板");
+                }
+              },
+              onClearLog: function () {
+                if (CONFIG.ENABLE_VCONSOLE) {
+                  console.log("🧹 日志已清空");
+                }
+              },
+            });
+
+            // 添加一些测试日志
+            if (CONFIG.ENABLE_VCONSOLE) {
+              console.log("🚀 页面加载完成，vConsole 已初始化");
+              console.log("📱 当前设备信息:", {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                screenSize: `${screen.width}x${screen.height}`,
+                viewportSize: `${window.innerWidth}x${window.innerHeight}`,
+              });
+            }
+
+            // 保存实例到全局变量
+            vConsoleInstance = vConsole;
+
+            return vConsole;
+          } else {
+            if (CONFIG.ENABLE_VCONSOLE) {
+              console.warn("⚠️ vConsole 未加载，移动端调试功能不可用");
+            }
+            return null;
+          }
+        } catch (error) {
+          if (CONFIG.ENABLE_VCONSOLE) {
+            console.error("❌ 初始化 vConsole 失败:", error);
+          }
+          return null;
+        }
+      }
+
+      // 页面加载完成后初始化
+      document.addEventListener("DOMContentLoaded", function () {
+        // 初始化vConsole
+        initVConsole();
+
+        // 初始化页面
+        initPage();
+      });
+    </script>
+  </body>
+</html>
