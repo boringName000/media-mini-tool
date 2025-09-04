@@ -55,6 +55,46 @@
           <text class="error-text">{{linkError}}</text>
         </view>
       </view>
+
+      <!-- 浏览量 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-text">浏览量</text>
+          <text class="required">*</text>
+        </view>
+        <view class="form-input-wrapper">
+          <input 
+            class="form-input {{viewCountError ? 'error' : ''}}"
+            type="number"
+            placeholder="请输入浏览量"
+            value="{{viewCount}}"
+            bindinput="onViewCountInput"
+          />
+        </view>
+        <view class="error-message" wx:if="{{viewCountError}}">
+          <text class="error-text">{{viewCountError}}</text>
+        </view>
+      </view>
+
+      <!-- 当日收益 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-text">当日收益</text>
+          <text class="required">*</text>
+        </view>
+        <view class="form-input-wrapper">
+          <input 
+            class="form-input {{dailyEarningsError ? 'error' : ''}}"
+            type="digit"
+            placeholder="请输入当日收益"
+            value="{{dailyEarnings}}"
+            bindinput="onDailyEarningsInput"
+          />
+        </view>
+        <view class="error-message" wx:if="{{dailyEarningsError}}">
+          <text class="error-text">{{dailyEarningsError}}</text>
+        </view>
+      </view>
     </view>
   </view>
 
@@ -63,7 +103,7 @@
     <button 
       class="submit-btn" 
       bindtap="submitUploadInfo"
-      disabled="{{!publishedLink}}"
+      disabled="{{!canSubmit()}}"
     >
       <text class="btn-text">提交回传</text>
     </button>

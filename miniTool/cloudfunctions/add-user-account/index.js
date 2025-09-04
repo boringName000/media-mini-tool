@@ -120,7 +120,7 @@ exports.main = async (event, context) => {
       createTimestamp: db.serverDate(),
       status: 1, // 账号状态：0-禁用，1-启用
       auditStatus: 0, // 审核状态：0-待审核，1-已通过，2-未通过
-      dailyPostCount: 0, // 每日发文数量
+      currentAccountEarnings: 0, // 当前账号收益
       posts: [], // 已发布的文章数据数组
       lastPostTime: null, // 最后发文时间
     };

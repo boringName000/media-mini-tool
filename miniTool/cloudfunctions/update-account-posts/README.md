@@ -6,14 +6,16 @@
 
 ## 请求参数
 
-| 参数名        | 类型   | 必填 | 说明     |
-| ------------- | ------ | ---- | -------- |
-| `userId`      | String | ✅   | 用户 ID  |
-| `accountId`   | String | ✅   | 账号 ID  |
-| `articleId`   | String | ✅   | 文章 ID  |
-| `title`       | String | ✅   | 文章标题 |
-| `trackType`   | Number | ✅   | 赛道类型 |
-| `callbackUrl` | String | ✅   | 回传地址 |
+| 参数名          | 类型   | 必填 | 说明     |
+| --------------- | ------ | ---- | -------- |
+| `userId`        | String | ✅   | 用户 ID  |
+| `accountId`     | String | ✅   | 账号 ID  |
+| `articleId`     | String | ✅   | 文章 ID  |
+| `title`         | String | ✅   | 文章标题 |
+| `trackType`     | Number | ✅   | 赛道类型 |
+| `callbackUrl`   | String | ✅   | 回传地址 |
+| `viewCount`     | Number | ✅   | 浏览量   |
+| `dailyEarnings` | Number | ✅   | 当日收益 |
 
 ## 返回值
 
@@ -75,8 +77,8 @@
 
 - 自动设置发布时间为服务器时间
 - **每日任务状态更新**: 检查文章 ID 是否匹配每日任务，自动更新任务状态为已完成
-- 更新账号的 `dailyPostCount` 字段
 - 更新账号的 `lastPostTime` 字段
+- **账号收益更新**: 自动更新账号的 `currentAccountEarnings` 字段为当前文章的 `dailyEarnings` 值
 - 更新用户的 `lastUpdateTimestamp` 字段
 
 ### 4. 数据结构
@@ -89,7 +91,9 @@
   title: "string",               // 文章标题
   trackType: number,             // 赛道类型
   publishTime: Date,             // 发布时间（服务器时间）
-  callbackUrl: "string"          // 回传地址
+  callbackUrl: "string",         // 回传地址
+  viewCount: number,             // 浏览量
+  dailyEarnings: number          // 当日收益
 }
 ```
 
@@ -107,6 +111,8 @@ wx.cloud.callFunction({
     title: "美食探店分享",
     trackType: 1,
     callbackUrl: "https://example.com/callback/123",
+    viewCount: 1500,
+    dailyEarnings: 95.5,
   },
 });
 ```
@@ -137,12 +143,34 @@ wx.cloud.callFunction({
 - `文章标题不能为空`: title 参数缺失
 - `赛道类型不能为空`: trackType 参数缺失
 - `回传地址不能为空`: callbackUrl 参数缺失
+- `浏览量不能为空`: viewCount 参数缺失
+- `当日收益不能为空`: dailyEarnings 参数缺失
 - `用户不存在`: 指定的用户 ID 不存在
 - `账号不存在`: 指定的账号 ID 不存在
 - `用户账号已被禁用`: 用户状态不为正常
 - `账号已被禁用`: 账号状态不为正常
 - `赛道类型必须是有效的数字`: trackType 格式错误
 - `回传地址格式不正确`: callbackUrl 不是有效 URL
+- `浏览量必须是有效的非负整数`: viewCount 格式错误
+- `当日收益必须是有效的非负数`: dailyEarnings 格式错误
+
+## 账号收益自动更新
+
+### 功能说明
+
+当添加或更新文章时，系统会自动将账号的 `currentAccountEarnings` 字段更新为当前文章的 `dailyEarnings` 值。
+
+### 更新逻辑
+
+1. **收益同步**: 每次更新文章时，将文章的 `dailyEarnings` 值同步到账号的 `currentAccountEarnings` 字段
+2. **实时更新**: 确保账号的当前收益始终反映最新文章的收益数据
+3. **数据一致性**: 保持文章收益和账号收益的数据一致性
+
+### 使用场景
+
+- 用户发布新文章并填写当日收益时，账号的当前收益会自动更新
+- 用户修改已有文章的收益时，账号的当前收益也会同步更新
+- 便于快速查看账号的最新收益情况
 
 ## 每日任务自动更新
 

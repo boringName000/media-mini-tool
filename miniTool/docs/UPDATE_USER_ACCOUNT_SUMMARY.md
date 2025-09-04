@@ -46,7 +46,7 @@ const allowedFields = [
   "screenshotUrl", // 截图URL
   "status", // 账号状态
   "auditStatus", // 审核状态
-  "dailyPostCount", // 每日发文数量
+  "currentAccountEarnings", // 当前账号收益
   "lastPostTime", // 最后发文时间
 ];
 ```
@@ -119,7 +119,7 @@ wx.cloud
     "screenshotUrl": "",
     "status": 1,
     "auditStatus": 0,
-    "dailyPostCount": 0,
+    "currentAccountEarnings": 0,
     "posts": [],
     "lastPostTime": null,
     "createTimestamp": "2024-01-01T00:00:00.000Z",

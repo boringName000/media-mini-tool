@@ -24,7 +24,7 @@
 - `screenshotUrl` (string): 截图 URL
 - `status` (number): 账号状态 (0-禁用，1-启用)
 - `auditStatus` (number): 审核状态 (0-待审核，1-已通过，2-未通过)
-- `dailyPostCount` (number): 每日发文数量
+- `currentAccountEarnings` (number): 当前账号收益
 - `lastPostTime` (string): 最后发文时间
 
 ## 返回数据

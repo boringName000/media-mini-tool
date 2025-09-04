@@ -12,8 +12,16 @@ exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext();
 
   try {
-    const { userId, accountId, articleId, title, trackType, callbackUrl } =
-      event;
+    const {
+      userId,
+      accountId,
+      articleId,
+      title,
+      trackType,
+      callbackUrl,
+      viewCount,
+      dailyEarnings,
+    } = event;
 
     // 参数验证
     if (!userId) {
@@ -108,6 +116,30 @@ exports.main = async (event, context) => {
       };
     }
 
+    // 验证浏览量
+    if (!Number.isInteger(viewCount) || viewCount < 0) {
+      return {
+        success: false,
+        message: "浏览量必须是有效的非负整数",
+        event: event,
+        openid: wxContext.OPENID,
+        appid: wxContext.APPID,
+        unionid: wxContext.UNIONID,
+      };
+    }
+
+    // 验证当日收益
+    if (typeof dailyEarnings !== "number" || dailyEarnings < 0) {
+      return {
+        success: false,
+        message: "当日收益必须是有效的非负数",
+        event: event,
+        openid: wxContext.OPENID,
+        appid: wxContext.APPID,
+        unionid: wxContext.UNIONID,
+      };
+    }
+
     // 查询用户信息
     const userQueryRes = await db
       .collection("user-info")
@@ -170,13 +202,15 @@ exports.main = async (event, context) => {
       };
     }
 
-    // 准备文章数据
+    // 构建文章数据
     const postData = {
       articleId: articleId,
       title: title,
       trackType: trackType,
       publishTime: db.serverDate(), // 使用服务器时间
       callbackUrl: callbackUrl,
+      viewCount: viewCount, // 浏览量
+      dailyEarnings: dailyEarnings, // 当日收益
     };
 
     // 检查是否已存在相同articleId的文章
@@ -222,9 +256,9 @@ exports.main = async (event, context) => {
     accounts[accountIndex] = {
       ...account,
       posts: posts,
-      dailyPostCount: posts.length,
       lastPostTime: postData.publishTime,
       dailyTasks: dailyTasks,
+      currentAccountEarnings: dailyEarnings, // 更新当前账号收益
     };
 
     // 更新用户数据

@@ -17,6 +17,8 @@ Page({
     platformType: "",
     publishedLink: "", // 发表后的链接
     linkError: "", // 链接错误提示
+    viewCount: "", // 浏览量
+    dailyEarnings: "", // 当日收益
   },
 
   onLoad: function (options) {
@@ -95,6 +97,24 @@ Page({
     this.validateLink(link);
   },
 
+  // 浏览量输入处理
+  onViewCountInput: function (e) {
+    const value = e.detail.value;
+    this.setData({
+      viewCount: value,
+    });
+    console.log("输入的浏览量:", value);
+  },
+
+  // 当日收益输入处理
+  onDailyEarningsInput: function (e) {
+    const value = e.detail.value;
+    this.setData({
+      dailyEarnings: value,
+    });
+    console.log("输入的当日收益:", value);
+  },
+
   // 验证链接格式
   validateLink: function (link) {
     if (!link) {
@@ -104,19 +124,79 @@ Page({
       return false;
     }
 
-    // 简单的链接格式验证
-    const urlPattern = /^https?:\/\/.+/;
-    if (!urlPattern.test(link)) {
+    // 如果用户没有输入协议，自动添加 http://
+    let normalizedLink = link;
+    if (!link.startsWith("http://") && !link.startsWith("https://")) {
+      normalizedLink = "http://" + link;
+    }
+
+    // 验证链接格式
+    try {
+      new URL(normalizedLink);
+      // 如果验证通过，更新链接为标准化后的格式
+      this.setData({
+        publishedLink: normalizedLink,
+        linkError: "",
+      });
+      return true;
+    } catch (error) {
       this.setData({
         linkError: "请输入有效的链接地址",
       });
       return false;
     }
+  },
+
+  // 验证浏览量
+  validateViewCount: function (viewCount) {
+    if (!viewCount) {
+      this.setData({
+        viewCountError: "请填写浏览量",
+      });
+      return false;
+    }
+
+    const count = parseInt(viewCount);
+    if (isNaN(count) || count < 0) {
+      this.setData({
+        viewCountError: "浏览量必须是有效的非负整数",
+      });
+      return false;
+    }
 
     this.setData({
-      linkError: "",
+      viewCountError: "",
     });
     return true;
+  },
+
+  // 验证当日收益
+  validateDailyEarnings: function (dailyEarnings) {
+    if (!dailyEarnings) {
+      this.setData({
+        dailyEarningsError: "请填写当日收益",
+      });
+      return false;
+    }
+
+    const earnings = parseFloat(dailyEarnings);
+    if (isNaN(earnings) || earnings < 0) {
+      this.setData({
+        dailyEarningsError: "当日收益必须是有效的非负数",
+      });
+      return false;
+    }
+
+    this.setData({
+      dailyEarningsError: "",
+    });
+    return true;
+  },
+
+  // 检查是否可以提交
+  canSubmit: function () {
+    const { publishedLink, viewCount, dailyEarnings } = this.data;
+    return publishedLink && viewCount && dailyEarnings;
   },
 
   // 提交回传信息
@@ -129,12 +209,34 @@ Page({
       accountId,
       trackType,
       platformType,
+      viewCount,
+      dailyEarnings,
     } = this.data;
 
     // 验证链接
     if (!this.validateLink(publishedLink)) {
       wx.showToast({
         title: "请填写有效的链接",
+        icon: "none",
+        duration: 2000,
+      });
+      return;
+    }
+
+    // 验证浏览量
+    if (!this.validateViewCount(viewCount)) {
+      wx.showToast({
+        title: "请填写有效的浏览量",
+        icon: "none",
+        duration: 2000,
+      });
+      return;
+    }
+
+    // 验证当日收益
+    if (!this.validateDailyEarnings(dailyEarnings)) {
+      wx.showToast({
+        title: "请填写有效的当日收益",
         icon: "none",
         duration: 2000,
       });
@@ -176,6 +278,8 @@ Page({
           title: articleTitle,
           trackType: trackType, // 直接使用枚举值
           callbackUrl: publishedLink, // 使用回传链接作为callbackUrl
+          viewCount: viewCount ? parseInt(viewCount) : undefined,
+          dailyEarnings: dailyEarnings ? parseFloat(dailyEarnings) : undefined,
         },
       })
       .then((result) => {

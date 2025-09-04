@@ -34,35 +34,37 @@
 
 #### accounts 数组中的每个账号对象结构：
 
-| 字段名              | 类型    | 必填 | 默认值   | 说明                                   |
-| ------------------- | ------- | ---- | -------- | -------------------------------------- |
-| `accountId`         | String  | ✅   | -        | 账号唯一标识符（格式：AC + 5 位数字）  |
-| `trackType`         | Number  | ✅   | -        | 赛道类型                               |
-| `platform`          | Number  | ✅   | -        | 平台类型                               |
-| `phoneNumber`       | String  | ✅   | -        | 账号关联手机号                         |
-| `accountNickname`   | String  | ✅   | -        | 账号昵称                               |
-| `originalAccountId` | String  | ✅   | -        | 原始账号 ID（用户输入的账号 ID）       |
-| `registerDate`      | Date    | ❌   | null     | 账号注册日期                           |
-| `isViolation`       | Boolean | ✅   | false    | 是否违规                               |
-| `screenshotUrl`     | String  | ❌   | ""       | 账号截图 URL                           |
-| `createTimestamp`   | Date    | ✅   | 当前时间 | 创建时间                               |
-| `status`            | Number  | ✅   | 1        | 账号状态：1-正常，0-禁用               |
-| `auditStatus`       | Number  | ✅   | 0        | 审核状态：0-待审核，1-已通过，2-未通过 |
-| `dailyPostCount`    | Number  | ✅   | 0        | 每日发文数量                           |
-| `lastPostTime`      | Date    | ❌   | null     | 最后发文时间                           |
-| `posts`             | Array   | ✅   | []       | 已发布的文章数据数组                   |
-| `earnings`          | Array   | ✅   | []       | 收益数据数组                           |
-| `dailyTasks`        | Array   | ✅   | []       | 每日任务数组                           |
+| 字段名                   | 类型    | 必填 | 默认值   | 说明                                   |
+| ------------------------ | ------- | ---- | -------- | -------------------------------------- |
+| `accountId`              | String  | ✅   | -        | 账号唯一标识符（格式：AC + 5 位数字）  |
+| `trackType`              | Number  | ✅   | -        | 赛道类型                               |
+| `platform`               | Number  | ✅   | -        | 平台类型                               |
+| `phoneNumber`            | String  | ✅   | -        | 账号关联手机号                         |
+| `accountNickname`        | String  | ✅   | -        | 账号昵称                               |
+| `originalAccountId`      | String  | ✅   | -        | 原始账号 ID（用户输入的账号 ID）       |
+| `registerDate`           | Date    | ❌   | null     | 账号注册日期                           |
+| `isViolation`            | Boolean | ✅   | false    | 是否违规                               |
+| `screenshotUrl`          | String  | ❌   | ""       | 账号截图 URL                           |
+| `createTimestamp`        | Date    | ✅   | 当前时间 | 创建时间                               |
+| `status`                 | Number  | ✅   | 1        | 账号状态：1-正常，0-禁用               |
+| `auditStatus`            | Number  | ✅   | 0        | 审核状态：0-待审核，1-已通过，2-未通过 |
+| `lastPostTime`           | Date    | ❌   | null     | 最后发文时间                           |
+| `currentAccountEarnings` | Number  | ✅   | 0        | 当前账号收益                           |
+| `posts`                  | Array   | ✅   | []       | 已发布的文章数据数组                   |
+| `earnings`               | Array   | ✅   | []       | 收益数据数组                           |
+| `dailyTasks`             | Array   | ✅   | []       | 每日任务数组                           |
 
 #### posts 数组中的每个文章对象结构：
 
-| 字段名        | 类型   | 必填 | 默认值 | 说明           |
-| ------------- | ------ | ---- | ------ | -------------- |
-| `articleId`   | String | ✅   | -      | 文章唯一标识符 |
-| `title`       | String | ✅   | -      | 文章标题       |
-| `trackType`   | Number | ✅   | -      | 赛道类型       |
-| `publishTime` | Date   | ✅   | -      | 发布时间       |
-| `callbackUrl` | String | ✅   | -      | 回传地址       |
+| 字段名          | 类型   | 必填 | 默认值 | 说明           |
+| --------------- | ------ | ---- | ------ | -------------- |
+| `articleId`     | String | ✅   | -      | 文章唯一标识符 |
+| `title`         | String | ✅   | -      | 文章标题       |
+| `trackType`     | Number | ✅   | -      | 赛道类型       |
+| `publishTime`   | Date   | ✅   | -      | 发布时间       |
+| `callbackUrl`   | String | ✅   | -      | 回传地址       |
+| `viewCount`     | Number | ✅   | 0      | 浏览量         |
+| `dailyEarnings` | Number | ✅   | 0      | 当日收益       |
 
 #### earnings 数组中的每个收益对象结构：
 
@@ -232,7 +234,7 @@
     createTimestamp: Date,
     status: Number,
     auditStatus: Number,
-    dailyPostCount: Number,
+    currentAccountEarnings: Number,
     posts: Array,
     lastPostTime: Date
   },
@@ -263,7 +265,7 @@
     screenshotUrl: String (可选),
     status: Number (可选),
     auditStatus: Number (可选),
-    dailyPostCount: Number (可选),
+    currentAccountEarnings: Number (可选),
     lastPostTime: Date (可选)
   }
 }
@@ -357,7 +359,7 @@
 - `originalAccountId`: 必填，不能为空
 - `status`: 只能是 0 或 1
 - `auditStatus`: 只能是 0、1 或 2
-- `dailyPostCount`: 必须是非负整数
+- `currentAccountEarnings`: 必须是非负数
 - `registerDate`: 如果提供，必须是有效的日期格式，不能大于当前时间，不能过于久远（超过 10 年）
 - `dailyTasks`: 必须是数组类型，数组中的每个元素必须是有效的任务对象
 
@@ -367,6 +369,8 @@
 - `trackType`: 必填，必须是有效的赛道枚举值
 - `publishTime`: 必填，必须是有效的日期格式，不能大于当前时间
 - `callbackUrl`: 必填，必须是有效的 URL 格式
+- `viewCount`: 必须是非负整数
+- `dailyEarnings`: 必须是非负数
 
 ### 每日任务验证
 
@@ -414,3 +418,4 @@
 - **v1.6**: 简化 posts 数组结构，删除未使用的 title、downloadUrl、platform 字段
 - **v1.7**: 新增 update-account-posts 云函数，支持添加和更新用户账号文章
 - **v1.8**: 在 dailyTasks 数组中新增 articleTitle、trackType、platformType、downloadUrl 字段
+- **v1.9**: 在 posts 数组中新增 viewCount 浏览量、dailyEarnings 当日收益字段，在 accounts 数组中新增 currentAccountEarnings 当前账号收益字段，删除 dailyPostCount 字段

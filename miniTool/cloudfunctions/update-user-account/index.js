@@ -50,7 +50,7 @@ exports.main = async (event, context) => {
       "screenshotUrl",
       "status",
       "auditStatus",
-      "dailyPostCount",
+      "currentAccountEarnings",
       "lastPostTime",
     ];
 

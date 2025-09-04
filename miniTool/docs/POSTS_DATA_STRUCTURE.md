@@ -33,9 +33,12 @@
 ```javascript
 {
   articleId: "string",           // 文章唯一标识符
+  title: "string",               // 文章标题
   trackType: number,             // 赛道类型
   publishTime: Date,             // 发布时间
-  callbackUrl: "string"          // 回传地址
+  callbackUrl: "string",         // 回传地址
+  viewCount: number,             // 浏览量
+  dailyEarnings: number          // 当日收益
 }
 ```
 
@@ -47,16 +50,18 @@
 // 在账号的posts数组中添加新文章
 const newPost = {
   articleId: "ART1_20241201_001",
+  title: "美食探店分享", // 文章标题
   trackType: 1, // 美食赛道
   publishTime: new Date(),
   callbackUrl: "https://example.com/callback/123",
+  viewCount: 0, // 浏览量，初始化为0
+  dailyEarnings: 0, // 当日收益，初始化为0
 };
 
 // 更新账号数据
 const updatedAccount = {
   ...existingAccount,
   posts: [...existingAccount.posts, newPost],
-  dailyPostCount: existingAccount.posts.length + 1,
   lastPostTime: newPost.publishTime,
 };
 ```
@@ -91,7 +96,9 @@ const monthlyStats = account.posts.reduce((stats, post) => {
 // 更新文章互动数据
 const updatePostStats = (accountId, postId, newStats) => {
   const account = findAccountById(accountId);
-  const postIndex = account.posts.findIndex((post) => post.postId === postId);
+  const postIndex = account.posts.findIndex(
+    (post) => post.articleId === postId
+  );
 
   if (postIndex !== -1) {
     account.posts[postIndex] = {
@@ -107,9 +114,8 @@ const updatePostStats = (accountId, postId, newStats) => {
 
 // 使用示例
 updatePostStats("AC00001", "POST_123456", {
-  views: 1500,
-  likes: 95,
-  comments: 15,
+  viewCount: 1500,
+  dailyEarnings: 95,
 });
 ```
 
@@ -119,17 +125,23 @@ updatePostStats("AC00001", "POST_123456", {
 
 ```javascript
 const getAccountStats = (account) => {
-  const posts = account.posts.filter((post) => post.status === "published");
+  const posts = account.posts || [];
 
   return {
     totalPosts: posts.length,
-    totalViews: posts.reduce((sum, post) => sum + post.views, 0),
-    totalLikes: posts.reduce((sum, post) => sum + post.likes, 0),
-    totalComments: posts.reduce((sum, post) => sum + post.comments, 0),
-    totalShares: posts.reduce((sum, post) => sum + post.shares, 0),
-    averageEngagement:
+    totalViews: posts.reduce((sum, post) => sum + (post.viewCount || 0), 0),
+    totalEarnings: posts.reduce(
+      (sum, post) => sum + (post.dailyEarnings || 0),
+      0
+    ),
+    averageViews:
       posts.length > 0
-        ? posts.reduce((sum, post) => sum + post.likes + post.comments, 0) /
+        ? posts.reduce((sum, post) => sum + (post.viewCount || 0), 0) /
+          posts.length
+        : 0,
+    averageEarnings:
+      posts.length > 0
+        ? posts.reduce((sum, post) => sum + (post.dailyEarnings || 0), 0) /
           posts.length
         : 0,
   };
@@ -140,7 +152,7 @@ const getAccountStats = (account) => {
 
 ```javascript
 const getTimeBasedStats = (account, timeRange = "month") => {
-  const posts = account.posts.filter((post) => post.status === "published");
+  const posts = account.posts || [];
   const now = new Date();
 
   const filteredPosts = posts.filter((post) => {
@@ -184,15 +196,16 @@ const getTimeBasedStats = (account, timeRange = "month") => {
 ```javascript
 // 支持分页查询文章列表
 const getPostsWithPagination = (account, page = 1, pageSize = 20) => {
-  const posts = account.posts
-    .filter((post) => post.status === "published")
-    .sort((a, b) => new Date(b.publishTime) - new Date(a.publishTime));
+  const posts = account.posts || [];
+  const sortedPosts = posts.sort(
+    (a, b) => new Date(b.publishTime) - new Date(a.publishTime)
+  );
 
   const startIndex = (page - 1) * pageSize;
   const endIndex = startIndex + pageSize;
 
   return {
-    posts: posts.slice(startIndex, endIndex),
+    posts: sortedPosts.slice(startIndex, endIndex),
     pagination: {
       currentPage: page,
       pageSize: pageSize,
@@ -217,9 +230,12 @@ const migrateTotalPostsToPostsArray = (userData) => {
         { length: account.totalPosts },
         (_, index) => ({
           articleId: `MIGRATED_${account.accountId}_${index + 1}`,
+          title: `迁移文章 ${index + 1}`,
           trackType: account.trackType || 1,
           publishTime: new Date(Date.now() - index * 24 * 60 * 60 * 1000), // 按时间倒序
           callbackUrl: "https://example.com/callback/migrated",
+          viewCount: 0,
+          dailyEarnings: 0,
         })
       );
 

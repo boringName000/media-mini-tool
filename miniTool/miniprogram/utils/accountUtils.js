@@ -170,7 +170,7 @@ const accountUtils = {
       auditStatus: account.auditStatus,
       auditStatusText: this.getAuditStatusText(account.auditStatus),
       auditStatusColor: this.getAuditStatusColor(account.auditStatus),
-      dailyPostCount: account.dailyPostCount || 0,
+      currentAccountEarnings: account.currentAccountEarnings || 0,
       totalPosts: account.totalPosts || 0,
       lastPostTime: account.lastPostTime,
       createTime: account.createTimestamp
