@@ -33,6 +33,13 @@ Page({
    * 生命周期函数--监听页面加载
    */
   onLoad: function (options) {
+    // 优先检查账号ID参数
+    if (options.accountId) {
+      console.log("通过账号ID加载文章列表，账号ID:", options.accountId);
+      this.loadArticlesByAccountId(options.accountId);
+      return;
+    }
+
     // 接收参数
     if (options.trackType && options.platformType) {
       const trackType = parseInt(options.trackType);
@@ -62,6 +69,98 @@ Page({
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady: function () {},
+
+  /**
+   * 通过账号ID加载文章列表（从每日任务中获取）
+   */
+  loadArticlesByAccountId: function (accountId) {
+    const that = this;
+
+    this.setData({
+      isLoading: true,
+    });
+
+    // 从全局数据获取用户信息
+    const app = getApp();
+    const loginResult = app.globalData.loginResult;
+
+    if (loginResult && loginResult.success && loginResult.accounts) {
+      const accounts = loginResult.accounts;
+
+      // 查找指定账号ID的账号
+      const targetAccount = accounts.find(
+        (account) => account.accountId === accountId
+      );
+
+      if (targetAccount) {
+        console.log("找到目标账号:", targetAccount);
+
+        // 获取账号的每日任务
+        const dailyTasks = targetAccount.dailyTasks || [];
+
+        // 将每日任务转换为文章列表格式
+        const articles = dailyTasks.map((task) => {
+          return {
+            articleId: task.articleId,
+            articleTitle: task.articleTitle,
+            trackType: task.trackType,
+            platformType: task.platformType,
+            downloadUrl: task.downloadUrl,
+            uploadTime: task.taskTime, // 使用任务时间作为上传时间
+            platform: getPlatformName(task.platformType),
+            trackTypeName: getTrackTypeName(task.trackType),
+            uploadTimeFormatted: timeUtils.formatTime(
+              task.taskTime,
+              "YYYY-MM-DD"
+            ),
+            // 添加任务相关字段
+            isClaimed: task.isClaimed,
+            isCompleted: task.isCompleted,
+            taskTime: task.taskTime,
+          };
+        });
+
+        // 设置页面标题
+        const trackName = getTrackTypeName(targetAccount.trackType);
+        const platformName = getPlatformName(targetAccount.platform);
+
+        this.setData({
+          currentTrackType: targetAccount.trackType,
+          currentTrackName: trackName,
+          currentPlatformType: targetAccount.platform,
+          currentPlatformName: platformName,
+          articleList: articles,
+          filteredArticleList: articles,
+          isLoading: false,
+        });
+
+        // 设置页面标题
+        wx.setNavigationBarTitle({
+          title: `${targetAccount.accountNickname} - 每日任务`,
+        });
+      } else {
+        console.error("未找到指定账号ID的账号:", accountId);
+        this.setData({
+          isLoading: false,
+        });
+        wx.showToast({
+          title: "未找到指定账号",
+          icon: "none",
+          duration: 2000,
+        });
+      }
+    } else {
+      console.error("全局数据中没有用户信息");
+      this.setData({
+        isLoading: false,
+      });
+      wx.showToast({
+        title: "获取用户信息失败",
+        icon: "none",
+        duration: 2000,
+      });
+    }
+  },
 
   /**
    * 从云函数获取文章数据
@@ -149,8 +248,12 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-    // 如果有赛道类型和平台类型参数，调用云函数获取数据
-    if (this.data.currentTrackType && this.data.currentPlatformType) {
+    // 如果有赛道类型和平台类型参数，且不是通过账号ID加载的，调用云函数获取数据
+    if (
+      this.data.currentTrackType &&
+      this.data.currentPlatformType &&
+      this.data.articleList.length === 0
+    ) {
       this.loadArticlesFromCloud(
         this.data.currentTrackType,
         this.data.currentPlatformType

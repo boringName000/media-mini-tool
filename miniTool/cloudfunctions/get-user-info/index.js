@@ -75,6 +75,16 @@ exports.main = async (event, context) => {
           break;
         }
 
+        // 检查是否没有任何一个已领取的任务
+        const hasClaimedTasks = dailyTasks.some((task) => task.isClaimed);
+        if (!hasClaimedTasks) {
+          needUpdateDailyTasks = true;
+          console.log(
+            `账号 ${account.accountId} 没有任何已领取的任务，需要检查更新`
+          );
+          break;
+        }
+
         // 检查是否有过期的任务
         const now = new Date();
         const today = new Date(

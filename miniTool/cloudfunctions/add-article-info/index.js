@@ -44,6 +44,7 @@ exports.main = async (event, context) => {
       trackType: trackType,
       platformType: platformType,
       downloadUrl: downloadUrl,
+      status: 1, // 文章状态：1-未使用
     };
 
     // 插入到 article-mgr 数据库

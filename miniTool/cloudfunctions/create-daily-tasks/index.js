@@ -7,70 +7,308 @@ cloud.init({
 
 const db = cloud.database();
 
+// 文章状态枚举
+const ArticleStatusEnum = {
+  UNUSED: 1, // 未使用
+  USED: 2, // 已经使用
+  NEED_REVISION: 3, // 待重新修改
+};
+
+// 每日任务数量常量
+const DAILY_TASKS_COUNT = 10;
+
 // 随机选择文章的通用函数
-async function selectRandomArticle(account, publishedArticleIds) {
+async function selectRandomArticles(
+  account,
+  publishedArticleIds,
+  count = DAILY_TASKS_COUNT
+) {
   try {
-    // 从 article-mgr 数据库中随机选取一个符合赛道类型的文章
+    // 从 article-mgr 数据库中随机选取符合赛道类型且状态为未使用的文章
     const articleResult = await db
       .collection("article-mgr")
       .aggregate()
-      // 1. 用 match 替代 where 做条件过滤
       .match({
         trackType: account.trackType,
+        status: ArticleStatusEnum.UNUSED, // 只选择未使用的文章
         articleId: db.command.nin(publishedArticleIds), // 排除已发布的文章
       })
-      // 2. 随机选择1条
-      .sample({ size: 1 })
+      .sample({ size: count })
       .end();
 
     if (articleResult.list.length === 0) {
       console.log(`账号 ${account.accountId} 没有找到合适的文章`);
-      return null;
+      return [];
     }
 
-    const selectedArticle = articleResult.list[0];
     console.log(
-      `账号 ${account.accountId} 随机选择文章: ${selectedArticle.articleId}`
+      `账号 ${account.accountId} 随机选择了 ${articleResult.list.length} 篇文章`
     );
-    return selectedArticle;
+    return articleResult.list;
   } catch (error) {
     console.error(`为账号 ${account.accountId} 选择文章失败:`, error);
-    return null;
+    return [];
   }
 }
 
-// 为新账号创建初始任务的辅助函数
-async function createInitialTask(account, publishedArticleIds) {
+// 获取文章信息
+async function getArticleInfo(articleIds) {
   try {
-    const selectedArticle = await selectRandomArticle(
-      account,
-      publishedArticleIds
+    const result = await cloud.callFunction({
+      name: "get-article-info",
+      data: {
+        articleIds: articleIds,
+      },
+    });
+
+    if (result.result && result.result.success) {
+      return result.result.data.articles || [];
+    } else {
+      console.error("获取文章信息失败:", result.result?.message);
+      return [];
+    }
+  } catch (error) {
+    console.error("调用 get-article-info 云函数失败:", error);
+    return [];
+  }
+}
+
+// 创建任务对象
+function createTaskFromArticle(article) {
+  return {
+    articleId: article.articleId,
+    articleTitle: article.articleTitle,
+    trackType: article.trackType,
+    platformType: article.platformType,
+    downloadUrl: article.downloadUrl,
+    taskTime: new Date(),
+    isCompleted: false,
+    isClaimed: false, // 新增：是否领取任务
+  };
+}
+
+// 检查任务是否过期
+function isTaskExpired(task) {
+  if (!task.taskTime) return true;
+
+  const taskDate = new Date(task.taskTime);
+  const today = new Date();
+  const todayStart = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
+
+  return taskDate < todayStart;
+}
+
+// 处理账号的每日任务
+async function processAccountDailyTasks(account, userId, accountIndex) {
+  try {
+    const dailyTasks = account.dailyTasks || [];
+    const publishedArticleIds = (account.posts || []).map(
+      (post) => post.articleId
     );
 
-    if (!selectedArticle) {
-      console.log(
-        `账号 ${account.accountId} 没有找到合适的文章，无法创建初始任务`
+    let newDailyTasks = [];
+    let tasksCreated = 0;
+    let tasksRemoved = 0;
+    let tasksUpdated = 0;
+
+    // 如果账号没有 dailyTasks 或 dailyTasks 为空，直接随机生成任务
+    if (!dailyTasks || dailyTasks.length === 0) {
+      console.log(`账号 ${account.accountId} 没有每日任务，开始初始化...`);
+
+      const selectedArticles = await selectRandomArticles(
+        account,
+        publishedArticleIds,
+        DAILY_TASKS_COUNT
       );
-      return null;
+      newDailyTasks = selectedArticles.map((article) =>
+        createTaskFromArticle(article)
+      );
+      tasksCreated = newDailyTasks.length;
+
+      // 更新账号的每日任务
+      await db
+        .collection("user-info")
+        .where({
+          userId: userId,
+          "accounts.accountId": account.accountId,
+        })
+        .update({
+          data: {
+            [`accounts.${accountIndex}.dailyTasks`]: newDailyTasks,
+          },
+        });
+
+      return {
+        accountId: account.accountId,
+        accountNickname: account.accountNickname,
+        tasksCreated: tasksCreated,
+        tasksRemoved: 0,
+        tasksUpdated: 1,
+        totalTasks: newDailyTasks.length,
+      };
     }
 
-    const currentTime = new Date();
+    // 检查是否有过期任务
+    const hasExpiredTasks = dailyTasks.some((task) => isTaskExpired(task));
 
-    // 创建初始任务
-    const initialTask = {
-      articleId: selectedArticle.articleId,
-      articleTitle: selectedArticle.articleTitle,
-      trackType: selectedArticle.trackType,
-      platformType: selectedArticle.platformType,
-      downloadUrl: selectedArticle.downloadUrl,
-      taskTime: currentTime,
-      isCompleted: false, // 新任务默认为未完成状态
+    // 检查是否有领取的任务
+    const claimedTasks = dailyTasks.filter((task) => task.isClaimed);
+    const hasClaimedTasks = claimedTasks.length > 0;
+
+    if (hasExpiredTasks) {
+      // 如果有过期任务
+      console.log(`账号 ${account.accountId} 有过期任务`);
+
+      if (!hasClaimedTasks) {
+        // 没有已领取的任务，全部重新随机
+        console.log(`账号 ${account.accountId} 没有已领取的任务，全部重新随机`);
+
+        const selectedArticles = await selectRandomArticles(
+          account,
+          publishedArticleIds,
+          DAILY_TASKS_COUNT
+        );
+        newDailyTasks = selectedArticles.map((article) =>
+          createTaskFromArticle(article)
+        );
+        tasksCreated = newDailyTasks.length;
+        tasksRemoved = dailyTasks.length;
+      } else {
+        // 有已领取的任务，检查是否完成任务
+        console.log(`账号 ${account.accountId} 有已领取的任务，检查完成状态`);
+
+        const isTaskCompleted = claimedTasks.some((task) =>
+          publishedArticleIds.includes(task.articleId)
+        );
+
+        if (isTaskCompleted) {
+          // 如果完成，全部重新随机
+          console.log(`账号 ${account.accountId} 任务已完成，全部重新随机`);
+
+          const selectedArticles = await selectRandomArticles(
+            account,
+            publishedArticleIds,
+            DAILY_TASKS_COUNT
+          );
+          newDailyTasks = selectedArticles.map((article) =>
+            createTaskFromArticle(article)
+          );
+          tasksCreated = newDailyTasks.length;
+          tasksRemoved = dailyTasks.length;
+        } else {
+          // 如果没完成，更新任务时间
+          console.log(`账号 ${account.accountId} 任务未完成，更新任务时间`);
+
+          newDailyTasks = dailyTasks.map((task) => ({
+            ...task,
+            taskTime: new Date(), // 更新任务时间
+            isCompleted: false,
+          }));
+          tasksUpdated = 1;
+        }
+      }
+    } else {
+      // 如果没有过期任务
+      console.log(`账号 ${account.accountId} 没有过期任务`);
+
+      if (!hasClaimedTasks) {
+        // 没有领取的任务，检查每个文章的状态是否可用，更新替换不可用的文章补充
+        console.log(`账号 ${account.accountId} 没有领取的任务，检查文章状态`);
+
+        const taskArticleIds = dailyTasks.map((task) => task.articleId);
+        const articleInfos = await getArticleInfo(taskArticleIds);
+
+        // 创建文章ID到文章信息的映射
+        const articleInfoMap = {};
+        articleInfos.forEach((article) => {
+          articleInfoMap[article.articleId] = article;
+        });
+
+        // 过滤出状态为未使用的任务
+        const validTasks = [];
+        const invalidTaskIds = [];
+
+        dailyTasks.forEach((task) => {
+          const articleInfo = articleInfoMap[task.articleId];
+          if (articleInfo && articleInfo.status === ArticleStatusEnum.UNUSED) {
+            validTasks.push(task);
+          } else {
+            invalidTaskIds.push(task.articleId);
+          }
+        });
+
+        tasksRemoved = invalidTaskIds.length;
+        console.log(
+          `账号 ${account.accountId} 移除了 ${tasksRemoved} 个不可用的任务`
+        );
+
+        // 补齐到10个任务
+        const needCount = DAILY_TASKS_COUNT - validTasks.length;
+        if (needCount > 0) {
+          const usedArticleIds = [
+            ...publishedArticleIds,
+            ...validTasks.map((task) => task.articleId),
+          ];
+          const selectedArticles = await selectRandomArticles(
+            account,
+            usedArticleIds,
+            needCount
+          );
+          const newTasks = selectedArticles.map((article) =>
+            createTaskFromArticle(article)
+          );
+
+          newDailyTasks = [...validTasks, ...newTasks];
+          tasksCreated = newTasks.length;
+        } else {
+          newDailyTasks = validTasks;
+        }
+      } else {
+        // 有已领取任务，不做处理
+        console.log(`账号 ${account.accountId} 有已领取任务，不做处理`);
+        newDailyTasks = dailyTasks;
+      }
+    }
+
+    // 更新账号的每日任务
+    if (
+      newDailyTasks.length !== dailyTasks.length ||
+      JSON.stringify(newDailyTasks) !== JSON.stringify(dailyTasks)
+    ) {
+      await db
+        .collection("user-info")
+        .where({
+          userId: userId,
+          "accounts.accountId": account.accountId,
+        })
+        .update({
+          data: {
+            [`accounts.${accountIndex}.dailyTasks`]: newDailyTasks,
+          },
+        });
+
+      tasksUpdated = 1;
+    }
+
+    return {
+      accountId: account.accountId,
+      accountNickname: account.accountNickname,
+      tasksCreated: tasksCreated,
+      tasksRemoved: tasksRemoved,
+      tasksUpdated: tasksUpdated,
+      totalTasks: newDailyTasks.length,
     };
-
-    return initialTask;
   } catch (error) {
-    console.error(`为账号 ${account.accountId} 创建初始任务失败:`, error);
-    return null;
+    console.error(`处理账号 ${account.accountId} 每日任务失败:`, error);
+    return {
+      accountId: account.accountId,
+      accountNickname: account.accountNickname,
+      error: error.message,
+    };
   }
 }
 
@@ -117,164 +355,27 @@ exports.main = async (event, context) => {
       };
     }
 
-    const today = new Date();
-    const startOfDay = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate()
-    );
-    const endOfDay = new Date(
-      today.getFullYear(),
-      today.getMonth(),
-      today.getDate(),
-      23,
-      59,
-      59,
-      999
-    );
-
     let updatedAccounts = [];
     let totalTasksCreated = 0;
-    let totalTasksSkipped = 0;
-    let totalTasksContinued = 0;
+    let totalTasksRemoved = 0;
+    let totalTasksUpdated = 0;
 
     // 遍历用户的所有账号
     for (let i = 0; i < accounts.length; i++) {
       const account = accounts[i];
-      let dailyTasks = account.dailyTasks || [];
-      let accountUpdated = false;
-      let tasksCreated = 0;
-      let tasksSkipped = 0;
-      let tasksContinued = 0; // 继续使用原文章的任务数
+      const result = await processAccountDailyTasks(account, userId, i);
 
-      // 获取该账号已发布的文章ID列表
-      const publishedArticleIds = (account.posts || []).map(
-        (post) => post.articleId
-      );
-
-      // 如果是新账号（没有 dailyTasks 或 dailyTasks 为空），初始化一个任务
-      if (!dailyTasks || dailyTasks.length === 0) {
-        console.log(`账号 ${account.accountId} 没有每日任务，开始初始化...`);
-
-        // 为新账号创建初始任务
-        const initialTask = await createInitialTask(
-          account,
-          publishedArticleIds
-        );
-        if (initialTask) {
-          dailyTasks = [initialTask];
-          accountUpdated = true;
-          tasksCreated = 1;
-          console.log(`账号 ${account.accountId} 初始化任务成功:`, initialTask);
-        } else {
-          console.log(`账号 ${account.accountId} 初始化任务失败，跳过该账号`);
-          continue;
-        }
-      }
-
-      // 检查每个任务的时间
-      for (let j = 0; j < dailyTasks.length; j++) {
-        const task = dailyTasks[j];
-        const taskTime = new Date(task.taskTime);
-
-        // 检查当前任务的文章是否已经完成
-        const currentTaskArticleId = task.articleId;
-        const isTaskCompleted =
-          publishedArticleIds.includes(currentTaskArticleId);
-
-        // 如果任务时间在今天范围内，只更新完成状态
-        if (taskTime >= startOfDay && taskTime <= endOfDay) {
-          // 检查是否需要更新 isCompleted 状态
-          if (task.isCompleted !== isTaskCompleted) {
-            dailyTasks[j] = {
-              ...task,
-              isCompleted: isTaskCompleted,
-            };
-            accountUpdated = true;
-          }
-          tasksSkipped++;
-          continue;
-        }
-
-        // 任务时间已过期，需要更新
-
-        let selectedArticle = null;
-
-        if (!isTaskCompleted) {
-          // 如果任务未完成，直接使用原有任务对象中的完整信息
-          selectedArticle = {
-            articleId: task.articleId,
-            articleTitle: task.articleTitle,
-            trackType: task.trackType,
-            platformType: task.platformType,
-            downloadUrl: task.downloadUrl,
-          };
-          tasksContinued++;
-        } else {
-          // 如果任务已完成，需要分配新文章
-          selectedArticle = await selectRandomArticle(
-            account,
-            publishedArticleIds
-          );
-
-          if (!selectedArticle) {
-            // 如果没有找到合适的文章，跳过这个任务
-            tasksSkipped++;
-            continue;
-          }
-        }
-
-        // 生成新的任务时间（使用当前时间）
-        const newTaskTime = new Date();
-
-        // 更新任务信息
-        dailyTasks[j] = {
-          articleId: selectedArticle.articleId,
-          articleTitle: selectedArticle.articleTitle,
-          trackType: selectedArticle.trackType,
-          platformType: selectedArticle.platformType,
-          downloadUrl: selectedArticle.downloadUrl,
-          taskTime: newTaskTime,
-          isCompleted: false, // 新任务默认为未完成状态
-        };
-
-        tasksCreated++;
-        accountUpdated = true;
-      }
-
-      if (accountUpdated) {
-        // 更新账号的 dailyTasks
-        await db
-          .collection("user-info")
-          .where({
-            userId: userId,
-            "accounts.accountId": account.accountId,
-          })
-          .update({
-            data: {
-              [`accounts.${i}.dailyTasks`]: dailyTasks,
-            },
-          });
-
-        updatedAccounts.push({
-          accountId: account.accountId,
-          accountNickname: account.accountNickname,
-          tasksCreated: tasksCreated,
-          tasksSkipped: tasksSkipped,
-          tasksContinued: tasksContinued,
-        });
-      }
-
-      totalTasksCreated += tasksCreated;
-      totalTasksSkipped += tasksSkipped;
-      totalTasksContinued += tasksContinued;
+      updatedAccounts.push(result);
+      totalTasksCreated += result.tasksCreated || 0;
+      totalTasksRemoved += result.tasksRemoved || 0;
+      totalTasksUpdated += result.tasksUpdated || 0;
     }
 
     console.log("每日任务创建完成:", {
       userId: userId,
       totalTasksCreated: totalTasksCreated,
-      totalTasksSkipped: totalTasksSkipped,
-      totalTasksContinued: totalTasksContinued,
+      totalTasksRemoved: totalTasksRemoved,
+      totalTasksUpdated: totalTasksUpdated,
       updatedAccounts: updatedAccounts,
     });
 
@@ -283,12 +384,12 @@ exports.main = async (event, context) => {
       data: {
         userId: userId,
         totalTasksCreated: totalTasksCreated,
-        totalTasksSkipped: totalTasksSkipped,
-        totalTasksContinued: totalTasksContinued,
+        totalTasksRemoved: totalTasksRemoved,
+        totalTasksUpdated: totalTasksUpdated,
         updatedAccounts: updatedAccounts,
         totalAccounts: accounts.length,
       },
-      message: `成功创建 ${totalTasksCreated} 个任务，继续 ${totalTasksContinued} 个任务，跳过 ${totalTasksSkipped} 个任务`,
+      message: `成功创建 ${totalTasksCreated} 个任务，移除 ${totalTasksRemoved} 个任务，更新 ${totalTasksUpdated} 个账号`,
     };
   } catch (error) {
     console.error("创建每日任务失败:", error);

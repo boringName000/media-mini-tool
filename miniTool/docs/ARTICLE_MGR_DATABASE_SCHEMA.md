@@ -23,6 +23,7 @@
 | `trackType`    | Number | ✅   | -                 | 赛道类型（参考 TrackTypeEnum）                                       |
 | `platformType` | Number | ✅   | -                 | 平台类型（参考 PlatformEnum）                                        |
 | `downloadUrl`  | String | ✅   | -                 | 文件下载地址（云存储路径）                                           |
+| `status`       | Number | ✅   | 1                 | 文章状态：1-未使用，2-已经使用，3-待重新修改                         |
 
 ### 系统字段
 
@@ -158,6 +159,34 @@ const PlatformEnum = {
 - 包含完整的文件路径信息
 - 支持直接下载访问
 
+### status（文章状态）
+
+**类型**: 数字枚举
+
+**枚举值**:
+
+```javascript
+const ArticleStatusEnum = {
+  UNUSED: 1, // 未使用
+  USED: 2, // 已经使用
+  NEED_REVISION: 3, // 待重新修改
+};
+```
+
+**状态说明**:
+
+- **未使用 (1)**: 文章刚上传，尚未被分配给任何任务
+- **已经使用 (2)**: 文章已被用户发布，不再可用于新任务
+- **待重新修改 (3)**: 文章需要修改后才能继续使用
+
+**状态流转**:
+
+```
+未使用 → 已经使用 (用户发布文章后)
+未使用 → 待重新修改 (管理员标记需要修改)
+待重新修改 → 未使用 (修改完成后重新启用)
+```
+
 ## 数据示例
 
 ### 完整记录示例
@@ -170,7 +199,8 @@ const PlatformEnum = {
   "uploadTime": "2023-12-21T10:30:45.123Z",
   "trackType": 1,
   "platformType": 2,
-  "downloadUrl": "cloud://xxx/article/1/美食文章-1703123456789.txt"
+  "downloadUrl": "cloud://xxx/article/1/美食文章-1703123456789.txt",
+  "status": 1
 }
 ```
 
@@ -183,7 +213,8 @@ const PlatformEnum = {
   "articleTitle": "娱乐新闻",
   "trackType": 4,
   "platformType": 3,
-  "downloadUrl": "cloud://xxx/article/4/娱乐新闻-1703123456789.txt"
+  "downloadUrl": "cloud://xxx/article/4/娱乐新闻-1703123456789.txt",
+  "status": 1
 }
 
 // 书法赛道文章
@@ -192,7 +223,8 @@ const PlatformEnum = {
   "articleTitle": "书法作品",
   "trackType": 7,
   "platformType": 1,
-  "downloadUrl": "cloud://xxx/article/7/书法作品-1703123456789.txt"
+  "downloadUrl": "cloud://xxx/article/7/书法作品-1703123456789.txt",
+  "status": 1
 }
 ```
 

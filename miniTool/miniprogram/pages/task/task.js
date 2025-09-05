@@ -194,7 +194,7 @@ Page({
    */
   updateTaskStats: function (accounts) {
     const taskStats = {
-      pending: 0, // 待发表任务数量
+      pending: 0, // 待发表任务数量（已领取的任务）
       completed: 0, // 已完成任务数量
       rejected: 0, // 已拒绝任务数量（直接给0）
     };
@@ -207,9 +207,9 @@ Page({
       // completed: posts 数组里面的都是已完成
       taskStats.completed += posts.length;
 
-      // pending: dailyTasks 每日任务中，没有完成的任务（isCompleted 为 false）
+      // pending: dailyTasks 每日任务中，已领取的任务（isClaimed 为 true）
       dailyTasks.forEach((task) => {
-        if (!task.isCompleted) {
+        if (task.isClaimed === true) {
           taskStats.pending++;
         }
       });
@@ -283,11 +283,25 @@ Page({
     const index = e.currentTarget.dataset.index;
     const account = this.data.accountList[index];
 
-    // 跳转到文章列表页面，传递赛道类型和平台类型参数
+    // 检查账号状态
+    if (account.originalData.status === 0) {
+      // 如果是禁用状态，弹出提示框
+      wx.showModal({
+        title: "账号已禁用",
+        content: "该账号已被禁用，请联系管理员处理",
+        showCancel: false,
+        confirmText: "知道了",
+      });
+      return;
+    }
+
+    // 跳转到文章列表页面，传递账号ID参数
     wx.navigateTo({
-      url: `/pages/article-list/article-list?trackType=${account.trackTypeEnum}&platformType=${account.platformEnum}`,
+      url: `/pages/article-list/article-list?accountId=${account.accountId}`,
       success: function () {
-        console.log(`跳转到${account.accountName}的文章列表页面`);
+        console.log(
+          `跳转到${account.accountName}的文章列表页面，账号ID：${account.accountId}`
+        );
       },
       fail: function (err) {
         console.error("跳转失败:", err);

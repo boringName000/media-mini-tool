@@ -52,3 +52,29 @@
     </view>
   </view>
 </scroll-view>
+
+<!-- 账号选择弹出卡片 -->
+<view class="account-popup-mask" wx:if="{{showAccountPopup}}" bind:tap="onPopupMaskTap">
+  <view class="account-popup-card" catch:tap="">
+    <!-- 描述提醒 -->
+    <view class="popup-description">点击账号，领取每日精选文章</view>
+    
+    <!-- 账号列表 -->
+    <view class="account-list">
+      <view 
+        class="account-item" 
+        wx:for="{{matchedAccounts}}" 
+        wx:key="accountId"
+        data-index="{{index}}"
+        bind:tap="onAccountItemTap"
+      >
+        <view class="account-info">
+          <view class="account-platform">{{item.platform}}</view>
+          <view class="account-nickname">{{item.accountNickname}}</view>
+          <view class="account-status">{{item.statusText}}</view>
+        </view>
+        <view class="account-arrow">></view>
+      </view>
+    </view>
+  </view>
+</view>

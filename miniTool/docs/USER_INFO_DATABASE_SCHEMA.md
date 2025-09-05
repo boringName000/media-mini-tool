@@ -93,6 +93,7 @@
 | `downloadUrl`  | String  | ✅   | -      | 文章下载地址                        |
 | `taskTime`     | Date    | ✅   | -      | 文章任务时间                        |
 | `isCompleted`  | Boolean | ✅   | false  | 是否完成（通过检查 posts 数组判断） |
+| `isClaimed`    | Boolean | ✅   | false  | 是否领取任务                        |
 
 ## 云函数返回值规范
 
@@ -381,6 +382,7 @@
 - `downloadUrl`: 必填，必须是有效的 URL 格式
 - `taskTime`: 必填，必须是有效的日期格式，不能大于当前时间
 - `isCompleted`: 必填，必须是布尔值（true/false）
+- `isClaimed`: 必填，必须是布尔值（true/false）
 
 ### 收益信息验证
 
@@ -419,3 +421,4 @@
 - **v1.7**: 新增 update-account-posts 云函数，支持添加和更新用户账号文章
 - **v1.8**: 在 dailyTasks 数组中新增 articleTitle、trackType、platformType、downloadUrl 字段
 - **v1.9**: 在 posts 数组中新增 viewCount 浏览量、dailyEarnings 当日收益字段，在 accounts 数组中新增 currentAccountEarnings 当前账号收益字段，删除 dailyPostCount 字段
+- **v1.10**: 在 dailyTasks 数组中新增 isClaimed 是否领取任务字段

@@ -19,7 +19,10 @@
       </view>
       
       <view class="task-content">
-        <view class="task-title">{{item.articleTitle}}</view>
+        <view class="task-title">
+          {{item.articleTitle}}
+          <text class="claimed-badge" wx:if="{{item.isClaimed}}">已领取</text>
+        </view>
         
         <view class="task-info">
           <view class="info-row">
@@ -70,7 +73,10 @@
   <view class="empty-state" wx:if="{{taskList.length === 0}}">
     <text class="empty-icon">📋</text>
     <text class="empty-text">暂无任务</text>
-    <text class="empty-desc">当前筛选条件下没有找到相关任务</text>
+    <text class="empty-desc" wx:if="{{currentStatus === 1}}">还未领取今日任务，点击账号去文章列表领取今日发表的文章任务吧！</text>
+    <text class="empty-desc" wx:elif="{{currentStatus === 2}}">还没有发表回传过文章，快去发表今日文章吧！</text>
+    <text class="empty-desc" wx:elif="{{currentStatus === 3}}">当前筛选条件下没有找到相关任务</text>
+    <text class="empty-desc" wx:else>当前筛选条件下没有找到相关任务</text>
   </view>
 
   <!-- 加载状态 -->

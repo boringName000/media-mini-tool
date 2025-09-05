@@ -124,10 +124,15 @@ Page({
 
     // 根据当前状态构建不同的任务列表
     if (this.data.currentStatus === TaskStatusEnum.PENDING) {
-      // 待发表状态：使用 dailyTasks 数据，显示所有任务
+      // 待发表状态：使用 dailyTasks 数据，只显示已领取的任务
       accounts.forEach((account) => {
         const dailyTasks = account.dailyTasks || [];
         dailyTasks.forEach((task) => {
+          // 只显示已领取的任务
+          if (!task.isClaimed) {
+            return; // 跳过未领取的任务
+          }
+
           // 根据任务完成状态动态设置状态
           const isTaskCompleted = task.isCompleted;
           const taskStatus = isTaskCompleted
@@ -158,6 +163,7 @@ Page({
             // 直接使用任务中的文章信息
             articleTitle: task.articleTitle || "未知标题",
             downloadUrl: task.downloadUrl || "",
+            isClaimed: task.isClaimed, // 添加领取状态字段
           };
 
           allTasks.push(taskObj);
