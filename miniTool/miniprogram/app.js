@@ -1,5 +1,6 @@
 // app.js
 const userInfoUtils = require("./utils/userInfoUtils");
+const updateDailyTasksUtils = require("./utils/updateDailyTasksUtils");
 
 App({
   globalData: {
@@ -70,6 +71,9 @@ App({
             console.error("更新本地存储失败:", e);
           }
           console.log("用户数据刷新完成:", this.globalData.loginResult);
+
+          // 调用 updateDailyTasks 传入参数，更新每日任务
+          this.updateDailyTasksOnLaunch();
         } else {
           console.error("获取用户数据失败:", result.error);
         }
@@ -78,6 +82,31 @@ App({
         console.error("刷新用户数据失败:", error);
         // 即使获取失败，也不影响用户继续使用，只是使用本地缓存的数据
       });
+  },
+
+  // 启动时更新每日任务
+  updateDailyTasksOnLaunch: function () {
+    console.log("启动时更新每日任务...");
+
+    const userId = this.globalData.loginResult?.userId;
+    const userData = this.globalData.loginResult;
+
+    if (userId && userData) {
+      updateDailyTasksUtils
+        .updateDailyTasks(userId, userData)
+        .then((result) => {
+          if (result.success) {
+            console.log("启动时每日任务更新成功:", result);
+          } else {
+            console.log("启动时每日任务更新失败:", result.error);
+          }
+        })
+        .catch((error) => {
+          console.error("启动时更新每日任务异常:", error);
+        });
+    } else {
+      console.log("启动时缺少用户数据，跳过每日任务更新");
+    }
   },
 
   // 跳转到登录页面

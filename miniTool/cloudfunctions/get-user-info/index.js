@@ -56,84 +56,7 @@ exports.main = async (event, context) => {
       };
     }
 
-    // 前置判断：检查是否需要更新每日任务
-    let needUpdateDailyTasks = false;
-    const accounts = user.accounts || [];
-
-    if (accounts.length === 0) {
-      // 没有账号，不需要更新每日任务
-      console.log("用户没有账号，跳过每日任务更新");
-    } else {
-      // 检查每个账号的每日任务状态
-      for (const account of accounts) {
-        const dailyTasks = account.dailyTasks || [];
-
-        if (dailyTasks.length === 0) {
-          // 账号没有每日任务，需要初始化
-          needUpdateDailyTasks = true;
-          console.log(`账号 ${account.accountId} 没有每日任务，需要初始化`);
-          break;
-        }
-
-        // 检查是否没有任何一个已领取的任务
-        const hasClaimedTasks = dailyTasks.some((task) => task.isClaimed);
-        if (!hasClaimedTasks) {
-          needUpdateDailyTasks = true;
-          console.log(
-            `账号 ${account.accountId} 没有任何已领取的任务，需要检查更新`
-          );
-          break;
-        }
-
-        // 检查是否有过期的任务
-        const now = new Date();
-        const today = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate()
-        );
-
-        for (const task of dailyTasks) {
-          if (!task.taskTime) continue;
-
-          const taskDate = new Date(task.taskTime);
-          const taskDay = new Date(
-            taskDate.getFullYear(),
-            taskDate.getMonth(),
-            taskDate.getDate()
-          );
-
-          if (taskDay < today) {
-            // 发现过期任务，需要更新
-            needUpdateDailyTasks = true;
-            console.log(`账号 ${account.accountId} 有过期任务，需要更新`);
-            break;
-          }
-        }
-
-        if (needUpdateDailyTasks) break;
-      }
-    }
-
-    // 只有在需要更新时才调用 create-daily-tasks 云函数
-    let dailyTasksResult = null;
-    if (needUpdateDailyTasks) {
-      try {
-        dailyTasksResult = await cloud.callFunction({
-          name: "create-daily-tasks",
-          data: {
-            userId: user.userId,
-          },
-        });
-
-        console.log("每日任务更新结果:", dailyTasksResult);
-      } catch (dailyTasksError) {
-        console.error("调用 create-daily-tasks 云函数失败:", dailyTasksError);
-        // 不阻止主流程，继续返回用户信息
-      }
-    } else {
-      console.log("每日任务无需更新，跳过云函数调用");
-    }
+    // 前置判断逻辑已移至工具函数中处理
 
     // 返回用户信息（不包含敏感信息如密码）
     return {
@@ -160,14 +83,6 @@ exports.main = async (event, context) => {
         appid: wxContext.APPID,
         unionid: wxContext.UNIONID,
       },
-      // 返回每日任务更新结果
-      dailyTasksUpdate: dailyTasksResult
-        ? {
-            success: dailyTasksResult.result.success,
-            message: dailyTasksResult.result.message,
-            data: dailyTasksResult.result.data,
-          }
-        : null,
     };
   } catch (error) {
     console.error("获取用户信息失败：", error);

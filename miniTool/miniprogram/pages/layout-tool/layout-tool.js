@@ -42,12 +42,6 @@ Page({
             "YYYY-MM-DD HH:mm",
             { defaultValue: "未知时间" }
           ),
-          // 格式化创建时间
-          createTimeFormatted: timeUtils.formatTime(
-            article.createTime,
-            "YYYY-MM-DD HH:mm",
-            { defaultValue: "未知时间" }
-          ),
           // 获取赛道类型和平台类型的显示名称
           trackTypeName: getTrackTypeName(article.trackType),
           platformTypeName: getPlatformName(article.platformType),
@@ -74,7 +68,7 @@ Page({
   previewArticle: function (e) {
     const article = e.currentTarget.dataset.article;
 
-    if (!article || !article.downloadUrl) {
+    if (!article || !article.permanentDownloadUrl) {
       wx.showToast({
         title: "文章下载地址无效",
         icon: "none",
@@ -84,13 +78,14 @@ Page({
 
     console.log("预览文章:", article);
 
-    // 跳转到文章预览页面，传递文章标题和下载地址
+    // 直接使用长期下载URL，不再调用云存储API兑换临时URL
+    // 跳转到文章预览页面，传递文章标题和长期下载地址
     wx.navigateTo({
       url: `/pages/article-preview/article-preview?articleTitle=${encodeURIComponent(
         article.title
-      )}&downloadUrl=${encodeURIComponent(article.downloadUrl)}`,
+      )}&downloadUrl=${encodeURIComponent(article.permanentDownloadUrl)}`,
       success: () => {
-        console.log("✅ 跳转到文章预览页面成功");
+        console.log("✅ 跳转到文章预览页面成功，使用长期下载URL");
       },
       fail: (err) => {
         console.error("❌ 跳转到文章预览页面失败:", err);

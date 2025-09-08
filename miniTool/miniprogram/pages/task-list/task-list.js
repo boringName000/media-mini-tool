@@ -212,10 +212,19 @@ Page({
   saveTaskInfo(e) {
     const task = e.currentTarget.dataset.task;
 
+    if (!task.accountId) {
+      wx.showToast({
+        title: "无法获取账号信息",
+        icon: "none",
+      });
+      return;
+    }
+
     saveArticleInfo({
       downloadUrl: task.downloadUrl,
       articleTitle: task.articleTitle || task.articleId,
       articleId: task.articleId, // 传递文章自己的ID
+      accountId: task.accountId, // 传递账号ID
       trackType: task.trackTypeEnum,
       platformType: task.platformEnum,
     });

@@ -13,6 +13,7 @@ const { TaskStatusEnum } = require("../../type/type");
 const authUtils = require("../../utils/authUtils");
 const userInfoUtils = require("../../utils/userInfoUtils");
 const accountUtils = require("../../utils/accountUtils");
+const updateDailyTasksUtils = require("../../utils/updateDailyTasksUtils");
 
 Page({
   data: {
@@ -295,7 +296,40 @@ Page({
       return;
     }
 
-    // 跳转到文章列表页面，传递账号ID参数
+    // 显示加载提示
+    wx.showLoading({
+      title: "更新任务中...",
+      mask: true,
+    });
+
+    // 调用 updateDailyTasks 不传参数，更新每日任务
+    updateDailyTasksUtils
+      .updateDailyTasks()
+      .then((result) => {
+        wx.hideLoading();
+
+        if (result.success) {
+          console.log("每日任务更新成功:", result);
+        } else {
+          console.log("每日任务更新失败:", result.error);
+        }
+
+        // 无论更新成功与否，都继续跳转
+        this.navigateToArticleList(account);
+      })
+      .catch((error) => {
+        wx.hideLoading();
+        console.error("更新每日任务异常:", error);
+
+        // 即使更新失败，也继续跳转
+        this.navigateToArticleList(account);
+      });
+  },
+
+  /**
+   * 跳转到文章列表页面
+   */
+  navigateToArticleList: function (account) {
     wx.navigateTo({
       url: `/pages/article-list/article-list?accountId=${account.accountId}`,
       success: function () {

@@ -14,6 +14,7 @@ const {
  * @param {string} options.downloadUrl 下载链接
  * @param {string} options.articleTitle 文章标题
  * @param {string} options.articleId 文章ID
+ * @param {string} options.accountId 账号ID
  * @param {number} options.trackType 赛道类型
  * @param {number} options.platformType 平台类型
  * @param {function} [options.onSuccess] 成功回调
@@ -24,13 +25,14 @@ function saveArticleInfo(options) {
     downloadUrl,
     articleTitle,
     articleId,
+    accountId,
     trackType,
     platformType,
     onSuccess,
     onError,
   } = options || {};
 
-  if (!downloadUrl || !articleTitle || !articleId) {
+  if (!downloadUrl || !articleTitle || !articleId || !accountId) {
     const error = "文章信息不完整，缺少必要字段";
     if (onError) onError(error);
     else {
@@ -39,27 +41,161 @@ function saveArticleInfo(options) {
     return;
   }
 
-  // 检查云存储文件状态
-  checkCloudFileStatus(downloadUrl, (fileExists) => {
-    if (fileExists) {
-      wx.showModal({
-        title: "确认保存",
-        content: `确定要保存文章："${articleTitle}" 的信息到本地吗？`,
-        success: (res) => {
-          if (res.confirm) {
-            _saveArticleInfoToLocal({
-              downloadUrl,
-              articleTitle,
-              articleId,
-              trackType,
-              platformType,
-              onSuccess,
-              onError,
-            });
+  // 先弹框询问是否下载
+  wx.showModal({
+    title: "今日文章",
+    content: `确定要保存文章："${articleTitle}" 的信息到本地吗？`,
+    success: (res) => {
+      if (res.confirm) {
+        // 用户确认后，先调用 claim-daily-task 云函数更新任务状态
+        _claimDailyTaskAndSave({
+          downloadUrl,
+          articleTitle,
+          articleId,
+          accountId,
+          trackType,
+          platformType,
+          onSuccess,
+          onError,
+        });
+      }
+      // 用户取消，不做任何操作
+    },
+  });
+}
+
+// 内部：调用 claim-daily-task 云函数并保存文章信息
+function _claimDailyTaskAndSave(options) {
+  const {
+    downloadUrl,
+    articleTitle,
+    articleId,
+    accountId,
+    trackType,
+    platformType,
+    onSuccess,
+    onError,
+  } = options;
+
+  // 显示加载提示
+  wx.showLoading({ title: "处理中..." });
+
+  // 获取当前用户信息
+  const app = getApp();
+  if (!app || !app.globalData || !app.globalData.loginResult) {
+    wx.hideLoading();
+    const error = "无法获取用户信息";
+    if (onError) onError(error);
+    else {
+      wx.showToast({ title: error, icon: "none" });
+    }
+    return;
+  }
+
+  const userInfo = app.globalData.loginResult;
+  const userId = userInfo.userId;
+
+  // 调用 claim-daily-task 云函数
+  wx.cloud.callFunction({
+    name: "claim-daily-task",
+    data: {
+      userId: userId,
+      accountId: accountId,
+      articleId: articleId,
+    },
+    success: (res) => {
+      console.log("claim-daily-task 云函数调用结果:", res);
+
+      if (res.result && res.result.success) {
+        // 云函数调用成功，更新全局用户数据
+        const result = res.result;
+        if (result.data && result.data.allDailyTasks) {
+          // 更新对应账号的每日任务数据
+          const accounts = userInfo.accounts || [];
+          const updatedAccounts = accounts.map((account) => {
+            if (account.accountId === accountId) {
+              return {
+                ...account,
+                dailyTasks: result.data.allDailyTasks,
+              };
+            }
+            return account;
+          });
+
+          // 更新全局用户数据
+          app.globalData.loginResult.accounts = updatedAccounts;
+
+          // 更新本地存储
+          try {
+            wx.setStorageSync("loginResult", app.globalData.loginResult);
+            console.log("✅ 全局用户数据已更新");
+          } catch (e) {
+            console.error("更新本地存储失败:", e);
           }
-        },
+        }
+
+        // 继续处理文章保存
+        _processArticleSave({
+          downloadUrl,
+          articleTitle,
+          articleId,
+          accountId,
+          trackType,
+          platformType,
+          onSuccess,
+          onError,
+        });
+      } else {
+        wx.hideLoading();
+        const error = res.result?.message || "更新任务状态失败";
+        if (onError) onError(error);
+        else {
+          wx.showToast({ title: error, icon: "none" });
+        }
+      }
+    },
+    fail: (err) => {
+      wx.hideLoading();
+      console.error("调用 claim-daily-task 云函数失败:", err);
+      const error = "网络错误，请重试";
+      if (onError) onError(error);
+      else {
+        wx.showToast({ title: error, icon: "none" });
+      }
+    },
+  });
+}
+
+// 内部：处理文章保存
+function _processArticleSave(options) {
+  const {
+    downloadUrl,
+    articleTitle,
+    articleId,
+    accountId,
+    trackType,
+    platformType,
+    onSuccess,
+    onError,
+  } = options;
+
+  // 兑换长期下载URL
+  getPermanentDownloadUrl(downloadUrl, (permanentUrl) => {
+    if (permanentUrl) {
+      // 兑换成功，直接存入本地存储
+      _saveArticleInfoToLocal({
+        originalFileId: downloadUrl, // 保留原始文件ID
+        permanentDownloadUrl: permanentUrl, // 新增字段存储长期下载URL
+        articleTitle,
+        articleId,
+        accountId,
+        trackType,
+        platformType,
+        onSuccess,
+        onError,
       });
     } else {
+      // 兑换失败，说明文件不存在或无法访问
       const error = "云存储中的文件不存在或无法访问";
       if (onError) onError(error);
       else {
@@ -77,9 +213,11 @@ function saveArticleInfo(options) {
 // 内部：保存文章信息到本地存储
 function _saveArticleInfoToLocal(options) {
   const {
-    downloadUrl,
+    originalFileId,
+    permanentDownloadUrl,
     articleTitle,
     articleId,
+    accountId,
     trackType,
     platformType,
     onSuccess,
@@ -93,9 +231,11 @@ function _saveArticleInfoToLocal(options) {
     const success = addArticleInfo({
       title: articleTitle,
       articleId: articleId,
+      accountId: accountId,
       trackType: trackType,
       platformType: platformType,
-      downloadUrl: downloadUrl,
+      originalFileId: originalFileId, // 原始文件ID
+      permanentDownloadUrl: permanentDownloadUrl, // 长期下载URL
     });
 
     wx.hideLoading();
@@ -107,17 +247,16 @@ function _saveArticleInfoToLocal(options) {
         onSuccess({ articleTitle, downloadUrl });
       } else {
         // 弹框提示是否跳转到排版工具页面
-        setTimeout(() => {
-          wx.showModal({
-            title: "保存成功",
-            content: "文章信息已保存，是否跳转到排版工具页面预览？",
-            success: (modalRes) => {
-              if (modalRes.confirm) {
-                navigateToLayoutTool();
-              }
-            },
-          });
-        }, 500);
+        wx.showModal({
+          title: "保存成功",
+          content: "文章信息已保存，是否跳转到排版工具页面预览文章？",
+          success: (modalRes) => {
+            if (modalRes.confirm) {
+              // 跳转到排版工具页面并关闭当前文章列表页面
+              navigateToLayoutTool(true);
+            }
+          },
+        });
       }
     } else {
       const error = "保存文章信息失败";
@@ -142,6 +281,42 @@ function _saveArticleInfoToLocal(options) {
       });
     }
   }
+}
+
+/**
+ * 获取长期下载URL
+ * @param {string} fileID 文件ID
+ * @param {function} callback 回调函数，参数为长期下载URL或null
+ */
+function getPermanentDownloadUrl(fileID, callback) {
+  console.log("获取长期下载URL:", fileID);
+
+  wx.cloud.getTempFileURL({
+    fileList: [fileID],
+    success: (res) => {
+      if (res.fileList && res.fileList.length > 0) {
+        const fileInfo = res.fileList[0];
+        if (fileInfo.status === 0 && fileInfo.tempFileURL) {
+          console.log("✅ 获取长期下载URL成功:", fileInfo.tempFileURL);
+          callback(fileInfo.tempFileURL);
+        } else {
+          console.error(
+            "❌ 获取长期下载URL失败:",
+            fileInfo.status,
+            fileInfo.errMsg
+          );
+          callback(null);
+        }
+      } else {
+        console.error("❌ 无法获取文件信息");
+        callback(null);
+      }
+    },
+    fail: (err) => {
+      console.error("❌ 获取长期下载URL失败:", err);
+      callback(null);
+    },
+  });
 }
 
 /**
@@ -183,12 +358,15 @@ function checkCloudFileStatus(fileID, callback) {
 
 /**
  * 跳转到排版工具页面
+ * @param {boolean} closeCurrentPage 是否关闭当前页面，默认为false
  */
-function navigateToLayoutTool() {
-  wx.navigateTo({
+function navigateToLayoutTool(closeCurrentPage = false) {
+  const navigateMethod = closeCurrentPage ? wx.redirectTo : wx.navigateTo;
+  
+  navigateMethod({
     url: "/pages/layout-tool/layout-tool",
     success: () => {
-      console.log("跳转到排版工具页面成功");
+      console.log(`跳转到排版工具页面成功${closeCurrentPage ? '（已关闭当前页面）' : ''}`);
     },
     fail: (err) => {
       console.error("跳转到排版工具页面失败:", err);
@@ -222,6 +400,7 @@ module.exports = {
   clearAllArticleInfo,
 
   // 辅助功能
+  getPermanentDownloadUrl,
   checkCloudFileStatus,
   navigateToLayoutTool,
   copyToClipboard,

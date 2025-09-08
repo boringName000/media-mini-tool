@@ -36,17 +36,26 @@ function saveArticleInfoList(articleList) {
  * @param {Object} articleInfo 文章信息对象
  * @param {string} articleInfo.title 文章标题
  * @param {string} articleInfo.articleId 文章ID
+ * @param {string} articleInfo.accountId 账号ID
  * @param {number} articleInfo.trackType 赛道类型
  * @param {number} articleInfo.platformType 平台类型
- * @param {string} articleInfo.downloadUrl 下载URL
+ * @param {string} articleInfo.originalFileId 原始文件ID
+ * @param {string} articleInfo.permanentDownloadUrl 长期下载URL
  * @returns {boolean} 是否添加成功
  */
 function addArticleInfo(articleInfo) {
   try {
-    const { title, articleId, trackType, platformType, downloadUrl } =
-      articleInfo;
+    const {
+      title,
+      articleId,
+      accountId,
+      trackType,
+      platformType,
+      originalFileId,
+      permanentDownloadUrl,
+    } = articleInfo;
 
-    if (!title || !downloadUrl || !articleId) {
+    if (!title || !permanentDownloadUrl || !articleId || !accountId) {
       console.error("❌ 文章信息不完整:", articleInfo);
       return false;
     }
@@ -57,11 +66,12 @@ function addArticleInfo(articleInfo) {
     const newArticle = {
       id: articleId, // 直接使用文章自己的ID作为主键
       title: title,
+      accountId: accountId, // 账号ID
       trackType: trackType || 0,
       platformType: platformType || 0,
-      downloadUrl: downloadUrl,
+      originalFileId: originalFileId, // 原始文件ID
+      permanentDownloadUrl: permanentDownloadUrl, // 长期下载URL
       downloadTime: Date.now(),
-      createTime: Date.now(),
     };
 
     // 检查是否已存在相同ID的文章，如果存在则更新

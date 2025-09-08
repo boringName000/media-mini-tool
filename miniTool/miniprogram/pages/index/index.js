@@ -1,6 +1,7 @@
 // 引入工具函数
 const { PlatformEnum, getPlatformName } = require("../../utils/platformUtils");
 const accountUtils = require("../../utils/accountUtils");
+const updateDailyTasksUtils = require("../../utils/updateDailyTasksUtils");
 
 Page({
   data: {
@@ -74,20 +75,64 @@ Page({
       if (matchedAccounts.length === 0) {
         // 如果没有账号符合点击的赛道类型，保持现在的跳转逻辑
         this.navigateToArticleList(type, 1, name);
-      } else if (matchedAccounts.length === 1) {
-        // 如果只有一个账号符合，直接跳转到文章列表页面，传递账号ID
-        const account = matchedAccounts[0];
-        this.navigateToArticleListByAccount(
-          account.accountId,
-          account.accountNickname
-        );
       } else {
-        // 如果有多个账号符合，显示账号选择弹出卡片
-        this.showAccountSelectionPopup(type, matchedAccounts);
+        // 当查找到有符合点击赛道类型的账号的时候，调用 updateDailyTasks 不传参数，更新每日任务，再跳转
+        this.updateDailyTasksAndNavigate(type, matchedAccounts, name);
       }
     } else {
       // 如果没有账号信息，保持现在的跳转逻辑
       this.navigateToArticleList(type, 1, name);
+    }
+  },
+
+  // 更新每日任务并导航
+  updateDailyTasksAndNavigate: function (
+    trackType,
+    matchedAccounts,
+    trackName
+  ) {
+    // 显示加载提示
+    wx.showLoading({
+      title: "更新任务中...",
+      mask: true,
+    });
+
+    // 调用 updateDailyTasks 不传参数，更新每日任务
+    updateDailyTasksUtils
+      .updateDailyTasks()
+      .then((result) => {
+        wx.hideLoading();
+
+        if (result.success) {
+          console.log("每日任务更新成功:", result);
+        } else {
+          console.log("每日任务更新失败:", result.error);
+        }
+
+        // 无论更新成功与否，都继续跳转
+        this.navigateAfterUpdate(trackType, matchedAccounts, trackName);
+      })
+      .catch((error) => {
+        wx.hideLoading();
+        console.error("更新每日任务异常:", error);
+
+        // 即使更新失败，也继续跳转
+        this.navigateAfterUpdate(trackType, matchedAccounts, trackName);
+      });
+  },
+
+  // 更新后的导航逻辑
+  navigateAfterUpdate: function (trackType, matchedAccounts, trackName) {
+    if (matchedAccounts.length === 1) {
+      // 如果只有一个账号符合，直接跳转到文章列表页面，传递账号ID
+      const account = matchedAccounts[0];
+      this.navigateToArticleListByAccount(
+        account.accountId,
+        account.accountNickname
+      );
+    } else {
+      // 如果有多个账号符合，显示账号选择弹出卡片
+      this.showAccountSelectionPopup(trackType, matchedAccounts);
     }
   },
 

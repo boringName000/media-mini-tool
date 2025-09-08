@@ -18,6 +18,10 @@ Page({
     // 当前筛选的平台类型
     currentPlatformType: null,
     currentPlatformName: "",
+    // 当前账号ID
+    currentAccountId: null,
+    // 页面类型：'account' 表示通过账号ID进入，'track' 表示通过赛道类型进入
+    pageType: null,
     // 文章列表数据
     articleList: [],
     // 过滤后的文章列表
@@ -36,6 +40,9 @@ Page({
     // 优先检查账号ID参数
     if (options.accountId) {
       console.log("通过账号ID加载文章列表，账号ID:", options.accountId);
+      this.setData({
+        pageType: "account",
+      });
       this.loadArticlesByAccountId(options.accountId);
       return;
     }
@@ -50,6 +57,7 @@ Page({
       const platformName = getPlatformName(platformType);
 
       this.setData({
+        pageType: "track",
         currentTrackType: trackType,
         currentTrackName: trackName,
         currentPlatformType: platformType,
@@ -59,6 +67,7 @@ Page({
     } else {
       // 没有参数时显示空状态
       this.setData({
+        pageType: null,
         filteredArticleList: [],
         isLoading: false,
       });
@@ -69,6 +78,37 @@ Page({
    * 生命周期函数--监听页面初次渲染完成
    */
   onReady: function () {},
+
+  /**
+   * 刷新页面数据
+   */
+  refreshPageData: function () {
+    const pageType = this.data.pageType;
+
+    if (pageType === "account") {
+      // 通过账号ID进入的情况，重新加载账号文章列表
+      const currentAccountId = this.data.currentAccountId;
+      if (currentAccountId) {
+        console.log(
+          "页面显示时重新加载账号文章列表，账号ID:",
+          currentAccountId
+        );
+        this.loadArticlesByAccountId(currentAccountId);
+      }
+    } else if (pageType === "track") {
+      // 通过赛道类型进入的情况，重新加载赛道文章列表
+      const trackType = this.data.currentTrackType;
+      const platformType = this.data.currentPlatformType;
+      console.log(
+        "页面显示时重新加载赛道文章列表，赛道类型:",
+        trackType,
+        "平台类型:",
+        platformType
+      );
+      this.loadArticlesFromCloud(trackType, platformType);
+    }
+    // 如果 pageType 为 null，说明没有有效参数，不需要刷新
+  },
 
   /**
    * 通过账号ID加载文章列表（从每日任务中获取）
@@ -125,6 +165,7 @@ Page({
         const platformName = getPlatformName(targetAccount.platform);
 
         this.setData({
+          currentAccountId: accountId,
           currentTrackType: targetAccount.trackType,
           currentTrackName: trackName,
           currentPlatformType: targetAccount.platform,
@@ -136,7 +177,7 @@ Page({
 
         // 设置页面标题
         wx.setNavigationBarTitle({
-          title: `${targetAccount.accountNickname} - 每日任务`,
+          title: `${targetAccount.accountNickname} - 每日文章`,
         });
       } else {
         console.error("未找到指定账号ID的账号:", accountId);
@@ -248,17 +289,8 @@ Page({
    * 生命周期函数--监听页面显示
    */
   onShow: function () {
-    // 如果有赛道类型和平台类型参数，且不是通过账号ID加载的，调用云函数获取数据
-    if (
-      this.data.currentTrackType &&
-      this.data.currentPlatformType &&
-      this.data.articleList.length === 0
-    ) {
-      this.loadArticlesFromCloud(
-        this.data.currentTrackType,
-        this.data.currentPlatformType
-      );
-    }
+    // 页面显示时重新加载数据，确保数据是最新的
+    this.refreshPageData();
   },
 
   /**
@@ -418,9 +450,55 @@ Page({
       // 复制标题
       this.downloadTitle(article);
     } else if (type === "article") {
+      // 检查下载限制
+      if (!this.checkDownloadPermission(article)) {
+        return;
+      }
       // 保存文章信息
       this.saveArticleInfo(article);
     }
+  },
+
+  /**
+   * 检查下载权限
+   */
+  checkDownloadPermission: function (article) {
+    const pageType = this.data.pageType;
+
+    if (pageType === "track") {
+      // 通过赛道类型进入的情况，不允许下载
+      const trackName = this.data.currentTrackName;
+      wx.showModal({
+        title: "无法下载",
+        content: `您还没有添加${trackName}类型的账号，请添加后再来领取吧`,
+        showCancel: false,
+        confirmText: "知道了",
+      });
+      return false;
+    }
+
+    if (pageType === "account") {
+      // 通过账号ID进入的情况，检查是否有已领取的文章
+      const hasClaimedTasks = this.data.articleList.some(
+        (item) => item.isClaimed === true
+      );
+
+      if (hasClaimedTasks) {
+        // 有已领取的文章，只能下载已领取的文章
+        if (!article.isClaimed) {
+          wx.showModal({
+            title: "无法下载",
+            content: "今天已经领取文章，请明天再来下载吧",
+            showCancel: false,
+            confirmText: "知道了",
+          });
+          return false;
+        }
+      }
+      // 没有已领取的文章，可以下载任何文章
+    }
+
+    return true;
   },
 
   /**
@@ -448,10 +526,22 @@ Page({
    * 保存文章信息
    */
   saveArticleInfo: function (article) {
+    // 获取当前账号ID
+    const currentAccountId = this.data.currentAccountId;
+
+    if (!currentAccountId) {
+      wx.showToast({
+        title: "无法获取账号信息",
+        icon: "none",
+      });
+      return;
+    }
+
     saveArticleInfo({
       downloadUrl: article.downloadUrl,
       articleTitle: article.articleTitle,
       articleId: article.articleId, // 使用正确的文章ID字段
+      accountId: currentAccountId, // 传递账号ID
       trackType: this.data.currentTrackType,
       platformType: this.data.currentPlatformType,
     });

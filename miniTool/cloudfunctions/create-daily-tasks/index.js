@@ -301,6 +301,10 @@ async function processAccountDailyTasks(account, userId, accountIndex) {
       tasksRemoved: tasksRemoved,
       tasksUpdated: tasksUpdated,
       totalTasks: newDailyTasks.length,
+      updatedAccount: {
+        ...account,
+        dailyTasks: newDailyTasks,
+      },
     };
   } catch (error) {
     console.error(`处理账号 ${account.accountId} 每日任务失败:`, error);
@@ -379,6 +383,19 @@ exports.main = async (event, context) => {
       updatedAccounts: updatedAccounts,
     });
 
+    // 组装更新后的 accounts 数据
+    const updatedAccountsData = accounts.map((account, index) => {
+      const updateInfo = updatedAccounts.find(
+        (ua) => ua.accountId === account.accountId
+      );
+      if (updateInfo && !updateInfo.error && updateInfo.updatedAccount) {
+        // 使用更新后的账号数据
+        return updateInfo.updatedAccount;
+      }
+      // 如果更新失败，保持原数据
+      return account;
+    });
+
     return {
       success: true,
       data: {
@@ -388,6 +405,7 @@ exports.main = async (event, context) => {
         totalTasksUpdated: totalTasksUpdated,
         updatedAccounts: updatedAccounts,
         totalAccounts: accounts.length,
+        accounts: updatedAccountsData, // 返回更新后的 accounts 数据
       },
       message: `成功创建 ${totalTasksCreated} 个任务，移除 ${totalTasksRemoved} 个任务，更新 ${totalTasksUpdated} 个账号`,
     };

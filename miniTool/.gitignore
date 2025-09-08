@@ -93,6 +93,11 @@ logs/
 *.sublime-project
 *.sublime-workspace
 
+# AI 编辑器配置文件
+.codebuddy/
+.cursor/
+.windsurf/
+
 # ===== 其他 =====
 # 压缩文件
 *.zip
