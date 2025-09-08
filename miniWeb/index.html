@@ -136,6 +136,21 @@
         width: 180px; /* 固定宽度，确保文字不换行 */
       }
 
+      /* 使用说明样式 */
+      .usage-description {
+        text-align: center;
+        padding: 15px 20px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      .usage-description p {
+        margin: 0;
+        color: #666;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
       /* 预览容器 */
       .preview-container {
         padding: 30px;
@@ -200,6 +215,14 @@
           width: 150px; /* 移动端按钮宽度，确保文字不换行 */
         }
 
+        .usage-description {
+          padding: 10px 15px;
+        }
+
+        .usage-description p {
+          font-size: 13px;
+        }
+
         .preview-container {
           margin: 5px 10px 10px 10px; /* 移动端减少上边距 */
           padding: 20px;
@@ -228,6 +251,11 @@
             <span class="btn-icon">📋</span>
             复制预览效果
           </button>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="usage-description">
+          <p>请点击复制按钮，复制文章内容去公众号发布</p>
         </div>
 
         <!-- HTML预览区域 -->
