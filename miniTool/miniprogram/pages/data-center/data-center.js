@@ -155,16 +155,64 @@ Page({
   onReportTap: function (e) {
     const index = e.currentTarget.dataset.index;
     const account = this.data.accountList[index];
+    const originalAccountData = account.originalAccountData;
+
+    // 检查是否有已领取的每日任务
+    const dailyTasks = originalAccountData.dailyTasks || [];
+    const claimedTasks = dailyTasks.filter(task => task.isClaimed === true);
+
+    if (claimedTasks.length === 0) {
+      // 没有已领取的任务，弹出提示
+      wx.showModal({
+        title: "提示",
+        content: "请去任务页面领取今日要发表的文章吧！",
+        showCancel: false,
+        confirmText: "确认",
+        success: (res) => {
+          if (res.confirm) {
+            // 跳转到任务主页面
+            wx.switchTab({
+              url: "/pages/task/task",
+              success: function () {
+                console.log("跳转到任务主页面");
+              },
+              fail: function (err) {
+                console.error("跳转任务页面失败:", err);
+                wx.showToast({
+                  title: "跳转失败，请重试",
+                  icon: "none",
+                });
+              },
+            });
+          }
+        },
+      });
+      return;
+    }
+
+    // 有已领取的任务，使用第一个已领取的任务数据跳转到回传页面
+    const firstClaimedTask = claimedTasks[0];
+    console.log("第一个已领取的任务数据:", firstClaimedTask);
+    // 构造跳转参数
+    const params = {
+      articleId: firstClaimedTask.articleId,
+      articleTitle: encodeURIComponent(firstClaimedTask.articleTitle || ""),
+      accountName: encodeURIComponent(originalAccountData.accountNickname || ""),
+      accountId: originalAccountData.accountId,
+      trackType: firstClaimedTask.trackType,
+      platformType: firstClaimedTask.platformType,
+    };
+
+    // 构建URL参数字符串
+    const queryString = Object.keys(params)
+      .map(key => `${key}=${params[key]}`)
+      .join('&');
 
     // 跳转到回传信息页面
     wx.navigateTo({
-      url: `/pages/upload-info/upload-info?taskId=${
-        account.accountId
-      }&taskTitle=${encodeURIComponent(
-        account.accountName
-      )}&accountName=${encodeURIComponent(account.accountName)}`,
+      url: `/pages/upload-info/upload-info?${queryString}`,
       success: function () {
-        console.log("跳转到回传信息页面");
+        console.log("跳转到回传信息页面，参数:", params);
       },
       fail: function (err) {
         console.error("跳转失败:", err);

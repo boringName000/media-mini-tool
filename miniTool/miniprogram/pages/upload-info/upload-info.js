@@ -19,6 +19,7 @@ Page({
     linkError: "", // 链接错误提示
     viewCount: "", // 浏览量
     dailyEarnings: "", // 当日收益
+    canSubmitFlag: false, // 是否可以提交的标志
   },
 
   onLoad: function (options) {
@@ -75,6 +76,9 @@ Page({
       trackType: this.data.trackType,
       platformType: this.data.platformType,
     });
+
+    // 初始化提交状态
+    this.updateSubmitStatus();
   },
 
   onShow: function () {
@@ -88,6 +92,7 @@ Page({
       publishedLink: link,
       linkError: "", // 清除错误提示
     });
+    this.updateSubmitStatus();
     console.log("输入的链接:", link);
   },
 
@@ -103,6 +108,7 @@ Page({
     this.setData({
       viewCount: value,
     });
+    this.updateSubmitStatus();
     console.log("输入的浏览量:", value);
   },
 
@@ -112,6 +118,7 @@ Page({
     this.setData({
       dailyEarnings: value,
     });
+    this.updateSubmitStatus();
     console.log("输入的当日收益:", value);
   },
 
@@ -124,22 +131,23 @@ Page({
       return false;
     }
 
-    // 如果用户没有输入协议，自动添加 http://
+    // 如果用户没有输入协议，自动添加 https://
     let normalizedLink = link;
     if (!link.startsWith("http://") && !link.startsWith("https://")) {
-      normalizedLink = "http://" + link;
+      normalizedLink = "https://" + link;
     }
 
-    // 验证链接格式
-    try {
-      new URL(normalizedLink);
+    // 使用更宽松的正则表达式验证链接格式
+    const urlPattern = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
+    
+    if (urlPattern.test(normalizedLink)) {
       // 如果验证通过，更新链接为标准化后的格式
       this.setData({
         publishedLink: normalizedLink,
         linkError: "",
       });
       return true;
-    } catch (error) {
+    } else {
       this.setData({
         linkError: "请输入有效的链接地址",
       });
@@ -197,6 +205,14 @@ Page({
   canSubmit: function () {
     const { publishedLink, viewCount, dailyEarnings } = this.data;
     return publishedLink && viewCount && dailyEarnings;
+  },
+
+  // 更新提交状态
+  updateSubmitStatus: function () {
+    const canSubmitFlag = this.canSubmit();
+    this.setData({
+      canSubmitFlag: canSubmitFlag
+    });
   },
 
   // 提交回传信息

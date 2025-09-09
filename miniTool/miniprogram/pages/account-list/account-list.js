@@ -82,7 +82,7 @@ Page({
           // 基本信息
           accountId: account.accountId,
           accountName: account.accountNickname,
-          platform: account.platform,
+          platform: platformUtils.getPlatformName(account.platform),
           platformIcon: platformIcon,
           trackType: trackTypeName,
           trackTypeEnum: account.trackType,

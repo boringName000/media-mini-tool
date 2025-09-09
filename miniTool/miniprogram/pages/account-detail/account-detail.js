@@ -342,11 +342,85 @@ Page({
     return isValid;
   },
 
+  // 检查是否有有效的修改内容（不能为空值）
+  hasValidChanges: function () {
+    // 检查赛道类型
+    if (!this.data.selectedTrackType) {
+      return false;
+    }
+
+    // 检查手机号
+    if (!this.data.phoneNumber || this.data.phoneNumber.trim() === "") {
+      return false;
+    }
+
+    // 检查账号昵称
+    if (!this.data.accountNickname || this.data.accountNickname.trim() === "") {
+      return false;
+    }
+
+    return true;
+  },
+
+  // 检查是否有实际的修改（与原数据对比，截图除外）
+  hasActualChanges: function () {
+    const originalData = this.data.accountInfo;
+    
+    // 检查赛道类型是否有变化
+    if (this.data.selectedTrackType && 
+        this.data.selectedTrackType.type !== originalData.trackType) {
+      return true;
+    }
+
+    // 检查手机号是否有变化
+    if (this.data.phoneNumber !== (originalData.phoneNumber || "")) {
+      return true;
+    }
+
+    // 检查账号昵称是否有变化
+    if (this.data.accountNickname !== (originalData.accountNickname || "")) {
+      return true;
+    }
+
+    // 检查违规状态是否有变化
+    if (this.data.isViolation !== (originalData.isViolation || false)) {
+      return true;
+    }
+
+    // 检查截图是否有变化（截图变化总是允许的）
+    if (this.data.screenshotFile || 
+        this.data.screenshotUrl !== (originalData.screenshotUrl || "")) {
+      return true;
+    }
+
+    return false;
+  },
+
   // 提交审核
   submitAudit: async function () {
     if (!this.validateForm()) {
       wx.showToast({
         title: "请完善表单信息",
+        icon: "none",
+        duration: 2000,
+      });
+      return;
+    }
+
+    // 检查修改内容是否为空
+    if (!this.hasValidChanges()) {
+      wx.showToast({
+        title: "请填写有效的修改内容",
+        icon: "none",
+        duration: 2000,
+      });
+      return;
+    }
+
+    // 检查修改的值是否与原值相同（除了截图）
+    if (!this.hasActualChanges()) {
+      wx.showToast({
+        title: "没有需要更新的内容",
         icon: "none",
         duration: 2000,
       });

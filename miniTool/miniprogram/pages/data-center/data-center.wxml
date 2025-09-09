@@ -59,7 +59,7 @@
                 <text class="info-value">{{item.lastPublishedTime}}</text>
               </view>
               <view class="articles-count">
-                <text class="info-label">文章数：</text>
+                <text class="info-label">已发布文章数：</text>
                 <text class="info-value">{{item.articlesCount}}</text>
               </view>
             </view>

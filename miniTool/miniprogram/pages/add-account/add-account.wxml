@@ -158,9 +158,10 @@
       <view class="form-item">
         <view class="form-label">
           <text class="label-text">资料页截图</text>
+          <text class="required">*</text>
         </view>
         <view class="upload-section">
-          <view class="upload-area" wx:if="{{!screenshotUrl}}" bindtap="uploadScreenshot">
+          <view class="upload-area {{errors.screenshotUrl ? 'error' : ''}}" wx:if="{{!screenshotUrl}}" bindtap="uploadScreenshot">
             <text class="upload-icon">📷</text>
             <text class="upload-text">点击上传截图</text>
             <text class="upload-hint">支持jpg、png格式</text>
@@ -182,6 +183,9 @@
               </view>
             </view>
           </view>
+        </view>
+        <view class="error-message" wx:if="{{errors.screenshotUrl}}">
+          <text class="error-text">{{errors.screenshotUrl}}</text>
         </view>
       </view>
 

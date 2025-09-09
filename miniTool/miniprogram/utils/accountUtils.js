@@ -89,6 +89,12 @@ const accountUtils = {
       }
     }
 
+    // 验证资料页截图（必填）
+    if (!accountData.screenshotUrl) {
+      errors.screenshotUrl = "请上传资料页截图";
+      isValid = false;
+    }
+
     return {
       isValid,
       errors,

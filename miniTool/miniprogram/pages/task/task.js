@@ -208,9 +208,9 @@ Page({
       // completed: posts 数组里面的都是已完成
       taskStats.completed += posts.length;
 
-      // pending: dailyTasks 每日任务中，已领取的任务（isClaimed 为 true）
+      // pending: dailyTasks 每日任务中，已领取但未完成的任务（isClaimed 为 true 且 isCompleted 为 false）
       dailyTasks.forEach((task) => {
-        if (task.isClaimed === true) {
+        if (task.isClaimed === true && task.isCompleted !== true) {
           taskStats.pending++;
         }
       });

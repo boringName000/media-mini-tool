@@ -40,6 +40,7 @@ Page({
       phoneNumber: "",
       accountNickname: "",
       accountId: "",
+      screenshotUrl: "",
     },
 
     // 上传状态
@@ -175,6 +176,7 @@ Page({
         that.setData({
           screenshotUrl: tempFilePath,
           screenshotFile: res.tempFiles[0], // 保存文件信息用于后续上传
+          "errors.screenshotUrl": "", // 清除截图错误提示
         });
 
         wx.showToast({

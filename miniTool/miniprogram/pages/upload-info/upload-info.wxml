@@ -103,7 +103,7 @@
     <button 
       class="submit-btn" 
       bindtap="submitUploadInfo"
-      disabled="{{!canSubmit()}}"
+      disabled="{{!canSubmitFlag}}"
     >
       <text class="btn-text">提交回传</text>
     </button>

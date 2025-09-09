@@ -246,17 +246,20 @@ function _saveArticleInfoToLocal(options) {
       if (onSuccess) {
         onSuccess({ articleTitle, downloadUrl });
       } else {
+        // 跳转到排版工具页面并关闭当前文章列表页面
+        navigateToLayoutTool(true);
+
         // 弹框提示是否跳转到排版工具页面
-        wx.showModal({
-          title: "保存成功",
-          content: "文章信息已保存，是否跳转到排版工具页面预览文章？",
-          success: (modalRes) => {
-            if (modalRes.confirm) {
-              // 跳转到排版工具页面并关闭当前文章列表页面
-              navigateToLayoutTool(true);
-            }
-          },
-        });
+        // wx.showModal({
+        //   title: "保存成功",
+        //   content: "文章信息已保存，是否跳转到排版工具页面预览文章？",
+        //   success: (modalRes) => {
+        //     if (modalRes.confirm) {
+        //       // 跳转到排版工具页面并关闭当前文章列表页面
+        //       navigateToLayoutTool(true);
+        //     }
+        //   },
+        // });
       }
     } else {
       const error = "保存文章信息失败";
