@@ -2,7 +2,7 @@
 .me-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  padding: 40rpx 30rpx 130rpx 30rpx; /* 底部增加130rpx为自定义tabBar留空间 */
+  padding: 40rpx 30rpx 110rpx 30rpx; /* 底部增加110rpx为自定义tabBar留空间，调整为更合理的高度 */
 }
 
 /* 用户信息区域 */

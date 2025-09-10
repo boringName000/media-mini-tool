@@ -215,12 +215,12 @@ page {
   font-size: 28rpx;
   font-weight: 800; /* 增加字体粗细 */
   white-space: nowrap;
-  animation: scrollText 25s linear infinite; /* 调整动画时间，让每条内容有合适的滚动时间 */
+  animation: scrollText 15s linear infinite; /* 调整动画时间 */
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   display: inline-block;
   will-change: transform; /* 优化动画性能 */
   /* 确保文字内容足够长，避免停顿 */
-  min-width: 100%; /* 恢复正常宽度 */
+  min-width: 200%; /* 设置为两倍宽度，因为有两段重复内容 */
 }
 
 .notice-text.scrolling {
@@ -229,15 +229,15 @@ page {
 
 .notice-separator {
   display: inline-block;
-  margin: 0 80rpx; /* 调整间距 */
+  margin: 0 100rpx; /* 增加间距，确保两段文字之间有合适的距离 */
 }
 
 @keyframes scrollText {
   0% {
-    transform: translateX(100%);
+    transform: translateX(0%);
   }
   100% {
-    transform: translateX(-100%);
+    transform: translateX(-50%); /* 滚动50%，正好是一段文字的长度，实现无缝循环 */
   }
 }
 
@@ -295,12 +295,13 @@ page {
 .container {
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   min-height: 400rpx;
-  padding-bottom: 130rpx; /* 为自定义tabBar留空间 */
+  padding-bottom: 110rpx; /* 为自定义tabBar留空间，调整为更合理的高度 */
+  margin-top: 280rpx; /* 为fixed的banner和滚动条幅留空间，从data-buttons-area转移过来 */
 }
 
 /* 赛道中心区域样式 */
 .track-center-area {
-  margin: 2rpx 30rpx 30rpx 30rpx; /* 上间距2rpx，左右间距30rpx，下间距30rpx */
+  margin: 32rpx 30rpx 30rpx 30rpx; /* 上间距32rpx（原2rpx + 30rpx间距），左右间距30rpx，下间距30rpx */
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 20rpx;

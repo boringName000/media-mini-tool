@@ -4,7 +4,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 110rpx;
+  height: 80rpx; /* 进一步减少高度 */
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(15px);
   border-top: 1px solid rgba(233, 236, 239, 0.6);
@@ -13,6 +13,8 @@
   justify-content: space-around;
   z-index: 9999;
   padding: 0 20rpx;
+  /* 减少安全区域高度 */
+  padding-bottom: calc(env(safe-area-inset-bottom) * 0.70);
   box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.06);
 }
 
@@ -23,11 +25,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8rpx 0;
+  padding: 4rpx 4rpx; /* 进一步减少内边距 */
+  margin: 4rpx 8rpx; /* 调整外边距 */
   border-radius: 12rpx;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  height: 72rpx; /* 调整高度以适应新的TabBar高度 */
 }
 
 /* 导航项点击效果 */
@@ -40,7 +44,7 @@
   bottom: 0;
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
   opacity: 0;
-  border-radius: 12rpx;
+  border-radius: 12rpx; /* 与nav-item的圆角保持一致 */
   transition: opacity 0.3s ease;
 }
 
@@ -52,34 +56,36 @@
 .nav-item-selected {
   background: linear-gradient(
     135deg,
-    rgba(79, 172, 254, 0.1) 0%,
-    rgba(0, 242, 254, 0.1) 100%
+    rgba(79, 172, 254, 0.15) 0%,
+    rgba(0, 242, 254, 0.15) 100%
   );
-  transform: translateY(-2rpx);
+  transform: none; /* 移除上移效果，避免超出边界 */
 }
 
 /* 图标样式 */
 .nav-icon {
-  font-size: 48rpx;
+  font-size: 42rpx; /* 减小图标尺寸 */
   line-height: 1;
-  margin-bottom: 4rpx;
+  margin-bottom: 6rpx; /* 减少图标和文字间距，为文字留出更多空间 */
+  margin-top: 6rpx; /* 减少顶部间距 */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 1;
 }
 
 .nav-item-selected .nav-icon {
-  font-size: 52rpx;
-  transform: scale(1.1);
+  font-size: 44rpx; /* 选中时适度放大 */
+  transform: scale(1.0); /* 移除缩放效果，保持对齐 */
   filter: drop-shadow(0 2px 8px rgba(79, 172, 254, 0.3));
 }
 
 /* 文字样式 */
 .nav-text {
-  font-size: 22rpx;
+  font-size: 26rpx; /* 保持文字尺寸不变 */
   color: #999999;
   font-weight: 500;
   line-height: 1.2;
+  margin-bottom: 6rpx; /* 增加底部间距，防止文字被裁减 */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 1;
@@ -88,7 +94,7 @@
 .nav-item-selected .nav-text {
   color: #667eea;
   font-weight: 600;
-  font-size: 24rpx;
+  font-size: 28rpx; /* 选中时适度放大 */
   text-shadow: 0 1px 3px rgba(102, 126, 234, 0.2);
 }
 
@@ -96,7 +102,7 @@
 .nav-item-selected::after {
   content: "";
   position: absolute;
-  top: 6rpx;
+  top: 4rpx; /* 调整指示器位置，适应更紧凑的布局 */
   left: 50%;
   transform: translateX(-50%);
   width: 6rpx;

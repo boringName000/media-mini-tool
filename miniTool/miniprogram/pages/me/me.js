@@ -6,6 +6,8 @@ Page({
   data: {
     // 登录状态
     isLoggedIn: true, // 默认已登录状态
+    // 管理员权限
+    isAdmin: false, // 是否为管理员（userType === 999）
 
     userInfo: {
       nickname: "用户",
@@ -29,11 +31,12 @@ Page({
         title: "今日数据",
         desc: "每天都要登记的数据",
       },
-      {
-        icon: "💰",
-        title: "收益结算",
-        desc: "查看和管理收益情况",
-      },
+      // 收益结算 - 暂时隐藏
+      // {
+      //   icon: "💰",
+      //   title: "收益结算",
+      //   desc: "查看和管理收益情况",
+      // },
       {
         icon: "📄",
         title: "排版工具",
@@ -48,11 +51,13 @@ Page({
         icon: "🗄️",
         title: "数据库测试",
         desc: "测试数据库连接和操作",
+        adminOnly: true, // 标记为管理员专用
       },
       {
         icon: "⚙️",
         title: "管理端配置",
         desc: "管理员功能配置",
+        adminOnly: true, // 标记为管理员专用
       },
       {
         icon: "🚪",
@@ -66,8 +71,14 @@ Page({
   applyLoginData: function (loginResult) {
     const ts = loginResult && loginResult.registerTimestamp;
     const timeLabel = timeUtils.formatTime(ts, "YYYY-MM-DD HH:mm");
+    
+    // 检查用户类型，判断是否为管理员
+    const userType = loginResult && loginResult.userType;
+    const isAdmin = userType === 999;
+    
     this.setData({
       isLoggedIn: true,
+      isAdmin: isAdmin, // 设置管理员权限
       "userInfo.nickname":
         (loginResult && loginResult.nickname) || this.data.userInfo.nickname,
       "userInfo.uid":

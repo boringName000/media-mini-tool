@@ -13,13 +13,17 @@
       <view class="notice-text {{isScrolling ? 'scrolling' : ''}}">
         <text class="notice-icon">📢</text>
         通知：欢迎各位达人使用本创作工具，请大家坚持日更，按时回传数据，有任何问题及时联系我们！
+        <text class="notice-separator">　　　　</text>
+        <text class="notice-icon">📢</text>
+        通知：欢迎各位达人使用本创作工具，请大家坚持日更，按时回传数据，有任何问题及时联系我们！
       </view>
     </view>
   </view>
 </view>
 
-<!-- 数据按钮区域 -->
-<view class="data-buttons-area">
+<!-- 数据按钮区域 - 暂时隐藏 -->
+<!-- TODO: 数据按钮区域暂时隐藏，包含今日数据和结算收益功能，后续需要时可恢复显示 -->
+<view class="data-buttons-area" wx:if="{{false}}">
   <view class="data-button" bind:tap="goTodayData">
     <view class="data-icon">📊</view>
     <view class="data-text">今日数据</view>

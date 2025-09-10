@@ -21,6 +21,7 @@
         class="menu-item" 
         wx:for="{{menuList}}" 
         wx:key="index"
+        wx:if="{{!item.adminOnly || isAdmin}}"
         data-index="{{index}}"
         bind:tap="onMenuTap"
       >
