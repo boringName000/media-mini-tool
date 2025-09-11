@@ -5,29 +5,29 @@
 const TrackTypeEnum = {
   // 美食相关赛道
   FOOD_TRACK: 1,
-  FOOD_GIF: 2,
-  FOOD_GREEN: 3,
 
   // 娱乐相关赛道
-  ENTERTAINMENT: 4,
+  ENTERTAINMENT: 2,
 
   // 旅游相关赛道
-  TRAVEL_TRACK: 5,
-  TRAVEL_ARTICLE: 6,
+  TRAVEL_TRACK: 3,
+  // 汽车相关赛道
+  CAR_TRACK: 4,
 
   // 艺术相关赛道
-  CALLIGRAPHY: 7,
-  PHOTOGRAPHY: 8,
-  ANTIQUE: 9,
+  Art: 5,
+
+  // 摄影相关赛道
+  PHOTOGRAPHY: 6,
 
   // 生活相关赛道
-  PET: 10,
+  PET: 7,
 
   // 科技相关赛道
-  TECH_DIGITAL: 11, // 科技数码
+  TECH_DIGITAL: 8, // 科技数码
 
   // 时尚相关赛道
-  FASHION_BEAUTY: 12, // 时尚美妆
+  FASHION_BEAUTY: 9, // 时尚美妆
 };
 
 const PlatformEnum = {

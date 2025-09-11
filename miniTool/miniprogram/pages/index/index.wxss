@@ -101,13 +101,14 @@ page {
 .track-item {
   display: flex;
   align-items: center;
-  padding: 24rpx 30rpx;
+  padding: 20rpx 30rpx;
   background: rgba(255, 255, 255, 0.95);
   border-radius: 16rpx;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #e9ecef;
   transition: all 0.3s ease;
   margin-bottom: 20rpx;
+  min-height: 130rpx; /* 降低高度，从140rpx减少到130rpx */
 }
 
 .track-item:active {
@@ -132,7 +133,7 @@ page {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 60rpx;
+  align-items: flex-start; /* 确保文字左对齐 */
 }
 
 .track-item-name {
@@ -148,6 +149,12 @@ page {
   color: #666;
   line-height: 1.4;
   opacity: 0.8;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* 限制最多显示两行 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 4rpx; /* 与标题的间距 */
 }
 
 /* 顶部banner样式 */
