@@ -49,10 +49,10 @@
           <div class="header-right">
             <el-dropdown @command="handleCommand">
               <span class="user-info">
-                <el-avatar :size="32" :src="userStore.userInfo?.avatar">
-                  {{ userStore.userInfo?.name?.charAt(0) || 'A' }}
+                <el-avatar :size="32">
+                  A
                 </el-avatar>
-                <span class="username">{{ userStore.userInfo?.name || '管理员' }}</span>
+                <span class="username">管理员</span>
                 <el-icon class="el-icon--right"><arrow-down /></el-icon>
               </span>
               <template #dropdown>
@@ -76,14 +76,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
 import { ElMessageBox } from 'element-plus'
+import { adminLogout } from '@/utils/cloudbase'
 
 const route = useRoute()
 const router = useRouter()
-const userStore = useUserStore()
 
 const isCollapse = ref(false)
 
@@ -124,7 +123,7 @@ const handleCommand = async (command) => {
           cancelButtonText: '取消',
           type: 'warning'
         })
-        userStore.logout()
+        adminLogout()
         router.push('/login')
       } catch {
         // 用户取消

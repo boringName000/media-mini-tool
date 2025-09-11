@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '@/stores/user'
+import { checkAdminLogin } from '@/utils/cloudbase'
 
 const routes = [
   {
@@ -73,11 +73,11 @@ const router = createRouter({
 
 // 路由守卫
 router.beforeEach((to, from, next) => {
-  const userStore = useUserStore()
+  const isLoggedIn = checkAdminLogin()
   
-  if (to.meta.requiresAuth && !userStore.isLoggedIn) {
+  if (to.meta.requiresAuth && !isLoggedIn) {
     next('/login')
-  } else if (to.path === '/login' && userStore.isLoggedIn) {
+  } else if (to.path === '/login' && isLoggedIn) {
     next('/')
   } else {
     next()

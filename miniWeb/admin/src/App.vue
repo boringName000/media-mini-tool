@@ -5,15 +5,8 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
-import { useUserStore } from '@/stores/user'
-
-const userStore = useUserStore()
-
-onMounted(() => {
-  // 应用初始化时检查登录状态
-  userStore.checkLoginStatus()
-})
+// App.vue 只负责渲染路由视图
+// 登录状态检查已在 main.js 和路由守卫中处理
 </script>
 
 <style lang="scss">

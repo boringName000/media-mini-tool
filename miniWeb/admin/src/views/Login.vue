@@ -58,13 +58,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
+import { adminLogin } from '@/utils/cloudbase'
 
 const router = useRouter()
-const userStore = useUserStore()
 
 const loginFormRef = ref()
 const loading = ref(false)
@@ -98,15 +97,14 @@ const handleLogin = async () => {
     
     loading.value = true
     
-    const result = await userStore.login({
-      username: loginForm.username,
-      password: loginForm.password,
-      remember: loginForm.remember
-    })
+    const result = await adminLogin(loginForm.username, loginForm.password)
     
     if (result.success) {
+      ElMessage.success('登录成功')
       // 登录成功，跳转到首页
       router.push('/')
+    } else {
+      ElMessage.error(result.message || '登录失败，请检查用户名和密码')
     }
   } catch (error) {
     console.error('登录失败:', error)
@@ -127,10 +125,17 @@ onMounted(() => {
 
 // 监听记住我选项
 watch(() => loginForm.remember, (newVal) => {
-  if (newVal) {
+  if (newVal && loginForm.username) {
     localStorage.setItem('admin_username', loginForm.username)
   } else {
     localStorage.removeItem('admin_username')
+  }
+})
+
+// 监听用户名变化，如果记住我被选中，保存用户名
+watch(() => loginForm.username, (newVal) => {
+  if (loginForm.remember && newVal) {
+    localStorage.setItem('admin_username', newVal)
   }
 })
 </script>
