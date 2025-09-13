@@ -272,9 +272,8 @@ async function getStatsByAggregation(userCollection, now, sevenDaysAgo, todaySta
   console.log("使用聚合查询策略进行统计");
   
   const _ = db.command;
-  const $ = db.command.aggregate;
   
-  // 并行执行多个聚合查询以提高性能
+  // 并行执行多个查询以提高性能
   const [
     activeUsersResult,
     registrationResult,
@@ -346,72 +345,128 @@ async function getStatsByAggregation(userCollection, now, sevenDaysAgo, todaySta
   };
 }
 
-// 获取活跃用户统计
+// 获取活跃用户统计 - 修复为微信云开发支持的语法
 async function getActiveUsersStats(userCollection, now, _) {
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   
-  return await userCollection.aggregate()
-    .match({
+  // 微信云开发不支持 dateToString，改用简单的查询然后在内存中处理
+  const result = await userCollection
+    .where({
       lastUpdateTimestamp: _.gte(sevenDaysAgo)
     })
-    .project({
-      date: $.dateToString({
-        date: '$lastUpdateTimestamp',
-        format: '%Y-%m-%d'
-      })
-    })
-    .group({
-      _id: '$date',
-      count: $.sum(1)
-    })
-    .end()
-    .then(res => res.list);
+    .get();
+  
+  // 在内存中按日期分组统计
+  const dailyStats = {};
+  result.data.forEach(user => {
+    if (user.lastUpdateTimestamp) {
+      let updateTime;
+      if (user.lastUpdateTimestamp._seconds) {
+        updateTime = new Date(user.lastUpdateTimestamp._seconds * 1000);
+      } else if (user.lastUpdateTimestamp.toDate) {
+        updateTime = user.lastUpdateTimestamp.toDate();
+      } else {
+        updateTime = new Date(user.lastUpdateTimestamp);
+      }
+      
+      const dateStr = updateTime.toISOString().split('T')[0];
+      dailyStats[dateStr] = (dailyStats[dateStr] || 0) + 1;
+    }
+  });
+  
+  // 转换为数组格式
+  return Object.keys(dailyStats).map(date => ({
+    _id: date,
+    count: dailyStats[date]
+  }));
 }
 
-// 获取注册用户统计
+// 获取注册用户统计 - 修复为微信云开发支持的语法
 async function getRegistrationStats(userCollection, now, _) {
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
   
-  return await userCollection.aggregate()
-    .match({
+  // 微信云开发不支持 dateToString，改用简单的查询然后在内存中处理
+  const result = await userCollection
+    .where({
       registerTimestamp: _.gte(sevenDaysAgo)
     })
-    .project({
-      date: $.dateToString({
-        date: '$registerTimestamp',
-        format: '%Y-%m-%d'
-      })
-    })
-    .group({
-      _id: '$date',
-      count: $.sum(1)
-    })
-    .end()
-    .then(res => res.list);
+    .get();
+  
+  // 在内存中按日期分组统计
+  const dailyStats = {};
+  result.data.forEach(user => {
+    if (user.registerTimestamp) {
+      let registerTime;
+      if (user.registerTimestamp._seconds) {
+        registerTime = new Date(user.registerTimestamp._seconds * 1000);
+      } else if (user.registerTimestamp.toDate) {
+        registerTime = user.registerTimestamp.toDate();
+      } else {
+        registerTime = new Date(user.registerTimestamp);
+      }
+      
+      const dateStr = registerTime.toISOString().split('T')[0];
+      dailyStats[dateStr] = (dailyStats[dateStr] || 0) + 1;
+    }
+  });
+  
+  // 转换为数组格式
+  return Object.keys(dailyStats).map(date => ({
+    _id: date,
+    count: dailyStats[date]
+  }));
 }
 
-// 获取账号相关统计
+// 获取账号相关统计 - 使用微信云开发支持的基础聚合查询
 async function getAccountStats(userCollection, _) {
-  return await userCollection.aggregate()
-    .project({
-      accountsCount: $.size($.ifNull(['$accounts', []])),
-      hasAccounts: $.gt([$.size($.ifNull(['$accounts', []])), 0]),
-      hasMultipleAccounts: $.gt([$.size($.ifNull(['$accounts', []])), 1])
-    })
-    .group({
-      _id: null,
-      totalAccounts: $.sum('$accountsCount'),
-      usersWithAccounts: $.sum($.cond(['$hasAccounts', 1, 0])),
-      usersWithMultipleAccounts: $.sum($.cond(['$hasMultipleAccounts', 1, 0])),
-      usersWithoutAccounts: $.sum($.cond(['$hasAccounts', 0, 1]))
-    })
-    .end()
-    .then(res => res.list[0] || {
-      totalAccounts: 0,
-      usersWithAccounts: 0,
-      usersWithMultipleAccounts: 0,
-      usersWithoutAccounts: 0
-    });
+  // 并行执行多个简单的查询，避免复杂的聚合操作符
+  const [
+    usersWithoutAccountsResult,
+    usersWithAccountsResult,
+    allUsersWithAccountsData
+  ] = await Promise.all([
+    // 1. 统计没有账号的用户数（accounts字段不存在或为空数组）
+    userCollection.where({
+      $or: [
+        { accounts: _.exists(false) },
+        { accounts: _.eq([]) }
+      ]
+    }).count(),
+    
+    // 2. 统计有账号的用户数
+    userCollection.where({
+      accounts: _.exists(true),
+      accounts: _.ne([])
+    }).count(),
+    
+    // 3. 获取所有有账号的用户数据，用于计算总账号数和多账号用户数
+    userCollection.where({
+      accounts: _.exists(true),
+      accounts: _.ne([])
+    }).field({
+      accounts: true
+    }).get()
+  ]);
+  
+  // 计算总账号数和多账号用户数
+  let totalAccounts = 0;
+  let usersWithMultipleAccounts = 0;
+  
+  allUsersWithAccountsData.data.forEach(user => {
+    if (user.accounts && Array.isArray(user.accounts)) {
+      totalAccounts += user.accounts.length;
+      if (user.accounts.length > 1) {
+        usersWithMultipleAccounts++;
+      }
+    }
+  });
+  
+  return {
+    totalAccounts,
+    usersWithAccounts: usersWithAccountsResult.total,
+    usersWithMultipleAccounts,
+    usersWithoutAccounts: usersWithoutAccountsResult.total
+  };
 }
 
 // 获取文章统计（这个比较复杂，可能需要简化或使用内存计算）

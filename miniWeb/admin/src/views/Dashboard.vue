@@ -201,6 +201,7 @@ import { ElMessage } from 'element-plus'
 import { RefreshRight, User, CircleCheck, CircleClose, Link, Connection } from '@element-plus/icons-vue'
 import { adminCloudFunctions } from '@/utils/cloudbase'
 import { dashboardStore } from '@/store'
+import { formatTime } from '@/utils/timeUtils'
 
 // 响应式数据
 const loading = ref(false)
@@ -208,20 +209,7 @@ const dashboardData = ref(null)
 const error = ref('')
 const lastUpdateTime = ref(null)
 
-// 计算属性
-const formatTime = computed(() => {
-  return (timestamp) => {
-    if (!timestamp) return ''
-    const date = new Date(timestamp)
-    return date.toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-})
+
 
 // 加载仪表盘数据
 const loadDashboardData = async (forceRefresh = false) => {

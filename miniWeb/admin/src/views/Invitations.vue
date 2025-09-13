@@ -209,6 +209,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { callAdminCloudFunction } from '@/utils/cloudbase'
 import { invitationsStore } from '@/store/index.js'
+import { formatTime } from '@/utils/timeUtils'
 
 // 响应式数据
 const loading = ref(false)
@@ -262,20 +263,7 @@ const getStatusType = (isExpired) => {
   return isExpired ? 'danger' : 'success'
 }
 
-const formatTime = (time) => {
-  if (!time) return '-'
-  try {
-    return new Date(time).toLocaleString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  } catch (error) {
-    return '-'
-  }
-}
+
 
 const formatCreatorId = (creatorId) => {
   if (!creatorId) return '-'

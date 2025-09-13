@@ -1,0 +1,9 @@
+{
+  "name": "admin-article-info",
+  "version": "1.0.0",
+  "description": "管理员获取文章统计信息的云函数",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
