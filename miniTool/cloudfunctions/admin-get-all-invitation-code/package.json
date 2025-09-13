@@ -1,0 +1,9 @@
+{
+  "name": "admin-get-all-invitation-code",
+  "version": "1.0.0",
+  "description": "云函数：管理员获取所有邀请码数据",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

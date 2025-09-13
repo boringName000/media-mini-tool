@@ -28,12 +28,6 @@ const routes = [
         meta: { title: '文章管理', icon: 'Document' }
       },
       {
-        path: '/invitations',
-        name: 'Invitations',
-        component: () => import('@/views/Invitations.vue'),
-        meta: { title: '邀请码管理', icon: 'Ticket' }
-      },
-      {
         path: '/accounts',
         name: 'Accounts',
         component: () => import('@/views/Accounts.vue'),
@@ -50,6 +44,12 @@ const routes = [
         name: 'ArticleAudit',
         component: () => import('@/views/ArticleAudit.vue'),
         meta: { title: '用户文章审核', icon: 'EditPen' }
+      },
+      {
+        path: '/invitations',
+        name: 'Invitations',
+        component: () => import('@/views/Invitations.vue'),
+        meta: { title: '邀请码管理', icon: 'Ticket' }
       },
       {
         path: '/settings',
