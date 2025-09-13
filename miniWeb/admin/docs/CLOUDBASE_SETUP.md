@@ -107,7 +107,7 @@ VITE_CLOUDBASE_ENV_ID=你的环境ID
 VITE_CLOUDBASE_REGION=ap-shanghai
 
 # 应用标题
-VITE_APP_TITLE=媒体小工具管理端
+VITE_APP_TITLE=西瓜🍉创作者管理中心
 
 # API 基础路径
 VITE_API_BASE_URL=/

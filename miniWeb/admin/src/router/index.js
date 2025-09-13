@@ -22,34 +22,34 @@ const routes = [
         meta: { title: '仪表盘', icon: 'DataBoard' }
       },
       {
-        path: '/users',
-        name: 'Users',
-        component: () => import('@/views/Users.vue'),
-        meta: { title: '用户管理', icon: 'User' }
-      },
-      {
-        path: '/accounts',
-        name: 'Accounts',
-        component: () => import('@/views/Accounts.vue'),
-        meta: { title: '账号管理', icon: 'UserFilled' }
-      },
-      {
         path: '/articles',
         name: 'Articles',
         component: () => import('@/views/Articles.vue'),
         meta: { title: '文章管理', icon: 'Document' }
       },
       {
-        path: '/tasks',
-        name: 'Tasks',
-        component: () => import('@/views/Tasks.vue'),
-        meta: { title: '任务管理', icon: 'List' }
-      },
-      {
         path: '/invitations',
         name: 'Invitations',
         component: () => import('@/views/Invitations.vue'),
         meta: { title: '邀请码管理', icon: 'Ticket' }
+      },
+      {
+        path: '/accounts',
+        name: 'Accounts',
+        component: () => import('@/views/Accounts.vue'),
+        meta: { title: '用户收益', icon: 'Money' }
+      },
+      {
+        path: '/users',
+        name: 'Users',
+        component: () => import('@/views/Users.vue'),
+        meta: { title: '用户信息审核', icon: 'User' }
+      },
+      {
+        path: '/article-audit',
+        name: 'ArticleAudit',
+        component: () => import('@/views/ArticleAudit.vue'),
+        meta: { title: '用户文章审核', icon: 'EditPen' }
       },
       {
         path: '/settings',

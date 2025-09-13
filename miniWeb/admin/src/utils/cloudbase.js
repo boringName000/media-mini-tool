@@ -29,11 +29,11 @@ export const initCloudBase = async () => {
     // 匿名登录（获得调用云函数的基础权限）
     // 这是必需的，为后续调用admin登录云函数提供基础权限
     try {
-      await auth.anonymousAuthProvider().signIn()
+      await auth.signInAnonymously()
       console.log('云开发匿名登录成功 - 已获得调用云函数的基础权限')
     } catch (loginError) {
       // 如果已经登录，会抛出错误，但不影响使用
-      if (loginError.code !== 'OPERATION_FAIL') {
+      if (loginError.code !== 'OPERATION_FAIL' && loginError.code !== 'AUTH_DUPLICATE_ANONYMOUS_USER') {
         throw loginError
       }
       console.log('用户已登录，跳过匿名登录')
@@ -111,11 +111,13 @@ const LOGIN_EXPIRE_DAYS = 3
 const LOGIN_EXPIRE_MS = LOGIN_EXPIRE_DAYS * 24 * 60 * 60 * 1000
 
 // 保存登录状态到localStorage
-const saveLoginState = () => {
+const saveLoginState = (username = 'admin', userInfo = null) => {
   const loginData = {
     isLoggedIn: true,
     timestamp: Date.now(),
-    expires: Date.now() + LOGIN_EXPIRE_MS
+    expires: Date.now() + LOGIN_EXPIRE_MS,
+    username: username,
+    userInfo: userInfo
   }
   localStorage.setItem('adminLoginState', JSON.stringify(loginData))
 }
@@ -124,7 +126,7 @@ const saveLoginState = () => {
 const loadLoginState = () => {
   try {
     const savedData = localStorage.getItem('adminLoginState')
-    if (!savedData) return false
+    if (!savedData) return null
 
     const loginData = JSON.parse(savedData)
     
@@ -132,14 +134,14 @@ const loadLoginState = () => {
     if (Date.now() > loginData.expires) {
       console.log('登录状态已过期，需要重新登录')
       localStorage.removeItem('adminLoginState')
-      return false
+      return null
     }
 
-    return loginData.isLoggedIn
+    return loginData
   } catch (error) {
     console.error('读取登录状态失败:', error)
     localStorage.removeItem('adminLoginState')
-    return false
+    return null
   }
 }
 
@@ -151,10 +153,14 @@ const clearLoginState = () => {
 
 // 初始化登录状态（从localStorage恢复）
 export const initAdminLoginState = () => {
-  isAdminLoggedIn = loadLoginState()
+  const loginData = loadLoginState()
+  isAdminLoggedIn = loginData ? loginData.isLoggedIn : false
   
-  if (isAdminLoggedIn) {
-    console.log('从本地存储恢复登录状态')
+  if (isAdminLoggedIn && loginData) {
+    console.log('从本地存储恢复登录状态:', {
+      username: loginData.username,
+      permissionLevel: loginData.userInfo?.permissionLevel
+    })
   }
   
   return isAdminLoggedIn
@@ -169,18 +175,26 @@ export const adminLogin = async (username, password) => {
     })
 
     if (result.result.success) {
-      // 保存到运行时变量和localStorage
+      // 保存到运行时变量和localStorage（包含用户信息）
       isAdminLoggedIn = true
-      saveLoginState()
+      saveLoginState(username, result.result.data)
       
-      console.log('管理员登录成功')
-      return { success: true, message: result.result.message }
+      console.log('管理员登录成功:', result.result.data)
+      return { 
+        success: true, 
+        message: result.result.message,
+        data: result.result.data
+      }
     } else {
-      return { success: false, error: result.result.message }
+      return { 
+        success: false, 
+        message: result.result.error || result.result.message,
+        code: result.result.code
+      }
     }
   } catch (error) {
     console.error('管理员登录失败:', error)
-    return { success: false, error: error.message }
+    return { success: false, message: error.message }
   }
 }
 
@@ -194,11 +208,29 @@ export const adminLogout = () => {
 export const checkAdminLogin = () => {
   // 如果运行时变量为false，尝试从localStorage恢复
   if (!isAdminLoggedIn) {
-    isAdminLoggedIn = loadLoginState()
+    const loginData = loadLoginState()
+    isAdminLoggedIn = loginData ? loginData.isLoggedIn : false
   }
   
   return isAdminLoggedIn
 }
+
+// 获取当前登录的管理员信息
+export const getAdminInfo = () => {
+  const loginData = loadLoginState()
+  if (!loginData || !loginData.isLoggedIn) {
+    return null
+  }
+  
+  return {
+    username: loginData.username,
+    userInfo: loginData.userInfo,
+    loginTime: new Date(loginData.timestamp),
+    expiresTime: new Date(loginData.expires)
+  }
+}
+
+
 
 // 带权限验证的云函数调用
 export const callAdminCloudFunction = async (name, data = {}) => {
@@ -291,6 +323,9 @@ export const adminCloudFunctions = {
   getAllInvitationCodes: (params = {}) => callAdminCloudFunction('admin-get-all-invitation-codes', params),
   
   // ===== 统计分析 =====
+  // 获取用户仪表盘统计数据
+  getUserDashboard: () => callAdminCloudFunction('admin-user-dashboard'),
+  
   // 获取用户统计（需要新建云函数）
   getUserStats: (params = {}) => callAdminCloudFunction('admin-get-user-stats', params),
   

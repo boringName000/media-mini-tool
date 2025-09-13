@@ -50,9 +50,9 @@
             <el-dropdown @command="handleCommand">
               <span class="user-info">
                 <el-avatar :size="32">
-                  A
+                  {{ adminInfo?.userInfo?.name?.charAt(0) || 'A' }}
                 </el-avatar>
-                <span class="username">管理员</span>
+                <span class="username">{{ adminInfo?.userInfo?.name || '管理员' }}</span>
                 <el-icon class="el-icon--right"><arrow-down /></el-icon>
               </span>
               <template #dropdown>
@@ -79,12 +79,15 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
-import { adminLogout } from '@/utils/cloudbase'
+import { adminLogout, getAdminInfo } from '@/utils/cloudbase'
 
 const route = useRoute()
 const router = useRouter()
 
 const isCollapse = ref(false)
+
+// 管理员信息
+const adminInfo = ref(null)
 
 // 菜单路由
 const menuRoutes = computed(() => {
@@ -138,6 +141,9 @@ onMounted(() => {
   if (savedCollapse !== null) {
     isCollapse.value = JSON.parse(savedCollapse)
   }
+  
+  // 获取管理员信息
+  adminInfo.value = getAdminInfo()
 })
 
 // 监听侧边栏状态变化，保存到本地存储

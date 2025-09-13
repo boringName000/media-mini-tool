@@ -3,7 +3,7 @@
     <div class="login-box">
       <div class="login-header">
         <h2>管理后台登录</h2>
-        <p>媒体小工具管理系统</p>
+        <p>创作者中心管理系统</p>
       </div>
       
       <el-form
@@ -51,7 +51,7 @@
       </el-form>
       
       <div class="login-footer">
-        <p>© 2024 媒体小工具管理系统</p>
+        <p>© 2025 西瓜🍉创作者中心管理系统</p>
       </div>
     </div>
   </div>
@@ -158,6 +158,7 @@ watch(() => loginForm.username, (newVal) => {
   padding: 40px;
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
+  box-sizing: border-box;
 }
 
 .login-header {
@@ -177,8 +178,23 @@ watch(() => loginForm.username, (newVal) => {
 }
 
 .login-form {
+  width: 100%;
+  box-sizing: border-box;
+  
   .el-form-item {
     margin-bottom: 20px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  :deep(.el-input) {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  :deep(.el-input__wrapper) {
+    width: 100%;
+    box-sizing: border-box;
   }
   
   .login-btn {
@@ -186,6 +202,7 @@ watch(() => loginForm.username, (newVal) => {
     height: 45px;
     font-size: 16px;
     border-radius: 6px;
+    box-sizing: border-box;
   }
 }
 

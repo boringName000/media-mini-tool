@@ -1,7 +1,7 @@
 {
   "name": "media-mini-tool-admin",
   "version": "1.0.0",
-  "description": "媒体小工具管理端",
+  "description": "西瓜🍉创作者管理中心",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,7 +15,6 @@
     "axios": "^1.6.2",
     "dayjs": "^1.11.10",
     "element-plus": "^2.4.4",
-    "pinia": "^2.1.7",
     "vue": "^3.4.0",
     "vue-router": "^4.2.5"
   },

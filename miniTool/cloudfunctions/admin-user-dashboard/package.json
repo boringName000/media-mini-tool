@@ -1,0 +1,14 @@
+{
+  "name": "admin-user-dashboard",
+  "version": "1.0.0",
+  "description": "云函数：管理员用户仪表盘数据统计（获取用户总数、活跃用户、任务完成情况、注册趋势等统计数据）",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "^3.0.1"
+  }
+}
