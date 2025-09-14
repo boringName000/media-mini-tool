@@ -16,7 +16,7 @@
     "pages/agreement/agreement",
     "pages/login/login",
     "pages/test-db/test-db",
-    "pages/admin-config/admin-config",
+
     "pages/article-preview/article-preview",
     "pages/layout-tool/layout-tool"
   ],
