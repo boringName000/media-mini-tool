@@ -2,7 +2,7 @@
   <div class="invitations-page">
     <div class="page-header">
       <h1>邀请码管理</h1>
-      <p>管理系统邀请码的生成和使用</p>
+      <p>管理系统邀请码的生成和使用 | 最后更新：{{ lastUpdateTime }}</p>
     </div>
 
     <!-- 操作栏 -->
@@ -213,6 +213,7 @@ import { formatTime } from '@/utils/timeUtils'
 
 // 响应式数据
 const loading = ref(false)
+const lastUpdateTime = ref('')
 const createLoading = ref(false)
 const invitationList = ref([])
 const statistics = ref({
@@ -311,6 +312,16 @@ const loadInvitationList = async (forceRefresh = false) => {
       // 更新页面数据
       invitationList.value = result.data || []
       statistics.value = result.statistics || {}
+      
+      // 更新数据更新时间
+      lastUpdateTime.value = new Date().toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })
       
       console.log('邀请码数据加载成功:', {
         total: statistics.value.totalCount,

@@ -2,7 +2,7 @@
   <div class="users-page">
     <div class="page-header">
       <h1>用户管理</h1>
-      <p>管理系统中的所有用户信息</p>
+      <p>管理系统中的所有用户信息 | 最后更新：{{ lastUpdateTime }}</p>
     </div>
 
     <!-- 搜索和操作栏 -->
@@ -186,6 +186,7 @@ import { callCloudFunction } from '@/utils/cloudbase'
 
 // 响应式数据
 const loading = ref(false)
+const lastUpdateTime = ref('')
 const submitLoading = ref(false)
 const userList = ref([])
 const selectedUsers = ref([])
@@ -251,6 +252,16 @@ const loadUserList = async () => {
     if (result.result.success) {
       userList.value = result.result.data.list || []
       pagination.total = result.result.data.total || 0
+      
+      // 更新数据更新时间
+      lastUpdateTime.value = new Date().toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })
     } else {
       ElMessage.error(result.result.message || '获取用户列表失败')
     }

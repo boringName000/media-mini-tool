@@ -3,7 +3,7 @@
     <!-- 1. 页面标题 -->
     <div class="page-header">
       <h1>文章管理</h1>
-      <p>管理待修改文章，查看文章统计信息</p>
+      <p>管理待修改文章，查看文章统计信息 | 最后更新：{{ lastUpdateTime }}</p>
     </div>
 
     <!-- 2. 数据纵览区域 -->
@@ -542,6 +542,7 @@ import { formatTime } from '@/utils/timeUtils'
 
 // 响应式数据
 const loading = ref(false)
+const lastUpdateTime = ref('')
 const articleStats = ref({
   totalCount: 0,
   unusedCount: 0,
@@ -716,6 +717,16 @@ const loadArticleData = async (forceRefresh = false) => {
       articlesStore.setData({
         articleStats: articleStats.value,
         needRevisionArticles: needRevisionArticles.value
+      })
+      
+      // 更新数据更新时间
+      lastUpdateTime.value = new Date().toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
       })
       
       console.log('文章数据加载成功:', {

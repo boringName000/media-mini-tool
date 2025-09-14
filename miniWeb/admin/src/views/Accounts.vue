@@ -2,7 +2,7 @@
   <div class="accounts-page">
     <div class="page-header">
       <h1>账号管理</h1>
-      <p>管理用户的创作账号信息</p>
+      <p>管理用户的创作账号信息 | 最后更新：{{ lastUpdateTime }}</p>
     </div>
 
     <!-- 搜索和操作栏 -->
@@ -301,6 +301,7 @@ import { callCloudFunction } from '@/utils/cloudbase'
 
 // 响应式数据
 const loading = ref(false)
+const lastUpdateTime = ref('')
 const submitLoading = ref(false)
 const accountList = ref([])
 const selectedAccounts = ref([])
@@ -404,6 +405,16 @@ const loadAccountList = async () => {
     if (result.result.success) {
       accountList.value = result.result.data.list || []
       pagination.total = result.result.data.total || 0
+      
+      // 更新数据更新时间
+      lastUpdateTime.value = new Date().toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })
     } else {
       ElMessage.error(result.result.message || '获取账号列表失败')
     }

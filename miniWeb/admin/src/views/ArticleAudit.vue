@@ -2,7 +2,7 @@
   <div class="article-audit-page">
     <div class="page-header">
       <h1>用户文章审核</h1>
-      <p>审核用户提交的文章内容</p>
+      <p>审核用户提交的文章内容 | 最后更新：{{ lastUpdateTime }}</p>
     </div>
 
     <!-- 筛选条件 -->
@@ -221,6 +221,7 @@ import { callCloudFunction } from '@/utils/cloudbase'
 
 // 响应式数据
 const loading = ref(false)
+const lastUpdateTime = ref('')
 const rejectLoading = ref(false)
 const previewVisible = ref(false)
 const rejectVisible = ref(false)
@@ -265,6 +266,16 @@ const getArticleList = async () => {
     if (result.result.success) {
       articleList.value = result.result.data.list
       pagination.total = result.result.data.total
+      
+      // 更新数据更新时间
+      lastUpdateTime.value = new Date().toLocaleString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })
     } else {
       ElMessage.error(result.result.message || '获取数据失败')
     }
