@@ -29,6 +29,14 @@ exports.main = async (event, context) => {
       }
     }
     
+    // 限制批量上传数量，避免超时
+    if (files.length > 10) {
+      return {
+        success: false,
+        message: '参数错误：单次上传最多支持10个文件'
+      }
+    }
+    
     // 验证每个文件对象的必要字段
     for (let i = 0; i < files.length; i++) {
       const file = files[i]

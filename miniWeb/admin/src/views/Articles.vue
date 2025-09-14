@@ -133,21 +133,18 @@
           <span>待修改文章列表 ({{ (filteredArticles && filteredArticles.length) || 0 }}/{{ (needRevisionArticles && needRevisionArticles.length) || 0 }})</span>
           <div class="list-actions">
             <el-button 
-              type="danger" 
+              type="primary" 
               :disabled="!selectedArticles || selectedArticles.length === 0"
-              @click="handleBatchDelete"
-              class="danger-button-solid"
+              @click="handleBatchDownload"
             >
-              批量删除 ({{ (selectedArticles && selectedArticles.length) || 0 }})
+              批量下载 ({{ (selectedArticles && selectedArticles.length) || 0 }})
             </el-button>
             <el-button 
               type="danger" 
-              plain
-              :disabled="!needRevisionArticles || needRevisionArticles.length === 0"
-              @click="handleDeleteAll"
-              class="danger-button-outline"
+              :disabled="!selectedArticles || selectedArticles.length === 0"
+              @click="handleBatchDelete"
             >
-              全部删除
+              批量删除 ({{ (selectedArticles && selectedArticles.length) || 0 }})
             </el-button>
           </div>
         </div>
@@ -274,11 +271,8 @@
               </div>
               
               <div class="article-actions">
-                <el-button size="small" @click="handleUpdateArticle(article)">
-                  更新
-                </el-button>
-                <el-button size="small" type="primary" @click="handlePreviewArticle(article)">
-                  预览
+                <el-button size="small" type="primary" @click="handleDownloadArticle(article)">
+                  下载
                 </el-button>
                 <el-button size="small" type="danger" @click="handleDeleteArticle(article)">
                   删除
@@ -806,33 +800,417 @@ const handleSelectAll = (checked) => {
   }
 }
 
+// 从ArrayBuffer创建文件下载
+const downloadFileFromBuffer = (fileContentArray, filename) => {
+  try {
+    // 将数组转换回Uint8Array
+    const uint8Array = new Uint8Array(fileContentArray)
+    
+    // 创建Blob对象
+    const blob = new Blob([uint8Array], { type: 'text/html' })
+    
+    // 创建下载URL
+    const downloadUrl = URL.createObjectURL(blob)
+    
+    // 创建下载链接
+    const link = document.createElement('a')
+    link.href = downloadUrl
+    link.download = filename
+    link.style.display = 'none'
+    
+    // 触发下载
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    // 清理URL
+    URL.revokeObjectURL(downloadUrl)
+    
+    return true
+  } catch (error) {
+    console.error('创建文件下载失败:', error)
+    throw new Error(`下载文件失败: ${error.message}`)
+  }
+}
+
+// 分批处理文章ID（每批最多10个）
+const chunkArray = (array, chunkSize) => {
+  const chunks = []
+  for (let i = 0; i < array.length; i += chunkSize) {
+    chunks.push(array.slice(i, i + chunkSize))
+  }
+  return chunks
+}
+
+// 批量下载
+const handleBatchDownload = async () => {
+  if (!selectedArticles.value || selectedArticles.value.length === 0) {
+    ElMessage.warning('请先选择要下载的文章')
+    return
+  }
+
+  const totalArticles = selectedArticles.value.length
+  console.log(`开始批量下载 ${totalArticles} 篇文章`)
+
+  // 分批处理（每批10个）
+  const articleChunks = chunkArray(selectedArticles.value, 10)
+  console.log(`分为 ${articleChunks.length} 批处理，每批最多10个文章`)
+
+  let totalSuccessCount = 0
+  let totalFailedCount = 0
+  let totalNotFoundCount = 0
+  let currentArticleIndex = 0
+
+  // 显示总体进度
+  let progressInstance = ElMessage({
+    message: `正在处理批量下载... (0/${totalArticles})`,
+    type: 'info',
+    duration: 0,
+    showClose: false
+  })
+
+  try {
+    // 逐批处理
+    for (let batchIndex = 0; batchIndex < articleChunks.length; batchIndex++) {
+      const currentBatch = articleChunks[batchIndex]
+      console.log(`处理第 ${batchIndex + 1}/${articleChunks.length} 批，包含 ${currentBatch.length} 篇文章`)
+
+      try {
+        // 调用云函数获取当前批次的文件内容
+        const result = await callAdminCloudFunction('admin-download-article', {
+          articleIds: currentBatch
+        })
+
+        if (result.result && result.result.success) {
+          const data = result.result.data
+          const { successCount, failedCount, notFoundCount, results } = data
+
+          // 累计统计
+          totalSuccessCount += successCount
+          totalFailedCount += failedCount
+          totalNotFoundCount += notFoundCount
+
+          // 下载当前批次的文件
+          for (const article of results) {
+            currentArticleIndex++
+            
+            // 更新进度
+            progressInstance.close()
+            progressInstance = ElMessage({
+              message: `正在下载... (${currentArticleIndex}/${totalArticles}) - ${article.articleTitle}`,
+              type: 'info',
+              duration: 0,
+              showClose: false
+            })
+
+            if (article.downloadSuccess && article.fileContent) {
+              try {
+                // 使用ArrayBuffer创建文件下载
+                downloadFileFromBuffer(
+                  article.fileContent,
+                  `${article.articleTitle}.html`
+                )
+                console.log(`文章下载成功: ${article.articleTitle}`)
+                
+                // 下载间隔（安全值）
+                await new Promise(resolve => setTimeout(resolve, 600))
+              } catch (error) {
+                console.error(`下载文章 ${article.articleTitle} 失败:`, error)
+                totalFailedCount++
+              }
+            } else {
+              console.warn(`文章 ${article.articleTitle} 内容获取失败: ${article.downloadError}`)
+            }
+          }
+        } else {
+          console.error(`第 ${batchIndex + 1} 批处理失败:`, result.result?.message)
+          totalFailedCount += currentBatch.length
+          currentArticleIndex += currentBatch.length
+        }
+      } catch (error) {
+        console.error(`第 ${batchIndex + 1} 批处理出错:`, error)
+        totalFailedCount += currentBatch.length
+        currentArticleIndex += currentBatch.length
+      }
+
+      // 批次间间隔
+      if (batchIndex < articleChunks.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
+
+    progressInstance.close()
+
+    // 构建最终结果消息
+    let message = `批量下载完成：`
+    if (totalSuccessCount > 0) {
+      message += `成功 ${totalSuccessCount} 篇`
+    }
+    if (totalFailedCount > 0) {
+      message += `${totalSuccessCount > 0 ? '，' : ''}失败 ${totalFailedCount} 篇`
+    }
+    if (totalNotFoundCount > 0) {
+      message += `${(totalSuccessCount > 0 || totalFailedCount > 0) ? '，' : ''}未找到 ${totalNotFoundCount} 篇`
+    }
+
+    if (totalSuccessCount > 0) {
+      ElMessage.success(message)
+    } else if (totalFailedCount > 0) {
+      ElMessage.warning(message)
+    } else {
+      ElMessage.error('没有成功下载任何文章')
+    }
+
+    console.log(`批量下载统计: 成功 ${totalSuccessCount}，失败 ${totalFailedCount}，未找到 ${totalNotFoundCount}`)
+
+  } catch (error) {
+    progressInstance.close()
+    console.error('批量下载过程出错:', error)
+    ElMessage.error(`批量下载失败: ${error.message}`)
+  }
+}
+
 // 批量删除
-const handleBatchDelete = () => {
-  ElMessage.info(`批量删除功能开发中，选中 ${selectedArticles.value.length} 篇文章`)
+const handleBatchDelete = async () => {
+  if (!selectedArticles.value || selectedArticles.value.length === 0) {
+    ElMessage.warning('请先选择要删除的文章')
+    return
+  }
+
+  const totalArticles = selectedArticles.value.length
+  console.log(`开始批量删除 ${totalArticles} 篇文章`)
+
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除选中的 ${totalArticles} 篇文章吗？此操作不可恢复。`,
+      '批量删除确认',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+
+    // 分批处理（每批20个）
+    const articleChunks = chunkArray(selectedArticles.value, 20)
+    console.log(`分为 ${articleChunks.length} 批处理，每批最多20个文章`)
+
+    let totalFullyDeletedCount = 0
+    let totalPartiallyDeletedCount = 0
+    let totalFailedCount = 0
+    let totalNotFoundCount = 0
+    let currentArticleIndex = 0
+
+    // 显示总体进度
+    let progressInstance = ElMessage({
+      message: `正在处理批量删除... (0/${totalArticles})`,
+      type: 'info',
+      duration: 0,
+      showClose: false
+    })
+
+    try {
+      // 逐批处理
+      for (let batchIndex = 0; batchIndex < articleChunks.length; batchIndex++) {
+        const currentBatch = articleChunks[batchIndex]
+        console.log(`处理第 ${batchIndex + 1}/${articleChunks.length} 批，包含 ${currentBatch.length} 篇文章`)
+
+        // 更新进度
+        progressInstance.close()
+        progressInstance = ElMessage({
+          message: `正在删除第 ${batchIndex + 1}/${articleChunks.length} 批... (${currentArticleIndex}/${totalArticles})`,
+          type: 'info',
+          duration: 0,
+          showClose: false
+        })
+
+        try {
+          // 调用云函数删除当前批次
+          const result = await callAdminCloudFunction('admin-delete-article', {
+            articleIds: currentBatch
+          })
+
+          if (result.result && result.result.success) {
+            const data = result.result.data
+            const { fullyDeletedCount, partiallyDeletedCount, failedCount, notFoundCount } = data
+
+            // 累计统计
+            totalFullyDeletedCount += fullyDeletedCount || 0
+            totalPartiallyDeletedCount += partiallyDeletedCount || 0
+            totalFailedCount += failedCount || 0
+            totalNotFoundCount += notFoundCount || 0
+
+            console.log(`第 ${batchIndex + 1} 批删除完成: 完全删除 ${fullyDeletedCount}，部分删除 ${partiallyDeletedCount}，失败 ${failedCount}，未找到 ${notFoundCount}`)
+          } else {
+            console.error(`第 ${batchIndex + 1} 批删除失败:`, result.result?.message)
+            totalFailedCount += currentBatch.length
+          }
+        } catch (error) {
+          console.error(`第 ${batchIndex + 1} 批删除出错:`, error)
+          totalFailedCount += currentBatch.length
+        }
+
+        currentArticleIndex += currentBatch.length
+
+        // 批次间间隔
+        if (batchIndex < articleChunks.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      }
+
+      progressInstance.close()
+
+      // 构建最终结果消息
+      let message = `批量删除完成：`
+      if (totalFullyDeletedCount > 0) {
+        message += `完全删除 ${totalFullyDeletedCount} 篇`
+      }
+      if (totalPartiallyDeletedCount > 0) {
+        message += `${totalFullyDeletedCount > 0 ? '，' : ''}部分删除 ${totalPartiallyDeletedCount} 篇（云存储删除失败）`
+      }
+      if (totalFailedCount > 0) {
+        message += `${(totalFullyDeletedCount > 0 || totalPartiallyDeletedCount > 0) ? '，' : ''}删除失败 ${totalFailedCount} 篇`
+      }
+      if (totalNotFoundCount > 0) {
+        message += `${(totalFullyDeletedCount > 0 || totalPartiallyDeletedCount > 0 || totalFailedCount > 0) ? '，' : ''}未找到 ${totalNotFoundCount} 篇`
+      }
+
+      if (totalFullyDeletedCount > 0) {
+        ElMessage.success(message)
+      } else if (totalPartiallyDeletedCount > 0 || totalFailedCount > 0) {
+        ElMessage.warning(message)
+      } else {
+        ElMessage.error('没有成功删除任何文章')
+      }
+
+      console.log(`批量删除统计: 完全删除 ${totalFullyDeletedCount}，部分删除 ${totalPartiallyDeletedCount}，失败 ${totalFailedCount}，未找到 ${totalNotFoundCount}`)
+
+      // 清空选择
+      selectedArticles.value = []
+      
+      // 刷新文章数据
+      await loadArticleData(true)
+
+    } catch (error) {
+      progressInstance.close()
+      console.error('批量删除过程出错:', error)
+      ElMessage.error(`批量删除失败: ${error.message}`)
+    }
+  } catch {
+    // 用户取消删除
+  }
 }
 
-// 全部删除
-const handleDeleteAll = () => {
-  ElMessage.info(`全部删除功能开发中，共 ${needRevisionArticles.value.length} 篇待修改文章`)
-}
 
-// 更新文章
-const handleUpdateArticle = (article) => {
-  ElMessage.info(`更新文章功能开发中: ${article.articleTitle}`)
-}
 
-// 预览文章
-const handlePreviewArticle = (article) => {
-  if (article.downloadUrl) {
-    window.open(article.downloadUrl, '_blank')
-  } else {
-    ElMessage.warning('该文章暂无预览链接')
+
+// 下载文章
+const handleDownloadArticle = async (article) => {
+  const loadingInstance = ElMessage({
+    message: `正在获取文章 "${article.articleTitle}" 的内容...`,
+    type: 'info',
+    duration: 0,
+    showClose: false
+  })
+
+  try {
+    const result = await callAdminCloudFunction('admin-download-article', {
+      articleIds: [article.articleId]
+    })
+
+    loadingInstance.close()
+
+    if (result.result && result.result.success) {
+      const data = result.result.data
+      const { results } = data
+
+      if (results && results.length > 0) {
+        const articleResult = results[0]
+        if (articleResult.downloadSuccess && articleResult.fileContent) {
+          try {
+            // 使用ArrayBuffer创建文件下载
+            downloadFileFromBuffer(
+              articleResult.fileContent,
+              `${article.articleTitle}.html`
+            )
+            ElMessage.success(`文章 "${article.articleTitle}" 下载成功`)
+          } catch (downloadError) {
+            console.error('文件下载失败:', downloadError)
+            ElMessage.error(`下载文章失败: ${downloadError.message}`)
+          }
+        } else {
+          ElMessage.error(`获取文章内容失败: ${articleResult.downloadError || '未知错误'}`)
+        }
+      } else {
+        ElMessage.error('文章不存在或已被删除')
+      }
+    } else {
+      throw new Error(result.result?.message || '获取文章内容失败')
+    }
+  } catch (error) {
+    loadingInstance.close()
+    console.error('下载文章失败:', error)
+    ElMessage.error(`下载文章失败: ${error.message}`)
   }
 }
 
 // 删除文章
-const handleDeleteArticle = (article) => {
-  ElMessage.info(`删除文章功能开发中: ${article.articleTitle}`)
+const handleDeleteArticle = async (article) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除文章 "${article.articleTitle}" 吗？此操作不可恢复。`,
+      '删除确认',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+
+    const loadingInstance = ElMessage({
+      message: `正在删除文章 "${article.articleTitle}"，请稍候...`,
+      type: 'info',
+      duration: 0,
+      showClose: false
+    })
+
+    try {
+      const result = await callAdminCloudFunction('admin-delete-article', {
+        articleIds: [article.articleId]
+      })
+
+      loadingInstance.close()
+
+      if (result.result && result.result.success) {
+        const data = result.result.data
+        const { fullyDeletedCount, partiallyDeletedCount, failedCount, notFoundCount } = data
+
+        if (fullyDeletedCount > 0) {
+          ElMessage.success(`文章 "${article.articleTitle}" 删除成功`)
+        } else if (partiallyDeletedCount > 0) {
+          ElMessage.warning(`文章 "${article.articleTitle}" 部分删除成功（云存储删除失败）`)
+        } else if (failedCount > 0) {
+          ElMessage.error(`文章 "${article.articleTitle}" 删除失败`)
+        } else if (notFoundCount > 0) {
+          ElMessage.warning(`文章 "${article.articleTitle}" 未找到`)
+        }
+
+        // 从选择列表中移除（如果存在）
+        selectedArticles.value = selectedArticles.value.filter(id => id !== article.articleId)
+        
+        // 刷新文章数据
+        await loadArticleData(true)
+      } else {
+        throw new Error(result.result?.message || '删除失败')
+      }
+    } catch (error) {
+      loadingInstance.close()
+      console.error('删除文章失败:', error)
+      ElMessage.error(`删除文章失败: ${error.message}`)
+    }
+  } catch {
+    // 用户取消删除
+  }
 }
 
 // ==================== 文章上传功能 ====================
@@ -1331,32 +1709,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-/* 危险按钮样式优化 - 提高对比度 */
-.danger-button-solid {
-  background-color: #dc2626 !important;
-  border-color: #dc2626 !important;
-  color: #ffffff !important;
-  font-weight: 600 !important;
 
-  &:hover {
-    background-color: #b91c1c !important;
-    border-color: #b91c1c !important;
-  }
-}
-
-.danger-button-outline {
-  background-color: #ffffff !important;
-  border-color: #dc2626 !important;
-  color: #dc2626 !important;
-  font-weight: 600 !important;
-  border-width: 2px !important;
-
-  &:hover {
-    background-color: #fef2f2 !important;
-    border-color: #b91c1c !important;
-    color: #b91c1c !important;
-  }
-}
 
 /* 清除缓存按钮样式优化 - 淡红色背景白色文字 */
 .clear-cache-button {
