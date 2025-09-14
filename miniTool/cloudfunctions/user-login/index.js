@@ -84,7 +84,7 @@ exports.main = async (event, context) => {
       .collection("user-info")
       .doc(user._id)
       .update({
-        data: { lastLoginTimestamp: serverNow },
+        data: { lastLoginTimestamp: serverNow ,lastUpdateTimestamp: serverNow},
       });
 
     return {

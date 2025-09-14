@@ -212,17 +212,24 @@ Page({
     // 生成缓存key
     const cacheKey = `${trackType}-${platformType}`;
 
-    // 检查缓存中是否已有数据
+    // 检查缓存中是否已有有效数据
     if (this.articleCache.has(cacheKey)) {
-      console.log("从缓存中获取文章数据");
       const cachedData = this.articleCache.get(cacheKey);
-
-      this.setData({
-        articleList: cachedData,
-        filteredArticleList: cachedData,
-        isLoading: false,
-      });
-      return;
+      
+      // 验证缓存数据是否有效（非空且有内容）
+      if (cachedData && Array.isArray(cachedData) && cachedData.length > 0) {
+        console.log("从缓存中获取文章数据");
+        this.setData({
+          articleList: cachedData,
+          filteredArticleList: cachedData,
+          isLoading: false,
+        });
+        return;
+      } else {
+        console.log("缓存数据无效，清除缓存并重新获取");
+        // 清除无效缓存
+        this.articleCache.delete(cacheKey);
+      }
     }
 
     console.log("调用云函数获取文章数据");

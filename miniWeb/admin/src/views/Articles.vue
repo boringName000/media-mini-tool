@@ -1,4 +1,4 @@
-shua<template>
+<template>
   <div class="articles-page">
     <!-- 1. 页面标题 -->
     <div class="page-header">
@@ -305,6 +305,223 @@ shua<template>
         </div>
       </div>
     </el-card>
+
+    <!-- 文章上传面板 -->
+    <el-dialog
+      v-model="uploadDialog.visible"
+      title="批量上传文章"
+      width="80%"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :before-close="handleBeforeCloseUpload"
+      class="upload-dialog"
+    >
+      <div class="upload-panel">
+        <!-- 左侧：文件列表区域 -->
+        <div class="file-list-area">
+          <div class="area-header">
+            <span>待上传文件</span>
+            <span class="file-count">({{ uploadFiles.length }} 个文件)</span>
+          </div>
+          <div class="file-drop-zone" 
+               :class="{ 'drag-over': dragOver }"
+               @drop="handleFileDrop"
+               @dragover.prevent="handleDragOver"
+               @dragleave="handleDragLeave"
+               @dragenter.prevent>
+            <div v-if="uploadFiles.length === 0" class="drop-placeholder">
+              <el-icon class="drop-icon"><Upload /></el-icon>
+              <p>拖拽文件到此处</p>
+              <p class="drop-hint">仅支持 .html 文件</p>
+            </div>
+            
+            <!-- 文件列表 -->
+            <div v-else class="file-list">
+              <div v-for="(file, index) in uploadFiles" 
+                   :key="index" 
+                   class="file-item"
+                   :class="{ 
+                     'success': file.status === 'success',
+                     'error': file.status === 'error',
+                     'uploading': file.status === 'uploading'
+                   }">
+                <div class="file-name">{{ file.name }}</div>
+                <div class="file-size">{{ formatFileSize(file.size) }}</div>
+                <div class="file-actions">
+                  <el-icon v-if="file.status === 'success'" class="status-icon success">
+                    <Check />
+                  </el-icon>
+                  <el-icon v-else-if="file.status === 'error'" class="status-icon error">
+                    <Close />
+                  </el-icon>
+                  <el-icon v-else-if="file.status === 'uploading'" class="status-icon uploading">
+                    <Loading />
+                  </el-icon>
+                  <el-button 
+                    v-else
+                    type="danger" 
+                    size="small" 
+                    text
+                    class="remove-btn"
+                    @click="removeFile(index)"
+                  >
+                    移除
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：操作按钮区域 -->
+        <div class="action-area">
+          <div class="action-buttons">
+            <el-button 
+              type="primary" 
+              :icon="FolderOpened"
+              @click="selectFiles"
+              :disabled="uploading"
+            >
+              选择文件
+            </el-button>
+            
+            <el-button 
+              type="warning" 
+              :icon="Warning"
+              @click="validateFiles"
+              :disabled="uploadFiles.length === 0 || uploading"
+            >
+              验证文件
+            </el-button>
+            
+            <el-button 
+              type="success" 
+              :icon="Upload"
+              @click="confirmUpload"
+              :disabled="uploadFiles.length === 0 || uploading"
+              :loading="uploading"
+            >
+              确认上传
+            </el-button>
+          </div>
+
+          <!-- 赛道和平台选择 -->
+          <div class="upload-config">
+            <el-form :model="uploadConfig" label-width="80px" size="small">
+              <el-form-item label="赛道类型" required>
+                <el-select 
+                  v-model="uploadConfig.trackType" 
+                  placeholder="选择赛道"
+                  :disabled="uploading"
+                >
+                  <el-option
+                    v-for="option in trackTypeOptions.filter(opt => opt.value !== '')"
+                    :key="option.value"
+                    :label="option.label"
+                    :value="option.value"
+                  />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="平台类型" required>
+                <el-select 
+                  v-model="uploadConfig.platformType" 
+                  placeholder="选择平台"
+                  :disabled="uploading"
+                >
+                  <el-option
+                    v-for="option in platformOptions.filter(opt => opt.value !== '')"
+                    :key="option.value"
+                    :label="option.label"
+                    :value="option.value"
+                  />
+                </el-select>
+              </el-form-item>
+            </el-form>
+          </div>
+        </div>
+      </div>
+
+      <!-- 上传进度条 -->
+      <div v-if="uploading || uploadProgress.total > 0" class="upload-progress">
+        <div class="progress-info">
+          <span>上传进度: {{ uploadProgress.completed }}/{{ uploadProgress.total }}</span>
+          <span v-if="uploadProgress.current">当前: {{ uploadProgress.current }}</span>
+        </div>
+        <el-progress 
+          :percentage="uploadProgressPercentage" 
+          :status="uploadProgress.completed === uploadProgress.total ? 'success' : ''"
+        />
+      </div>
+
+      <!-- 底部状态区域 -->
+      <div class="upload-status">
+        <!-- 左侧：文件状态列表 -->
+        <div class="status-list">
+          <div class="status-header">
+            <span>文件上传状态</span>
+            <span class="file-count">({{ sortedUploadStatusFiles.length }} 个文件)</span>
+          </div>
+          <div class="status-items">
+            <div v-for="(file, index) in sortedUploadStatusFiles" 
+                 :key="index" 
+                 class="status-item"
+                 :class="file.status">
+              <span class="status-filename">{{ file.name }}</span>
+              <span class="status-result">
+                <el-tag v-if="file.status === 'success'" type="success" size="small">成功</el-tag>
+                <el-tag v-else-if="file.status === 'error'" type="danger" size="small">失败</el-tag>
+                <el-tag v-else-if="file.status === 'uploading'" type="warning" size="small">上传中</el-tag>
+                <el-tag v-else type="info" size="small">待上传</el-tag>
+              </span>
+              <span v-if="file.error" class="status-error">{{ file.error }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：操作按钮 -->
+        <div class="retry-area">
+          <el-button 
+            type="warning" 
+            :icon="RefreshRight"
+            @click="retryFailedFiles"
+            :disabled="!hasFailedFiles || uploading"
+          >
+            重试上传
+          </el-button>
+          <el-button 
+            type="danger" 
+            :icon="Delete"
+            @click="clearCache"
+            :disabled="uploading"
+            plain
+            class="clear-cache-button"
+          >
+            清除缓存
+          </el-button>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="closeUploadDialog" :disabled="uploading">
+            {{ uploading ? '上传中...' : '关闭' }}
+          </el-button>
+          <el-button type="primary" @click="clearAllFiles" :disabled="uploading">
+            清空文件
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 隐藏的文件选择器 -->
+    <input 
+      ref="fileInput" 
+      type="file" 
+      multiple 
+      accept=".html"
+      style="display: none"
+      @change="handleFileSelect"
+    />
   </div>
 </template>
 
@@ -312,7 +529,8 @@ shua<template>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  Document, Clock, Check, Warning, Upload, Refresh
+  Document, Clock, Check, Warning, Upload, Refresh,
+  FolderOpened, Close, Loading, Tickets, RefreshRight
 } from '@element-plus/icons-vue'
 import { callAdminCloudFunction } from '@/utils/cloudbase'
 import { articlesStore } from '@/store'
@@ -617,10 +835,494 @@ const handleDeleteArticle = (article) => {
   ElMessage.info(`删除文章功能开发中: ${article.articleTitle}`)
 }
 
-// 上传文章
+// ==================== 文章上传功能 ====================
+
+// 上传对话框状态
+const uploadDialog = ref({
+  visible: false
+})
+
+// 上传文件列表
+const uploadFiles = ref([])
+// 上传状态文件列表
+const uploadStatusFiles = ref([])
+
+// 拖拽状态
+const dragOver = ref(false)
+
+// 上传状态
+const uploading = ref(false)
+
+// 上传进度
+const uploadProgress = ref({
+  total: 0,
+  completed: 0,
+  current: ''
+})
+
+// 上传配置
+const uploadConfig = ref({
+  trackType: null,
+  platformType: null
+})
+
+// 文件选择器引用
+const fileInput = ref(null)
+
+// 上传文章 - 打开上传面板
 const handleUploadArticle = () => {
-  ElMessage.info('上传文章功能开发中')
+  uploadDialog.value.visible = true
+  // 重置状态
+  uploadFiles.value = []
+  uploadProgress.value = { total: 0, completed: 0, current: '' }
+  uploading.value = false
 }
+
+// 关闭上传对话框前的确认
+const handleBeforeCloseUpload = (done) => {
+  if (uploading.value) {
+    ElMessageBox.confirm(
+      '文件正在上传中，确定要关闭吗？关闭后上传将被中断。',
+      '确认关闭',
+      {
+        confirmButtonText: '确定关闭',
+        cancelButtonText: '继续上传',
+        type: 'warning'
+      }
+    ).then(() => {
+      uploading.value = false
+      done()
+    }).catch(() => {
+      // 用户选择继续上传
+    })
+  } else {
+    done()
+  }
+}
+
+// 关闭上传对话框
+const closeUploadDialog = () => {
+  if (uploading.value) {
+    ElMessage.warning('正在上传中，请等待完成')
+    return
+  }
+  uploadDialog.value.visible = false
+}
+
+// 文件拖拽处理
+const handleDragOver = (e) => {
+  e.preventDefault()
+  dragOver.value = true
+}
+
+const handleDragLeave = () => {
+  dragOver.value = false
+}
+
+const handleFileDrop = (e) => {
+  e.preventDefault()
+  dragOver.value = false
+  
+  const files = Array.from(e.dataTransfer.files)
+  addFiles(files)
+}
+
+// 选择文件
+const selectFiles = () => {
+  fileInput.value?.click()
+}
+
+const handleFileSelect = (e) => {
+  const files = Array.from(e.target.files)
+  addFiles(files)
+  // 清空input，允许重复选择同一文件
+  e.target.value = ''
+}
+
+// 添加文件到列表
+const addFiles = (files) => {
+  const validFiles = files.filter(file => {
+    const fileName = file.name.toLowerCase()
+    const isValid = fileName.endsWith('.html')
+    
+    if (!isValid) {
+      ElMessage.warning(`文件 ${file.name} 格式不支持，仅支持 .html 文件`)
+      return false
+    }
+    
+    // 检查是否已存在于待上传列表中
+    const exists = uploadFiles.value.some(f => f.name === file.name && f.size === file.size)
+    if (exists) {
+      ElMessage.warning(`文件 ${file.name} 已存在于待上传列表中`)
+      return false
+    }
+    
+    return true
+  })
+  
+  const newFiles = validFiles.map(file => ({
+    file: file,
+    name: file.name,
+    size: file.size,
+    status: 'pending', // pending, uploading, success, error
+    error: null,
+    tempFilePath: null
+  }))
+  
+  uploadFiles.value.push(...newFiles)
+  
+  if (newFiles.length > 0) {
+    ElMessage.success(`已添加 ${newFiles.length} 个文件`)
+  }
+}
+
+// 移除文件
+const removeFile = (index) => {
+  uploadFiles.value.splice(index, 1)
+}
+
+// 清空所有文件
+const clearAllFiles = () => {
+  uploadFiles.value = []
+  uploadProgress.value = { total: 0, completed: 0, current: '' }
+  uploadConfig.value = { trackType: null, platformType: null }
+}
+
+// 验证文件
+const validateFiles = () => {
+  ElMessageBox.alert(
+    '功能未开发：自动验证文件是否已经在数据库存在，请上传前手动保证，不要上传重复的文件！！！',
+    '验证文件',
+    {
+      confirmButtonText: '知道了',
+      type: 'warning'
+    }
+  )
+}
+
+// 确认上传
+const confirmUpload = async () => {
+  if (uploadFiles.value.length === 0) {
+    ElMessage.warning('请先选择文件')
+    return
+  }
+  
+  if (!uploadConfig.value.trackType || !uploadConfig.value.platformType) {
+    ElMessage.warning('请选择赛道类型和平台类型')
+    return
+  }
+  
+  try {
+    await ElMessageBox.confirm(
+      `确定要上传 ${uploadFiles.value.length} 个文件吗？`,
+      '确认上传',
+      {
+        confirmButtonText: '确定上传',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    await startUpload()
+  } catch {
+    // 用户取消
+  }
+}
+
+// 开始上传
+const startUpload = async () => {
+  uploading.value = true
+  uploadProgress.value = {
+    total: uploadFiles.value.length,
+    completed: 0,
+    current: ''
+  }
+  
+  // 显示上传提示
+  const loadingInstance = ElMessage({
+    message: '文件批量上传中，请耐心等待，不要关闭窗口...⌛️',
+    type: 'info',
+    duration: 0,
+    showClose: false
+  })
+  
+  // 重置所有文件状态
+  uploadFiles.value.forEach(file => {
+    if (file.status !== 'success') {
+      file.status = 'pending'
+      file.error = null
+    }
+  })
+  
+  const pendingFiles = uploadFiles.value.filter(file => file.status === 'pending')
+  const BATCH_SIZE = 10 // 每批上传10个文件
+  
+  try {
+    // 分批上传
+    for (let i = 0; i < pendingFiles.length; i += BATCH_SIZE) {
+      const batch = pendingFiles.slice(i, i + BATCH_SIZE)
+      await uploadBatch(batch)
+    }
+    
+    const successCount = uploadFiles.value.filter(f => f.status === 'success').length
+    const errorCount = uploadFiles.value.filter(f => f.status === 'error').length
+    
+    // 关闭loading提示
+    loadingInstance.close()
+    
+    if (errorCount === 0) {
+      ElMessage.success(`所有文件上传成功！共 ${successCount} 个文件`)
+    } else {
+      ElMessage.warning(`上传完成：成功 ${successCount} 个，失败 ${errorCount} 个`)
+    }
+    
+    // 🚀 上传完成后，将结果添加到状态列表，并清空待上传列表
+    const completedFiles = [...uploadFiles.value]
+    
+    // 将完成的文件添加到状态列表（失败的文件排在前面）
+    uploadStatusFiles.value.push(...completedFiles)
+    
+    // 清空待上传文件列表和配置
+    uploadFiles.value = []
+    uploadProgress.value = { total: 0, completed: 0, current: '' }
+    uploadConfig.value = { trackType: null, platformType: null }
+    
+    // 刷新文章数据
+    await loadArticleData(true)
+    
+  } catch (error) {
+    console.error('上传过程出错:', error)
+    loadingInstance.close()
+    ElMessage.error('上传过程中出现错误')
+  } finally {
+    uploading.value = false
+    uploadProgress.value.current = ''
+  }
+}
+
+// 上传单批文件
+const uploadBatch = async (batch) => {
+  // 标记为上传中
+  batch.forEach(file => {
+    file.status = 'uploading'
+  })
+  
+  try {
+    // 🚀 优化：读取文件内容为 ArrayBuffer
+    const files = await Promise.all(
+      batch.map(async (fileItem) => {
+        try {
+          const arrayBuffer = await readFileAsArrayBuffer(fileItem.file)
+          return {
+            fileName: fileItem.name,
+            fileContent: Array.from(new Uint8Array(arrayBuffer)), // 转换为数组便于传输
+            fileSize: fileItem.file.size
+          }
+        } catch (error) {
+          console.error(`读取文件 ${fileItem.name} 失败:`, error)
+          throw new Error(`读取文件 ${fileItem.name} 失败: ${error.message}`)
+        }
+      })
+    )
+    
+    // 调用云函数
+    const result = await callAdminCloudFunction('admin-add-article', {
+      trackType: uploadConfig.value.trackType,
+      platformType: uploadConfig.value.platformType,
+      files: files
+    })
+    
+    if (result.result && result.result.success) {
+      const { results, errors } = result.result.data
+      
+      // 更新成功的文件状态
+      results.forEach((result, index) => {
+        const file = batch[index]
+        if (file) {
+          file.status = 'success'
+          uploadProgress.value.completed++
+        }
+      })
+      
+      // 更新失败的文件状态
+      errors.forEach(error => {
+        const file = batch[error.index]
+        if (file) {
+          file.status = 'error'
+          file.error = error.error
+          uploadProgress.value.completed++
+        }
+      })
+    } else {
+      // 整批失败
+      batch.forEach(file => {
+        file.status = 'error'
+        file.error = result.result?.message || '上传失败'
+        uploadProgress.value.completed++
+      })
+    }
+  } catch (error) {
+    console.error('云函数调用失败:', error)
+    // 整批失败
+    batch.forEach(file => {
+      file.status = 'error'
+      file.error = error.message || '网络错误或云函数调用失败'
+      uploadProgress.value.completed++
+    })
+  }
+}
+
+// 🚀 新增：读取文件为 ArrayBuffer
+const readFileAsArrayBuffer = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    
+    reader.onload = (event) => {
+      resolve(event.target.result)
+    }
+    
+    reader.onerror = (error) => {
+      reject(new Error('文件读取失败'))
+    }
+    
+    // 读取为 ArrayBuffer（性能最优）
+    reader.readAsArrayBuffer(file)
+  })
+}
+
+// 重试失败的文件
+const retryFailedFiles = async () => {
+  const failedFiles = uploadStatusFiles.value.filter(f => f.status === 'error')
+  
+  if (failedFiles.length === 0) {
+    ElMessage.info('没有失败的文件需要重试')
+    return
+  }
+  
+  try {
+    await ElMessageBox.confirm(
+      `确定要重试上传 ${failedFiles.length} 个失败的文件吗？`,
+      '重试上传',
+      {
+        confirmButtonText: '确定重试',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    // 重置失败文件状态
+    failedFiles.forEach(file => {
+      file.status = 'pending'
+      file.error = null
+    })
+    
+    // 使用现有的批量上传逻辑重试失败的文件
+    uploading.value = true
+    uploadProgress.value = {
+      total: failedFiles.length,
+      completed: 0,
+      current: ''
+    }
+    
+    const loadingInstance = ElMessage({
+      message: '重试上传失败文件中，请耐心等待...⌛️',
+      type: 'info',
+      duration: 0,
+      showClose: false
+    })
+    
+    try {
+      const BATCH_SIZE = 10
+      for (let i = 0; i < failedFiles.length; i += BATCH_SIZE) {
+        const batch = failedFiles.slice(i, i + BATCH_SIZE)
+        await uploadBatch(batch)
+      }
+      
+      const successCount = failedFiles.filter(f => f.status === 'success').length
+      const errorCount = failedFiles.filter(f => f.status === 'error').length
+      
+      loadingInstance.close()
+      
+      if (errorCount === 0) {
+        ElMessage.success(`重试成功！共 ${successCount} 个文件`)
+      } else {
+        ElMessage.warning(`重试完成：成功 ${successCount} 个，失败 ${errorCount} 个`)
+      }
+      
+      // 刷新文章数据
+      await loadArticleData(true)
+      
+    } catch (error) {
+      console.error('重试上传出错:', error)
+      loadingInstance.close()
+      ElMessage.error('重试上传过程中出现错误')
+    } finally {
+      uploading.value = false
+      uploadProgress.value.current = ''
+    }
+    
+  } catch {
+    // 用户取消
+  }
+}
+
+// 清除缓存 - 恢复到初始状态
+const clearCache = async () => {
+  try {
+    await ElMessageBox.confirm(
+      '确定要清除所有上传记录和缓存数据吗？此操作不可恢复。',
+      '清除缓存',
+      {
+        confirmButtonText: '确定清除',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
+    
+    // 重置所有状态
+    uploadFiles.value = []
+    uploadStatusFiles.value = []
+    uploading.value = false
+    uploadProgress.value = { completed: 0, total: 0 }
+    uploadConfig.value = { trackType: null, platformType: null }
+    
+    ElMessage.success('缓存已清除')
+  } catch {
+    // 用户取消
+  }
+}
+
+// 格式化文件大小
+const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+// 计算上传进度百分比
+const uploadProgressPercentage = computed(() => {
+  if (uploadProgress.value.total === 0) return 0
+  return Math.round((uploadProgress.value.completed / uploadProgress.value.total) * 100)
+})
+
+// 是否有失败的文件
+const hasFailedFiles = computed(() => {
+  return uploadStatusFiles.value.some(f => f.status === 'error')
+})
+
+// 排序后的上传状态文件列表（失败的排在前面）
+const sortedUploadStatusFiles = computed(() => {
+  const files = [...uploadStatusFiles.value]
+  return files.sort((a, b) => {
+    // 失败的文件排在最前面
+    if (a.status === 'error' && b.status !== 'error') return -1
+    if (a.status !== 'error' && b.status === 'error') return 1
+    // 其他状态保持原有顺序
+    return 0
+  })
+})
 
 // 组件挂载时加载数据
 onMounted(() => {
@@ -653,6 +1355,30 @@ onMounted(() => {
     background-color: #fef2f2 !important;
     border-color: #b91c1c !important;
     color: #b91c1c !important;
+  }
+}
+
+/* 清除缓存按钮样式优化 - 淡红色背景白色文字 */
+.clear-cache-button {
+  &.is-disabled {
+    background-color: #f5f5f5 !important;
+    border-color: #d1d5db !important;
+    color: #6b7280 !important; /* 提高对比度的灰色 */
+    font-weight: 500 !important;
+  }
+  
+  &:not(.is-disabled) {
+    background-color: #dc2626 !important; /* 淡红色背景 */
+    border-color: #dc2626 !important;
+    color: #ffffff !important; /* 白色文字 */
+    font-weight: 600 !important;
+    border-width: 1px !important;
+
+    &:hover {
+      background-color: #b91c1c !important; /* 悬停时更深的红色 */
+      border-color: #b91c1c !important;
+      color: #ffffff !important;
+    }
   }
 }
 
@@ -1087,6 +1813,272 @@ onMounted(() => {
   }
 }
 
+// 上传面板样式
+.upload-dialog {
+  .upload-panel {
+    display: flex;
+    gap: 24px;
+    min-height: 400px;
+
+    .file-list-area {
+      flex: 2;
+
+      .file-drop-zone {
+        border: 2px dashed #dcdfe6;
+        border-radius: 8px;
+        padding: 20px;
+        min-height: 350px;
+        transition: all 0.3s;
+        background: #fafafa;
+
+        &.drag-over {
+          border-color: #409eff;
+          background: #f0f9ff;
+        }
+
+        .drop-placeholder {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          color: #909399;
+
+          .drop-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #c0c4cc;
+          }
+
+          p {
+            margin: 4px 0;
+            font-size: 16px;
+
+            &.drop-hint {
+              font-size: 14px;
+              color: #c0c4cc;
+            }
+          }
+        }
+
+        .file-list {
+          max-height: 280px;
+          overflow-y: auto;
+          padding-right: 8px;
+
+          .file-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #ebeef5;
+            transition: all 0.3s;
+
+            &:hover {
+              border-color: #c0c4cc;
+            }
+
+            &.success {
+              border-color: #67c23a;
+              background: #f0f9ff;
+            }
+
+            &.error {
+              border-color: #f56c6c;
+              background: #fef0f0;
+            }
+
+            &.uploading {
+              border-color: #e6a23c;
+              background: #fdf6ec;
+            }
+
+            .file-name {
+              flex: 1;
+              font-weight: 500;
+              color: #303133;
+              font-size: 14px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              margin-right: 12px;
+            }
+
+            .file-size {
+              font-size: 12px;
+              color: #909399;
+              margin-right: 12px;
+              white-space: nowrap;
+            }
+
+            .file-actions {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+
+              .status-icon {
+                font-size: 16px;
+
+                &.success {
+                  color: #67c23a;
+                }
+
+                &.error {
+                  color: #f56c6c;
+                }
+
+                &.uploading {
+                  color: #e6a23c;
+                  animation: rotate 1s linear infinite;
+                }
+              }
+
+              .remove-btn {
+                padding: 2px 6px;
+                font-size: 12px;
+                min-height: auto;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .action-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+
+      .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        .el-button {
+          width: 100%;
+        }
+      }
+
+      .upload-config {
+        .el-form-item {
+          margin-bottom: 16px;
+        }
+      }
+    }
+  }
+
+  .upload-progress {
+    margin: 20px 0;
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #606266;
+    }
+  }
+
+  .upload-status {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    min-height: 200px;
+
+    .status-list {
+      flex: 2;
+
+      .status-header {
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: #303133;
+      }
+
+      .status-items {
+        max-height: 180px;
+        overflow-y: auto;
+
+        .status-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 8px 12px;
+          margin-bottom: 4px;
+          border-radius: 4px;
+          border-bottom: 1px solid #f0f0f0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .status-filename {
+            flex: 1;
+            font-size: 14px;
+            color: #606266;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .status-result {
+            flex-shrink: 0;
+          }
+
+          .status-error {
+            font-size: 12px;
+            color: #f56c6c;
+            margin-left: 8px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          &.success {
+            background: #f0f9ff;
+            border-left: 3px solid #67c23a;
+          }
+
+          &.error {
+            background: #fef0f0;
+            border-left: 3px solid #f56c6c;
+          }
+
+          &.uploading {
+            background: #fdf6ec;
+            border-left: 3px solid #e6a23c;
+          }
+        }
+      }
+    }
+
+    .retry-area {
+      flex: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+  }
+
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 // 响应式设计
 @media (max-width: 768px) {
   .articles-page {
@@ -1120,6 +2112,30 @@ onMounted(() => {
           justify-content: flex-start;
         }
       }
+    }
+  }
+
+  .upload-dialog {
+    .upload-panel {
+      flex-direction: column;
+      gap: 16px;
+
+      .action-area {
+        .action-buttons {
+          flex-direction: row;
+          flex-wrap: wrap;
+
+          .el-button {
+            width: auto;
+            flex: 1;
+          }
+        }
+      }
+    }
+
+    .upload-status {
+      flex-direction: column;
+      gap: 16px;
     }
   }
 }
