@@ -328,6 +328,39 @@ Page({
   onShareAppMessage: function () {},
 
   /**
+   * 复制UID功能
+   */
+  onCopyUid: function () {
+    const uid = this.data.userInfo.uid;
+    if (!uid) {
+      wx.showToast({
+        title: "UID不存在",
+        icon: "none",
+        duration: 2000,
+      });
+      return;
+    }
+
+    wx.setClipboardData({
+      data: uid,
+      success: function () {
+        wx.showToast({
+          title: "UID已复制",
+          icon: "success",
+          duration: 2000,
+        });
+      },
+      fail: function () {
+        wx.showToast({
+          title: "复制失败",
+          icon: "none",
+          duration: 2000,
+        });
+      },
+    });
+  },
+
+  /**
    * 点击登录按钮
    */
   onLoginTap: function () {

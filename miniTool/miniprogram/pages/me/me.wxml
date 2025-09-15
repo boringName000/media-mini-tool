@@ -6,7 +6,12 @@
     <view class="user-info">
       <view class="user-avatar">{{userInfo.avatar}}</view>
       <view class="user-details">
-        <text class="user-nickname">{{userInfo.nickname}}</text>
+        <view class="user-header">
+          <text class="user-nickname">{{userInfo.nickname}}</text>
+          <view class="copy-uid-btn" bindtap="onCopyUid">
+            <text class="copy-icon">📋</text>
+          </view>
+        </view>
         <text class="user-desc">签约达人</text>
         <view class="user-register-time">
           <text class="register-label">注册时间:</text>

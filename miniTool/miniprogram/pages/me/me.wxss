@@ -73,6 +73,35 @@
   font-family: monospace;
 }
 
+.user-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.copy-uid-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  border-radius: 14rpx;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(79, 172, 254, 0.25);
+}
+
+.copy-uid-btn:active {
+  transform: scale(0.95);
+  box-shadow: 0 1px 3px rgba(79, 172, 254, 0.3);
+}
+
+.copy-icon {
+  font-size: 28rpx;
+  color: #fff;
+}
+
 .user-register-time {
   display: flex;
   align-items: center;
@@ -82,7 +111,6 @@
   padding: 8rpx 12rpx;
   border: 1px solid #ffe7ba;
   width: fit-content;
-  margin-top: 12rpx;
 }
 
 .register-label {
