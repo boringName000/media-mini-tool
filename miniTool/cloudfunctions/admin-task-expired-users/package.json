@@ -1,0 +1,9 @@
+{
+  "name": "admin-task-expired-users",
+  "version": "1.0.0",
+  "description": "查询用户每个账号的数据，检查每个账号下的每日任务字段，检查任务时间是否过期",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

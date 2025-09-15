@@ -333,7 +333,11 @@ export const adminCloudFunctions = {
   getArticleStats: (params = {}) => callAdminCloudFunction('admin-get-article-stats', params),
   
   // 获取收益统计（需要新建云函数）
-  getEarningsStats: (params = {}) => callAdminCloudFunction('admin-get-earnings-stats', params)
+  getEarningsStats: (params = {}) => callAdminCloudFunction('admin-get-earnings-stats', params),
+  
+  // ===== 过期任务管理 =====
+  // 获取过期任务用户
+  getExpiredTaskUsers: (params = {}) => callAdminCloudFunction('admin-task-expired-users', params)
 }
 
 // 向后兼容的云函数封装

@@ -76,7 +76,7 @@
           </div>
           <div class="card-content">
             <div class="card-value">{{ dashboardData.todayClaimedTasksCount }}</div>
-            <div class="card-label">今日已领取未发布数</div>
+            <div class="card-label">今日已领取文章数</div>
           </div>
         </div>
 
