@@ -115,49 +115,40 @@ async function getStatsByMemoryCalculation(userCollection, now, sevenDaysAgo, to
     });
   }
 
-  // 3. 今日完成任务和未完成任务的账号数（根据每个账号的 dailyTasks 中的 isCompleted）
+  // 3. 完成任务和已领取任务的账号数
+  // 完成任务数：isClaimed 已领取 并且 isCompleted 已完成
+  // 已领取任务数：dailyTasks下的isClaimed是true的表示已领取
   let todayCompletedTasksCount = 0;
-  let todayUncompletedTasksCount = 0;
+  let todayClaimedTasksCount = 0;
   
   allUsers.forEach(user => {
     if (user.accounts && Array.isArray(user.accounts)) {
       user.accounts.forEach(account => {
-        if (account.dailyTasks && Array.isArray(account.dailyTasks)) {
-          // 检查今日任务
-          let hasCompletedTask = false;
-          let hasUncompletedTask = false;
+        if (account.dailyTasks && Array.isArray(account.dailyTasks) && account.dailyTasks.length > 0) {
+          // 检查是否有已完成且已领取的任务
+          let hasCompletedAndClaimedTask = false;
+          
+          // 检查是否有已领取的任务
+          let hasClaimedTask = false;
           
           account.dailyTasks.forEach(task => {
-            if (!task.taskTime) return;
-            
-            // 处理不同的时间格式
-            let taskTime;
-            if (task.taskTime._seconds) {
-              // db.serverDate() 格式：{ _seconds: xxx, _nanoseconds: xxx }
-              taskTime = new Date(task.taskTime._seconds * 1000);
-            } else if (task.taskTime.toDate) {
-              // Firestore Timestamp 格式
-              taskTime = task.taskTime.toDate();
-            } else {
-              // 普通 Date 格式或字符串
-              taskTime = new Date(task.taskTime);
+            // 完成任务：需要同时满足 isClaimed 和 isCompleted
+            if (task.isClaimed === true && task.isCompleted === true) {
+              hasCompletedAndClaimedTask = true;
             }
             
-            // 检查是否是今天的任务
-            if (taskTime >= todayStart && taskTime < new Date(todayStart.getTime() + 24 * 60 * 60 * 1000)) {
-              if (task.isCompleted === true) {
-                hasCompletedTask = true;
-              } else {
-                hasUncompletedTask = true;
-              }
+            // 已领取任务：isClaimed 为 true
+            if (task.isClaimed === true) {
+              hasClaimedTask = true;
             }
           });
           
-          if (hasCompletedTask) {
+          if (hasCompletedAndClaimedTask) {
             todayCompletedTasksCount++;
           }
-          if (hasUncompletedTask) {
-            todayUncompletedTasksCount++;
+          
+          if (hasClaimedTask) {
+            todayClaimedTasksCount++;
           }
         }
       });
@@ -259,7 +250,7 @@ async function getStatsByMemoryCalculation(userCollection, now, sevenDaysAgo, to
     totalAccounts,
     activeUsersLast7Days,
     todayCompletedTasksCount,
-    todayUncompletedTasksCount,
+    todayClaimedTasksCount,
     usersWithoutAccounts,
     userRegistrationsLast7Days,
     articlePublishLast7Days,
@@ -337,7 +328,7 @@ async function getStatsByAggregation(userCollection, now, sevenDaysAgo, todaySta
     totalAccounts: accountStatsResult.totalAccounts,
     activeUsersLast7Days,
     todayCompletedTasksCount: articleStatsResult.todayCompletedTasks,
-    todayUncompletedTasksCount: articleStatsResult.todayUncompletedTasks,
+    todayClaimedTasksCount: articleStatsResult.todayClaimedTasks,
     usersWithoutAccounts: accountStatsResult.usersWithoutAccounts,
     userRegistrationsLast7Days,
     articlePublishLast7Days,
@@ -483,47 +474,42 @@ async function getArticleStats(userCollection, now, todayStart, _) {
   
   const users = usersWithAccountsResult.data;
   
-  // 统计今日完成任务和未完成任务的账号数
+  // 统计完成任务和已领取任务的账号数
+  // 完成任务数：isClaimed 已领取 并且 isCompleted 已完成
+  // 已领取任务数：dailyTasks下的isClaimed是true的表示已领取
   let todayCompletedTasks = 0;
-  let todayUncompletedTasks = 0;
+  let todayClaimedTasks = 0;
   const dailyArticles = {};
   
   users.forEach(user => {
     if (user.accounts && Array.isArray(user.accounts)) {
       user.accounts.forEach(account => {
-        // 统计今日任务
-        if (account.dailyTasks && Array.isArray(account.dailyTasks)) {
-          let hasCompletedTask = false;
-          let hasUncompletedTask = false;
+        // 统计任务完成状态
+        if (account.dailyTasks && Array.isArray(account.dailyTasks) && account.dailyTasks.length > 0) {
+          // 检查是否有已完成且已领取的任务
+          let hasCompletedAndClaimedTask = false;
+          
+          // 检查是否有已领取的任务
+          let hasClaimedTask = false;
           
           account.dailyTasks.forEach(task => {
-            if (!task.taskTime) return;
-            
-            // 处理不同的时间格式
-            let taskTime;
-            if (task.taskTime._seconds) {
-              taskTime = new Date(task.taskTime._seconds * 1000);
-            } else if (task.taskTime.toDate) {
-              taskTime = task.taskTime.toDate();
-            } else {
-              taskTime = new Date(task.taskTime);
+            // 完成任务：需要同时满足 isClaimed 和 isCompleted
+            if (task.isClaimed === true && task.isCompleted === true) {
+              hasCompletedAndClaimedTask = true;
             }
             
-            // 检查是否是今天的任务
-            if (taskTime >= todayStart && taskTime < new Date(todayStart.getTime() + 24 * 60 * 60 * 1000)) {
-              if (task.isCompleted === true) {
-                hasCompletedTask = true;
-              } else {
-                hasUncompletedTask = true;
-              }
+            // 已领取任务：isClaimed 为 true
+            if (task.isClaimed === true) {
+              hasClaimedTask = true;
             }
           });
           
-          if (hasCompletedTask) {
+          if (hasCompletedAndClaimedTask) {
             todayCompletedTasks++;
           }
-          if (hasUncompletedTask) {
-            todayUncompletedTasks++;
+          
+          if (hasClaimedTask) {
+            todayClaimedTasks++;
           }
         }
         
@@ -560,7 +546,7 @@ async function getArticleStats(userCollection, now, todayStart, _) {
   
   return {
     todayCompletedTasks,
-    todayUncompletedTasks,
+    todayClaimedTasks,
     dailyArticles: dailyArticlesArray
   };
 }

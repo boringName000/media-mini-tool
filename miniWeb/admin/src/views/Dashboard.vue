@@ -71,24 +71,25 @@
         </div>
 
         <div class="stats-card">
+          <div class="card-icon uncompleted-tasks">
+            <el-icon><CircleClose /></el-icon>
+          </div>
+          <div class="card-content">
+            <div class="card-value">{{ dashboardData.todayClaimedTasksCount }}</div>
+            <div class="card-label">今日已领取未发布数</div>
+          </div>
+        </div>
+
+        <div class="stats-card">
           <div class="card-icon completed-tasks">
             <el-icon><CircleCheck /></el-icon>
           </div>
           <div class="card-content">
             <div class="card-value">{{ dashboardData.todayCompletedTasksCount }}</div>
-            <div class="card-label">今日完成任务账号数</div>
+            <div class="card-label">今日已领取已发布数</div>
           </div>
         </div>
 
-        <div class="stats-card">
-          <div class="card-icon uncompleted-tasks">
-            <el-icon><CircleClose /></el-icon>
-          </div>
-          <div class="card-content">
-            <div class="card-value">{{ dashboardData.todayUncompletedTasksCount }}</div>
-            <div class="card-label">今日未完成任务账号数</div>
-          </div>
-        </div>
       </div>
 
       <!-- 图表区域 -->
