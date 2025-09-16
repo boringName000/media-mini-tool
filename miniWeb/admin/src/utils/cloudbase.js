@@ -255,7 +255,7 @@ export const adminCloudFunctions = {
 
   // ===== 用户管理 =====
   // 获取用户信息
-  getUserInfo: (userId) => callAdminCloudFunction('get-user-info', { userId }),
+  getUserInfo: (searchType, searchValue) => callAdminCloudFunction('admin-get-user-info', { searchType, searchValue }),
   
   // 获取所有用户列表（需要新建云函数）
   getAllUsers: (params = {}) => callAdminCloudFunction('admin-get-all-users', params),
@@ -263,31 +263,46 @@ export const adminCloudFunctions = {
   // 更新用户信息（需要新建云函数）
   updateUserInfo: (userId, updateData) => callAdminCloudFunction('admin-update-user', { userId, updateData }),
   
+  // 用户权限查询
+  getUserPermissionsQuery: (params) => callAdminCloudFunction('admin-user-permissions-query', params),
+  
+  // 用户权限管理
+  manageUserPermissions: (params) => callAdminCloudFunction('admin-user-permissions-mgr', params),
+  
   // ===== 账号管理 =====
   // 获取账号信息
   getAccountInfo: (accountId) => callAdminCloudFunction('get-account-info', { accountId }),
   
-  // 获取所有账号列表（需要新建云函数）
-  getAllAccounts: (params = {}) => callAdminCloudFunction('admin-get-all-accounts', params),
+  // 获取所有账号列表
+  getAllAccounts: (params = {}) => callAdminCloudFunction('admin-get-accounts', params),
   
-  // 更新账号信息（需要新建云函数）
+  // 更新账号信息
   updateAccountInfo: (accountId, updateData) => callAdminCloudFunction('admin-update-account', { accountId, updateData }),
   
+  // 审核通过账号
+  approveAccount: (params) => callAdminCloudFunction('admin-approve-account', params),
+  
+  // 审核拒绝账号
+  rejectAccount: (params) => callAdminCloudFunction('admin-reject-account', params),
+  
+  // 批量审核通过账号
+  batchApproveAccounts: (params) => callAdminCloudFunction('admin-batch-approve-accounts', params),
+  
+  // 批量审核拒绝账号
+  batchRejectAccounts: (params) => callAdminCloudFunction('admin-batch-reject-accounts', params),
+  
   // ===== 文章管理 =====
-  // 添加文章信息
-  addArticleInfo: (articleData) => callAdminCloudFunction('add-article-info', articleData),
-  
   // 获取文章信息
-  getArticleInfo: (articleIds) => callAdminCloudFunction('get-article-info', { articleIds }),
+  getArticleInfo: () => callAdminCloudFunction('admin-article-info', {}),
   
-  // 获取所有文章列表（需要新建云函数）
-  getAllArticles: (params = {}) => callAdminCloudFunction('admin-get-all-articles', params),
+  // 添加文章
+  addArticle: (params) => callAdminCloudFunction('admin-add-article', params),
   
-  // 更新文章状态（需要新建云函数）
-  updateArticleStatus: (articleId, status) => callAdminCloudFunction('admin-update-article-status', { articleId, status }),
+  // 下载文章
+  downloadArticle: (articleIds) => callAdminCloudFunction('admin-download-article', { articleIds }),
   
-  // 删除文章（需要新建云函数）
-  deleteArticle: (articleId) => callAdminCloudFunction('admin-delete-article', { articleId }),
+  // 删除文章
+  deleteArticle: (articleIds) => callAdminCloudFunction('admin-delete-article', { articleIds }),
   
   // ===== 任务管理 =====
   // 创建每日任务
@@ -313,14 +328,17 @@ export const adminCloudFunctions = {
   batchSettle: (settlementData) => callAdminCloudFunction('admin-batch-settle', settlementData),
   
   // ===== 邀请码管理 =====
+  // 获取所有邀请码
+  getAllInvitationCodes: () => callAdminCloudFunction('admin-get-all-invitation-code'),
+  
   // 创建邀请码
-  createInvitationCode: (codeData) => callAdminCloudFunction('create-invitation-code', codeData),
+  createInvitationCode: () => callAdminCloudFunction('create-invitation-code'),
+  
+  // 验证邀请码
+  verifyInvitationCode: (invitationCode) => callAdminCloudFunction('verify-invitation-code', { invitationCode }),
   
   // 删除邀请码
-  deleteInvitationCode: (codeId) => callAdminCloudFunction('delete-invitation-code', { codeId }),
-  
-  // 获取所有邀请码（需要新建云函数）
-  getAllInvitationCodes: (params = {}) => callAdminCloudFunction('admin-get-all-invitation-codes', params),
+  deleteInvitationCode: (invitationCode) => callAdminCloudFunction('delete-invitation-code', { invitationCode }),
   
   // ===== 统计分析 =====
   // 获取用户仪表盘统计数据
@@ -340,7 +358,14 @@ export const adminCloudFunctions = {
   getExpiredTaskUsers: (params = {}) => callAdminCloudFunction('admin-task-expired-users', params),
   
   // 移除任务（拒绝任务）
-  adminRemoveTask: (params = {}) => callAdminCloudFunction('admin-remove-task', params)
+  adminRemoveTask: (params = {}) => callAdminCloudFunction('admin-remove-task', params),
+  
+  // ===== 系统设置管理 =====
+  // 获取系统设置
+  getSettings: (params = {}) => callAdminCloudFunction('admin-get-settings', params),
+  
+  // 保存基础设置
+  saveBasicSettings: (params) => callAdminCloudFunction('admin-save-basic-settings', params)
 }
 
 // 向后兼容的云函数封装

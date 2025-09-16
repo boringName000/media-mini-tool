@@ -940,24 +940,20 @@ watch(
 
 <style lang="scss" scoped>
 .expired-task-page {
-  padding: 20px;
-  background-color: #f5f5f5;
-  min-height: 100vh;
-
   .page-header {
     margin-bottom: 24px;
     
     h1 {
       margin: 0 0 8px 0;
-      font-size: 28px;
-      font-weight: 600;
       color: #303133;
+      font-size: 24px;
+      font-weight: 600;
     }
     
     p {
       margin: 0;
-      font-size: 14px;
       color: #909399;
+      font-size: 14px;
     }
   }
 
@@ -988,71 +984,72 @@ watch(
         gap: 20px;
         
         .stat-card {
-          background: #F8F9FA;
-          border: 1px solid #EBEEF5;
+          background: #f8f9fa;
           border-radius: 8px;
           padding: 20px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 120px;
           transition: all 0.3s ease;
           
           &:hover {
-            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-            border-color: #409EFF;
-            background: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
           }
           
           .stat-content {
             display: flex;
             align-items: center;
             gap: 16px;
-            position: relative;
-            z-index: 2;
+            width: 100%;
+            justify-content: center;
             
             .stat-icon {
               width: 48px;
               height: 48px;
-              background: #F0F9FF;
-              border-radius: 8px;
+              border-radius: 50%;
               display: flex;
               align-items: center;
               justify-content: center;
+              background: #409eff;
+              color: white;
+              flex-shrink: 0;
               
-              .el-icon {
-                font-size: 24px;
-                color: #409EFF;
+              &.users {
+                background: #409eff;
               }
               
-              &.unused .el-icon {
-                color: #E6A23C;
+              &.tasks {
+                background: #e6a23c;
               }
               
-              &.used .el-icon {
-                color: #67C23A;
+              &.accounts {
+                background: #67c23a;
               }
               
-              &.revision .el-icon {
-                color: #F56C6C;
+              &.severe {
+                background: #f56c6c;
               }
             }
             
             .stat-info {
-              flex: 1;
+              text-align: center;
               
               .stat-number {
                 font-size: 28px;
-                font-weight: 600;
-                line-height: 1;
-                margin-bottom: 4px;
+                font-weight: bold;
                 color: #303133;
+                line-height: 1;
               }
               
               .stat-label {
                 font-size: 14px;
-                color: #606266;
+                color: #909399;
+                margin-top: 4px;
               }
             }
           }
-          
-
         }
       }
     }
@@ -1193,76 +1190,74 @@ watch(
 }
 
 @media (max-width: 768px) {
-  .expired-task-page {
-    .overview-section {
-      .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+  .overview-section {
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      
+      .header-actions {
+        width: 100%;
         
-        .header-actions {
+        .el-button {
           width: 100%;
-          
-          .el-button {
-            width: 100%;
-          }
         }
       }
-      
-      .overview-content {
-        .stat-cards {
-          grid-template-columns: 1fr;
-          gap: 12px;
+    }
+    
+    .overview-content {
+      .stat-cards {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        
+        .stat-card {
+          padding: 16px;
           
-          .stat-card {
-            padding: 16px;
+          .stat-content {
+            gap: 12px;
             
-            .stat-content {
-              gap: 12px;
+            .stat-icon {
+              width: 40px;
+              height: 40px;
               
-              .stat-icon {
-                width: 40px;
-                height: 40px;
-                
-                .el-icon {
-                  font-size: 20px;
-                }
+              .el-icon {
+                font-size: 20px;
               }
-              
-              .stat-info {
-                .stat-number {
-                  font-size: 24px;
-                }
+            }
+            
+            .stat-info {
+              .stat-number {
+                font-size: 24px;
               }
             }
           }
         }
       }
     }
-    
-    .filter-card {
-      .filter-row {
-        margin-bottom: 12px;
-      }
-      
-      .el-form-item {
-        margin-bottom: 12px;
-        
-        :deep(.el-form-item__content) {
-          width: 100%;
-        }
-      }
+  }
+  
+  .filter-card {
+    .filter-row {
+      margin-bottom: 12px;
     }
     
-    .expanded-content {
-      padding: 16px;
+    .el-form-item {
+      margin-bottom: 12px;
       
-      .account-table {
-        font-size: 12px;
-        
-        :deep(.el-table__cell) {
-          padding: 8px 4px;
-        }
+      :deep(.el-form-item__content) {
+        width: 100%;
+      }
+    }
+  }
+  
+  .expanded-content {
+    padding: 16px;
+    
+    .account-table {
+      font-size: 12px;
+      
+      :deep(.el-table__cell) {
+        padding: 8px 4px;
       }
     }
   }

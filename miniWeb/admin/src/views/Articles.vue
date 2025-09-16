@@ -526,7 +526,7 @@ import {
   Document, Clock, Check, Warning, Upload, Refresh,
   FolderOpened, Close, Loading, Tickets, RefreshRight
 } from '@element-plus/icons-vue'
-import { callAdminCloudFunction } from '@/utils/cloudbase'
+import { adminCloudFunctions } from '@/utils/cloudbase'
 import { articlesStore } from '@/store'
 import { 
   getPlatformName, 
@@ -706,7 +706,7 @@ const loadArticleData = async (forceRefresh = false) => {
     console.log('调用 admin-article-info 云函数获取文章统计数据')
     
     // 调用云函数获取数据
-    const cloudResult = await callAdminCloudFunction('admin-article-info', {})
+    const cloudResult = await adminCloudFunctions.getArticleInfo()
     
     // 检查云函数返回结果
     console.log('云函数返回结果:', cloudResult)
@@ -902,9 +902,7 @@ const handleBatchDownload = async () => {
 
       try {
         // 调用云函数获取当前批次的文件内容
-        const result = await callAdminCloudFunction('admin-download-article', {
-          articleIds: currentBatch
-        })
+        const result = await adminCloudFunctions.downloadArticle(currentBatch)
 
         if (result.result && result.result.success) {
           const data = result.result.data
@@ -1051,9 +1049,7 @@ const handleBatchDelete = async () => {
 
         try {
           // 调用云函数删除当前批次
-          const result = await callAdminCloudFunction('admin-delete-article', {
-            articleIds: currentBatch
-          })
+          const result = await adminCloudFunctions.deleteArticle(currentBatch)
 
           if (result.result && result.result.success) {
             const data = result.result.data
@@ -1139,9 +1135,7 @@ const handleDownloadArticle = async (article) => {
   })
 
   try {
-    const result = await callAdminCloudFunction('admin-download-article', {
-      articleIds: [article.articleId]
-    })
+    const result = await adminCloudFunctions.downloadArticle([article.articleId])
 
     loadingInstance.close()
 
@@ -1200,9 +1194,7 @@ const handleDeleteArticle = async (article) => {
     })
 
     try {
-      const result = await callAdminCloudFunction('admin-delete-article', {
-        articleIds: [article.articleId]
-      })
+      const result = await adminCloudFunctions.deleteArticle([article.articleId])
 
       loadingInstance.close()
 
@@ -1529,7 +1521,7 @@ const uploadBatch = async (batch) => {
     )
     
     // 调用云函数
-    const result = await callAdminCloudFunction('admin-add-article', {
+    const result = await adminCloudFunctions.addArticle({
       trackType: uploadConfig.value.trackType,
       platformType: uploadConfig.value.platformType,
       files: files
@@ -1767,11 +1759,14 @@ onMounted(() => {
     h1 {
       margin: 0 0 8px 0;
       color: #303133;
+      font-size: 24px;
+      font-weight: 600;
     }
     
     p {
       margin: 0;
       color: #909399;
+      font-size: 14px;
     }
   }
 

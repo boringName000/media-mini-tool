@@ -207,7 +207,7 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { callAdminCloudFunction } from '@/utils/cloudbase'
+import { adminCloudFunctions } from '@/utils/cloudbase'
 import { invitationsStore } from '@/store/index.js'
 import { formatTime, updatePageTime } from '@/utils/timeUtils'
 
@@ -314,7 +314,7 @@ const loadInvitationList = async (forceRefresh = false) => {
     invitationsStore.setLoading(true)
     
     // 调用云函数获取新数据
-    const cloudResult = await callAdminCloudFunction('admin-get-all-invitation-code')
+    const cloudResult = await adminCloudFunctions.getAllInvitationCodes()
     
     if (cloudResult && cloudResult.result && cloudResult.result.success) {
       const result = cloudResult.result
@@ -379,7 +379,7 @@ const handleCreateInvitation = () => {
 const handleConfirmCreate = async () => {
   createLoading.value = true
   try {
-    const result = await callAdminCloudFunction('create-invitation-code')
+    const result = await adminCloudFunctions.createInvitationCode()
 
     if (result && result.result && result.result.success) {
       ElMessage.success('邀请码生成成功')
@@ -427,9 +427,7 @@ const handleCopy = async (code) => {
 const handleVerify = async (row) => {
   verifyingCodes.value.add(row.invitationCode)
   try {
-    const result = await callAdminCloudFunction('verify-invitation-code', {
-      invitationCode: row.invitationCode
-    })
+    const result = await adminCloudFunctions.verifyInvitationCode(row.invitationCode)
 
     if (result && result.result && result.result.success) {
       ElMessage.success('邀请码验证通过，可正常使用')
@@ -464,9 +462,7 @@ const handleDelete = async (row) => {
 
     deletingCodes.value.add(row.invitationCode)
     
-    const result = await callAdminCloudFunction('delete-invitation-code', {
-      invitationCode: row.invitationCode
-    })
+    const result = await adminCloudFunctions.deleteInvitationCode(row.invitationCode)
 
     if (result && result.result && result.result.success) {
       ElMessage.success('删除成功')

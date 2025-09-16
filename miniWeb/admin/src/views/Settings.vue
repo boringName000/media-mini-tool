@@ -80,7 +80,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { callCloudFunction } from '@/utils/cloudbase'
+import { adminCloudFunctions } from '@/utils/cloudbase'
 
 // 加载状态
 const basicLoading = ref(false)
@@ -106,7 +106,7 @@ const systemInfo = reactive({
 const loadSettings = async () => {
   try {
     // TODO: 调用云函数获取系统设置
-    const result = await callCloudFunction('admin-get-settings')
+    const result = await adminCloudFunctions.getSettings()
 
     if (result.result.success) {
       const settings = result.result.data
@@ -122,7 +122,7 @@ const handleSaveBasic = async () => {
   basicLoading.value = true
   try {
     // TODO: 调用云函数保存基础设置
-    const result = await callCloudFunction('admin-save-basic-settings', basicSettings)
+    const result = await adminCloudFunctions.saveBasicSettings(basicSettings)
 
     if (result.result.success) {
       ElMessage.success('基础设置保存成功')
@@ -165,11 +165,14 @@ onMounted(() => {
     h1 {
       margin: 0 0 8px 0;
       color: #303133;
+      font-size: 24px;
+      font-weight: 600;
     }
     
     p {
       margin: 0;
       color: #909399;
+      font-size: 14px;
     }
   }
   

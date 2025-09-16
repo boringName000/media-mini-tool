@@ -297,9 +297,8 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { callCloudFunction } from '@/utils/cloudbase'
+import { adminCloudFunctions } from '@/utils/cloudbase'
 import { updatePageTime } from '@/utils/timeUtils'
-import { accountsStore } from '@/store/index.js'
 import { accountsStore } from '@/store/index.js'
 
 // 响应式数据
@@ -425,7 +424,7 @@ const loadAccountList = async (forceRefresh = false) => {
     loading.value = true
     accountsStore.setLoading(true)
     
-    const result = await callCloudFunction('admin-get-accounts', {
+    const result = await adminCloudFunctions.getAllAccounts({
       page: pagination.page,
       size: pagination.size,
       ...searchForm
@@ -507,7 +506,7 @@ const handleApprove = async (row) => {
     })
 
     // TODO: 调用云函数审核通过
-    const result = await callCloudFunction('admin-approve-account', {
+    const result = await adminCloudFunctions.approveAccount({
       accountId: row.accountId,
       userId: row.userId
     })
@@ -537,7 +536,7 @@ const handleReject = async (row) => {
     })
 
     // TODO: 调用云函数审核拒绝
-    const result = await callCloudFunction('admin-reject-account', {
+    const result = await adminCloudFunctions.rejectAccount({
       accountId: row.accountId,
       userId: row.userId,
       reason: reason
@@ -570,7 +569,7 @@ const handleBatchApprove = async () => {
 
     // TODO: 调用云函数批量审核通过
     const accountIds = selectedAccounts.value.map(item => item.accountId)
-    const result = await callCloudFunction('admin-batch-approve-accounts', {
+    const result = await adminCloudFunctions.batchApproveAccounts({
       accountIds: accountIds
     })
 
@@ -602,7 +601,7 @@ const handleBatchReject = async () => {
 
     // TODO: 调用云函数批量审核拒绝
     const accountIds = selectedAccounts.value.map(item => item.accountId)
-    const result = await callCloudFunction('admin-batch-reject-accounts', {
+    const result = await adminCloudFunctions.batchRejectAccounts({
       accountIds: accountIds,
       reason: reason
     })
@@ -650,7 +649,7 @@ const handleSubmit = async () => {
     submitLoading.value = true
 
     // TODO: 调用云函数更新账号信息
-    const result = await callCloudFunction('admin-update-account', accountForm)
+    const result = await adminCloudFunctions.updateAccountInfo(accountForm.accountId, accountForm)
 
     if (result.result.success) {
       ElMessage.success('更新成功')
@@ -703,11 +702,14 @@ onMounted(() => {
     h1 {
       margin: 0 0 8px 0;
       color: #303133;
+      font-size: 24px;
+      font-weight: 600;
     }
     
     p {
       margin: 0;
       color: #909399;
+      font-size: 14px;
     }
   }
   

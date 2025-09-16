@@ -1,0 +1,9 @@
+{
+  "name": "admin-user-permissions-mgr",
+  "version": "1.0.0",
+  "description": "管理员用户权限管理云函数 - 更新用户状态、账号状态、账号审核状态",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
