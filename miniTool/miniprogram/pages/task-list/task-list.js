@@ -200,10 +200,38 @@ Page({
         });
       });
     } else if (this.data.currentStatus === TaskStatusEnum.REJECTED) {
-      // 已拒绝状态：暂时不处理，返回空数组
-      console.log("已拒绝状态暂不处理，显示无任务");
-    }
+      // 已拒绝状态：使用 rejectPosts 数据
+      accounts.forEach((account) => {
+        const rejectPosts = account.rejectPosts || [];
+        rejectPosts.forEach((post) => {
+          const taskObj = {
+            taskId: post.articleId, // 直接使用服务器的文章ID
+            accountId: account.accountId,
+            articleId: post.articleId,
+            accountName: account.accountNickname,
+            platformEnum: account.platform,
+            platformName: getPlatformName(account.platform),
+            platformIcon: getPlatformIcon(account.platform),
+            trackTypeEnum: post.trackType || account.trackType,
+            trackType: getTrackTypeName(post.trackType || account.trackType),
+            taskTime: timeUtils.formatTime(post.rejectTime, "YYYY-MM-DD", {
+              defaultValue: "未知时间",
+            }),
+            isCompleted: false, // 已拒绝的任务标记为未完成
+            status: TaskStatusEnum.REJECTED,
+            statusText: getTaskStatusName(TaskStatusEnum.REJECTED),
+            statusClass: getTaskStatusClass(TaskStatusEnum.REJECTED),
+            // 直接使用文章中的信息
+            articleTitle: post.title || "未知标题",
+            downloadUrl: "", // rejectPosts 数组中没有 downloadUrl 字段
+            rejectTime: post.rejectTime, // 添加拒绝时间字段
+          };
 
+          allTasks.push(taskObj);
+        });
+      });
+    }
+  
     console.log("构建的任务列表:", allTasks);
     return allTasks;
   },

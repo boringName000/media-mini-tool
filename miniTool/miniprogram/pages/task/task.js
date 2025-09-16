@@ -204,9 +204,13 @@ Page({
     accounts.forEach((account) => {
       const dailyTasks = account.originalData.dailyTasks || [];
       const posts = account.originalData.posts || [];
+      const rejectPosts = account.originalData.rejectPosts || [];
 
       // completed: posts 数组里面的都是已完成
       taskStats.completed += posts.length;
+
+      // rejected: rejectPosts 数组里面的都是已拒绝
+      taskStats.rejected += rejectPosts.length; 
 
       // pending: dailyTasks 每日任务中，已领取但未完成的任务（isClaimed 为 true 且 isCompleted 为 false）
       dailyTasks.forEach((task) => {
