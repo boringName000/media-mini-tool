@@ -51,6 +51,7 @@
 | `lastPostTime`           | Date    | ❌   | null     | 最后发文时间                           |
 | `currentAccountEarnings` | Number  | ✅   | 0        | 当前账号收益                           |
 | `posts`                  | Array   | ✅   | []       | 已发布的文章数据数组                   |
+| `rejectPosts`            | Array   | ✅   | []       | 已拒绝的文章数据数组                   |
 | `earnings`               | Array   | ✅   | []       | 收益数据数组                           |
 | `dailyTasks`             | Array   | ✅   | []       | 每日任务数组                           |
 
@@ -65,6 +66,15 @@
 | `callbackUrl`   | String | ✅   | -      | 回传地址       |
 | `viewCount`     | Number | ✅   | 0      | 浏览量         |
 | `dailyEarnings` | Number | ✅   | 0      | 当日收益       |
+
+#### rejectPosts 数组中的每个文章对象结构：
+
+| 字段名          | 类型   | 必填 | 默认值 | 说明           |
+| --------------- | ------ | ---- | ------ | -------------- |
+| `articleId`     | String | ✅   | -      | 文章唯一标识符 |
+| `title`         | String | ✅   | -      | 文章标题       |
+| `trackType`     | Number | ✅   | -      | 赛道类型       |
+| `rejectTime`    | Date   | ✅   | -      | 拒绝时间       |
 
 #### earnings 数组中的每个收益对象结构：
 
@@ -422,3 +432,4 @@
 - **v1.8**: 在 dailyTasks 数组中新增 articleTitle、trackType、platformType、downloadUrl 字段
 - **v1.9**: 在 posts 数组中新增 viewCount 浏览量、dailyEarnings 当日收益字段，在 accounts 数组中新增 currentAccountEarnings 当前账号收益字段，删除 dailyPostCount 字段
 - **v1.10**: 在 dailyTasks 数组中新增 isClaimed 是否领取任务字段
+- **v1.11**: 在 accounts 数组中新增 rejectPosts 已拒绝的文章数据数组字段，结构与 posts 数组相同

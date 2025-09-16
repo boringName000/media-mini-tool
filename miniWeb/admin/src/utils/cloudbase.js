@@ -337,7 +337,10 @@ export const adminCloudFunctions = {
   
   // ===== 过期任务管理 =====
   // 获取过期任务用户
-  getExpiredTaskUsers: (params = {}) => callAdminCloudFunction('admin-task-expired-users', params)
+  getExpiredTaskUsers: (params = {}) => callAdminCloudFunction('admin-task-expired-users', params),
+  
+  // 移除任务（拒绝任务）
+  adminRemoveTask: (params = {}) => callAdminCloudFunction('admin-remove-task', params)
 }
 
 // 向后兼容的云函数封装

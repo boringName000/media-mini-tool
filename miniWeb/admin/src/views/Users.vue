@@ -183,6 +183,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { callCloudFunction } from '@/utils/cloudbase'
+import { updatePageTime } from '@/utils/timeUtils'
+import { usersStore } from '@/store/index.js'
 
 // 响应式数据
 const loading = ref(false)
@@ -237,10 +239,36 @@ const userFormRules = {
 }
 
 // 加载用户列表
-const loadUserList = async () => {
-  loading.value = true
+const loadUserList = async (forceRefresh = false) => {
   try {
-    // TODO: 调用云函数获取用户列表
+    // 1. 检查缓存（如果不是强制刷新且是第一页）
+    if (!forceRefresh && pagination.page === 1 && !searchForm.keyword && !searchForm.status) {
+      const cached = usersStore.getData() // 内部已检查isDataValid()
+      if (cached) {
+        console.log('使用缓存的用户数据')
+        userList.value = cached.list || []
+        pagination.total = cached.total || 0
+        
+        // 显示缓存时间
+        const cachedTime = usersStore.getUpdateTime()
+        if (cachedTime) {
+          lastUpdateTime.value = cachedTime.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })
+        }
+        return
+      }
+    }
+
+    // 2. 缓存过期或无缓存，获取新数据
+    loading.value = true
+    usersStore.setLoading(true)
+    
     const result = await callCloudFunction('admin-get-users', {
       page: pagination.page,
       size: pagination.size,
@@ -250,18 +278,21 @@ const loadUserList = async () => {
     })
 
     if (result.result.success) {
-      userList.value = result.result.data.list || []
-      pagination.total = result.result.data.total || 0
+      const data = {
+        list: result.result.data.list || [],
+        total: result.result.data.total || 0
+      }
       
-      // 更新数据更新时间
-      lastUpdateTime.value = new Date().toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      })
+      userList.value = data.list
+      pagination.total = data.total
+      
+      // 3. 更新缓存（只缓存第一页无搜索条件的数据）
+      if (pagination.page === 1 && !searchForm.keyword && !searchForm.status) {
+        usersStore.setData(data)
+      }
+      
+      // 更新时间
+      updatePageTime({ lastUpdateTime }, usersStore)
     } else {
       ElMessage.error(result.result.message || '获取用户列表失败')
     }
@@ -270,6 +301,7 @@ const loadUserList = async () => {
     ElMessage.error('网络错误，请重试')
   } finally {
     loading.value = false
+    usersStore.setLoading(false)
   }
 }
 

@@ -209,7 +209,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { callAdminCloudFunction } from '@/utils/cloudbase'
 import { invitationsStore } from '@/store/index.js'
-import { formatTime } from '@/utils/timeUtils'
+import { formatTime, updatePageTime } from '@/utils/timeUtils'
 
 // 响应式数据
 const loading = ref(false)
@@ -286,13 +286,26 @@ const loadInvitationList = async (forceRefresh = false) => {
   try {
     loading.value = true
     
-    // 检查是否有缓存数据且未过期
+    // 1. 检查缓存（如果不是强制刷新）
     if (!forceRefresh) {
-      const cachedData = invitationsStore.getData()
-      if (cachedData) {
-        invitationList.value = cachedData.data || []
-        statistics.value = cachedData.statistics || {}
+      const cached = invitationsStore.getData() // 内部已检查isDataValid()
+      if (cached) {
         console.log('使用缓存的邀请码数据')
+        invitationList.value = cached.data || []
+        statistics.value = cached.statistics || {}
+        
+        // 显示缓存时间
+        const cachedTime = invitationsStore.getUpdateTime()
+        if (cachedTime) {
+          lastUpdateTime.value = cachedTime.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })
+        }
         return
       }
     }
@@ -314,14 +327,8 @@ const loadInvitationList = async (forceRefresh = false) => {
       statistics.value = result.statistics || {}
       
       // 更新数据更新时间
-      lastUpdateTime.value = new Date().toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      })
+      // 3. 更新数据、缓存、store、时间
+      updatePageTime({ lastUpdateTime }, invitationsStore)
       
       console.log('邀请码数据加载成功:', {
         total: statistics.value.totalCount,

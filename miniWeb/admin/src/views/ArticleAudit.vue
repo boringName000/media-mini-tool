@@ -53,7 +53,7 @@
               </div>
               <div class="stat-info">
                 <div class="stat-number">{{ moderateExpiredCount }}</div>
-                <div class="stat-label">严重过期时间(>3天)</div>
+                <div class="stat-label">严重过期时间 (>3天)</div>
               </div>
             </div>
           </div>
@@ -65,7 +65,7 @@
               </div>
               <div class="stat-info">
                 <div class="stat-number">{{ severeExpiredCount }}</div>
-                <div class="stat-label">严重过期时间(>7天)</div>
+                <div class="stat-label">严重过期时间 (>7天)</div>
               </div>
             </div>
           </div>
@@ -346,7 +346,7 @@ import { adminCloudFunctions } from '@/utils/cloudbase'
 import { articleAuditStore } from '@/store'
 import { getPlatformName, getPlatformOptions } from '@/utils/platformUtils'
 import { getTrackTypeName, getTrackTypeOptions } from '@/utils/trackTypeUtils'
-import { formatTime } from '@/utils/timeUtils'
+import { formatTime, updatePageTime } from '@/utils/timeUtils'
 
 // 响应式数据
 const loading = ref(false)
@@ -358,15 +358,12 @@ const selectedAccount = ref(null)
 const selectedAccountTasks = ref([])
 
 // 页面更新时间
-const lastUpdateTime = computed(() => {
-  return new Date().toLocaleString('zh-CN', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-})
+const lastUpdateTime = ref('')
+
+// 更新页面时间（使用封装的工具函数）
+const updateLastUpdateTime = () => {
+  updatePageTime({ lastUpdateTime }, articleAuditStore)
+}
 
 // 筛选表单
 const filterForm = ref({
@@ -522,17 +519,30 @@ const severeExpiredCount = computed(() => {
 // 方法
 const fetchExpiredTasks = async (forceRefresh = false) => {
   try {
-    // 如果不是强制刷新，先尝试从store获取缓存数据
+    // 1. 检查缓存（如果不是强制刷新）
     if (!forceRefresh) {
-      const cached = articleAuditStore.getData()
+      const cached = articleAuditStore.getData() // 内部已检查isDataValid()
       if (cached) {
         console.log('[ArticleAudit] 使用缓存数据')
         cachedData.value = cached
+        
+        // 显示缓存时间
+        const cachedTime = articleAuditStore.getUpdateTime()
+        if (cachedTime) {
+          lastUpdateTime.value = cachedTime.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })
+        }
         return
       }
     }
 
-    // 设置loading状态
+    // 2. 缓存过期或无缓存，获取新数据
     loading.value = true
     articleAuditStore.setLoading(true)
     console.log('开始获取过期任务数据...')
@@ -549,9 +559,10 @@ const fetchExpiredTasks = async (forceRefresh = false) => {
       const flattened = flattenUserData(result.result.data.users)
       console.log('扁平化后的数据:', flattened)
       
-      // 更新本地数据和store缓存
+      // 3. 更新数据、缓存、store、时间
       cachedData.value = flattened
       articleAuditStore.setData(flattened)
+      updatePageTime({ lastUpdateTime }, articleAuditStore)
       
       ElMessage.success(`获取成功，共 ${flattened.length} 条过期任务`)
     } else {
@@ -639,7 +650,15 @@ const handlePageChange = (page) => {
 }
 
 const showAccountTasks = (account) => {
-  selectedAccount.value = account
+  // 需要从原始数据中找到对应的用户信息
+  const user = filteredGroupedUsers.value.find(u => 
+    u.accounts.some(acc => acc.accountId === account.accountId)
+  )
+  
+  selectedAccount.value = {
+    ...account,
+    userId: user?.userId
+  }
   selectedAccountTasks.value = account.expiredTasks || []
   taskDialogVisible.value = true
 }
@@ -648,6 +667,53 @@ const handleCloseTaskDialog = () => {
   taskDialogVisible.value = false
   selectedAccount.value = null
   selectedAccountTasks.value = []
+}
+
+// 分批处理任务的辅助函数
+const processBatchTasks = async (tasks, batchSize = 15) => {
+  const results = {
+    successfulOperations: 0,
+    failedOperations: 0,
+    errors: []
+  }
+  
+  // 将任务分批
+  const batches = []
+  for (let i = 0; i < tasks.length; i += batchSize) {
+    batches.push(tasks.slice(i, i + batchSize))
+  }
+  
+  console.log(`开始分批处理 ${tasks.length} 个任务，共 ${batches.length} 批，每批最多 ${batchSize} 个`)
+  
+  // 逐批处理
+  for (let i = 0; i < batches.length; i++) {
+    const batch = batches[i]
+    console.log(`处理第 ${i + 1}/${batches.length} 批，包含 ${batch.length} 个任务`)
+    
+    try {
+      const result = await adminCloudFunctions.adminRemoveTask({ tasks: batch })
+      
+      // 修正数据结构解析：云函数返回的是 result.result.success 和 result.result.data
+      if (result.result && result.result.success && result.result.data) {
+        results.successfulOperations += result.result.data.successfulOperations || 0
+        results.failedOperations += result.result.data.failedOperations || 0
+      } else {
+        results.failedOperations += batch.length
+        results.errors.push(`第 ${i + 1} 批处理失败: ${result.result?.message || result.error || '未知错误'}`)
+      }
+    } catch (error) {
+      console.error(`第 ${i + 1} 批处理异常:`, error)
+      results.failedOperations += batch.length
+      results.errors.push(`第 ${i + 1} 批处理异常: ${error.message}`)
+    }
+    
+    // 批次间稍作延迟，避免请求过于频繁
+    if (i < batches.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 500))
+    }
+  }
+  
+  return results
 }
 
 const handleRejectTask = async (task) => {
@@ -662,16 +728,33 @@ const handleRejectTask = async (task) => {
       }
     )
     
-    // 这里调用拒绝单个任务的接口
-    ElMessage.success('任务已拒绝')
+    loading.value = true
     
-    // 刷新数据
-    await fetchExpiredTasks(true)
-    handleCloseTaskDialog()
+    // 调用云函数拒绝单个任务
+    const tasks = [{
+      userId: selectedAccount.value.userId || task.userId,
+      accountId: selectedAccount.value.accountId,
+      articleId: task.taskId
+    }]
+    
+    const result = await adminCloudFunctions.adminRemoveTask({ tasks })
+    
+    // 修正数据结构解析：云函数返回的是 result.result.success
+    if (result.result && result.result.success) {
+      ElMessage.success('任务已拒绝')
+      // 刷新数据
+      await fetchExpiredTasks(true)
+      handleCloseTaskDialog()
+    } else {
+      throw new Error(result.result?.message || result.error || '拒绝任务失败')
+    }
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('拒绝任务失败')
+      console.error('拒绝任务失败:', error)
+      ElMessage.error(error.message || '拒绝任务失败')
     }
+  } finally {
+    loading.value = false
   }
 }
 
@@ -687,15 +770,52 @@ const handleRejectUserTasks = async (user) => {
       }
     )
     
-    // 这里调用批量拒绝用户任务的接口
-    ElMessage.success(`已拒绝用户 ${user.username} 的所有过期任务`)
+    loading.value = true
     
-    // 刷新数据
-    await fetchExpiredTasks(true)
+    // 收集该用户的所有过期任务
+    const tasks = []
+    user.accounts.forEach(account => {
+      if (account.expiredTasks && account.expiredTasks.length > 0) {
+        account.expiredTasks.forEach(task => {
+          tasks.push({
+            userId: user.userId,
+            accountId: account.accountId,
+            articleId: task.taskId
+          })
+        })
+      }
+    })
+    
+    if (tasks.length === 0) {
+      ElMessage.warning('该用户没有过期任务')
+      return
+    }
+    
+    // 使用分批处理拒绝任务
+    const result = await processBatchTasks(tasks)
+    
+    // 显示处理结果
+    if (result.successfulOperations > 0) {
+      ElMessage.success(
+        `已拒绝用户 ${user.username} 的任务：成功 ${result.successfulOperations} 个，失败 ${result.failedOperations} 个`
+      )
+      // 刷新数据
+      await fetchExpiredTasks(true)
+    } else {
+      throw new Error('所有任务处理失败')
+    }
+    
+    // 如果有错误，显示详细信息
+    if (result.errors.length > 0) {
+      console.warn('处理过程中的错误:', result.errors)
+    }
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('批量拒绝失败')
+      console.error('拒绝用户任务失败:', error)
+      ElMessage.error(error.message || '批量拒绝失败')
     }
+  } finally {
+    loading.value = false
   }
 }
 
@@ -718,18 +838,58 @@ const handleBatchReject = async () => {
       }
     )
     
-    // 这里调用批量拒绝接口
-    ElMessage.success(`已批量拒绝 ${selectedUsers.value.length} 个用户的过期任务`)
+    loading.value = true
     
-    // 清空选择
-    selectedUsers.value = []
+    // 收集所有选中用户的过期任务
+    const tasks = []
+    selectedUsers.value.forEach(user => {
+      user.accounts.forEach(account => {
+        if (account.expiredTasks && account.expiredTasks.length > 0) {
+          account.expiredTasks.forEach(task => {
+            tasks.push({
+              userId: user.userId,
+              accountId: account.accountId,
+              articleId: task.taskId
+            })
+          })
+        }
+      })
+    })
     
-    // 刷新数据
-    await fetchExpiredTasks(true)
+    if (tasks.length === 0) {
+      ElMessage.warning('选中的用户没有过期任务')
+      return
+    }
+    
+    // 使用分批处理拒绝任务
+    const result = await processBatchTasks(tasks)
+    
+    // 显示处理结果
+    if (result.successfulOperations > 0) {
+      ElMessage.success(
+        `批量拒绝完成：成功 ${result.successfulOperations} 个，失败 ${result.failedOperations} 个`
+      )
+      
+      // 清空选择
+      selectedUsers.value = []
+      
+      // 刷新数据
+      await fetchExpiredTasks(true)
+    } else {
+      throw new Error('所有任务处理失败')
+    }
+    
+    // 如果有错误，显示详细信息
+    if (result.errors.length > 0) {
+      console.warn('批量处理过程中的错误:', result.errors)
+    }
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('批量拒绝失败')
+      console.error('批量拒绝失败:', error)
+      ElMessage.error(error.message || '批量拒绝失败')
     }
+  } finally {
+    loading.value = false
   }
 }
 
@@ -763,6 +923,8 @@ const getExpiredDaysTagType = (days) => {
 
 // 生命周期
 onMounted(() => {
+  // 初始化页面时间
+  updateLastUpdateTime()
   // 尝试从store获取缓存数据，如果没有或过期则重新获取
   fetchExpiredTasks()
 })

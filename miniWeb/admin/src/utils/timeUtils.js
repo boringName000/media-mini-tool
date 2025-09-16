@@ -346,6 +346,65 @@ export const TIME_FORMATS = {
   CUSTOM_TIME: { format: 'custom', customFormat: 'HH:mm' }
 }
 
+/**
+ * 获取当前时间的标准格式字符串
+ * @returns {string} 格式化的当前时间 YYYY/MM/DD HH:mm:ss
+ */
+export const getCurrentTimeString = () => {
+  return new Date().toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
+}
+
+/**
+ * 格式化缓存时间为显示格式
+ * @param {Date} cacheTime - 缓存时间对象
+ * @returns {string} 格式化的时间字符串
+ */
+export const formatCachedTime = (cacheTime) => {
+  if (!cacheTime) return getCurrentTimeString()
+  
+  try {
+    return cacheTime.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+  } catch (error) {
+    console.warn('格式化缓存时间失败:', error)
+    return getCurrentTimeString()
+  }
+}
+
+/**
+ * 更新页面的最后更新时间
+ * @param {Object} refs - Vue refs对象 {lastUpdateTime}
+ * @param {Object} store - store实例（可选，用于获取准确的更新时间）
+ */
+export const updatePageTime = (refs, store = null) => {
+  const { lastUpdateTime } = refs
+  
+  if (store && store.getUpdateTime) {
+    // 优先使用store中的更新时间（数据实际更新时间）
+    const storeTime = store.getUpdateTime()
+    if (storeTime) {
+      lastUpdateTime.value = formatCachedTime(storeTime)
+      return
+    }
+  }
+  
+  // 如果没有store时间，使用当前时间
+  lastUpdateTime.value = getCurrentTimeString()
+}
+
 // 默认导出
 export default {
   formatTime,
@@ -355,5 +414,8 @@ export default {
   isToday,
   isThisWeek,
   getTimestamp,
+  getCurrentTimeString,
+  formatCachedTime,
+  updatePageTime,
   TIME_FORMATS
 }

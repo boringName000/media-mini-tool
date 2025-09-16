@@ -5,7 +5,7 @@
       <div class="header-left">
         <h1 class="page-title">仪表盘</h1>
         <p class="page-subtitle" v-if="lastUpdateTime">
-          最后更新：{{ formatTime(lastUpdateTime) }}
+          最后更新：{{ lastUpdateTime }}
         </p>
       </div>
       <div class="header-right">
@@ -202,7 +202,7 @@ import { ElMessage } from 'element-plus'
 import { RefreshRight, User, CircleCheck, CircleClose, Link, Connection } from '@element-plus/icons-vue'
 import { adminCloudFunctions } from '@/utils/cloudbase'
 import { dashboardStore } from '@/store'
-import { formatTime } from '@/utils/timeUtils'
+import { formatTime, updatePageTime } from '@/utils/timeUtils'
 
 // 响应式数据
 const loading = ref(false)
@@ -215,13 +215,25 @@ const lastUpdateTime = ref(null)
 // 加载仪表盘数据
 const loadDashboardData = async (forceRefresh = false) => {
   try {
-    // 如果不是强制刷新，先检查缓存
+    // 1. 检查缓存（如果不是强制刷新）
     if (!forceRefresh) {
-      const cachedData = dashboardStore.getData()
-      if (cachedData) {
+      const cached = dashboardStore.getData() // 内部已检查isDataValid()
+      if (cached) {
         console.log('使用缓存的仪表盘数据')
-        dashboardData.value = cachedData
-        lastUpdateTime.value = dashboardStore.getUpdateTime()
+        dashboardData.value = cached
+        
+        // 显示缓存时间
+        const cachedTime = dashboardStore.getUpdateTime()
+        if (cachedTime) {
+          lastUpdateTime.value = cachedTime.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })
+        }
         return
       }
     }
@@ -232,6 +244,7 @@ const loadDashboardData = async (forceRefresh = false) => {
       return
     }
 
+    // 2. 缓存过期或无缓存，获取新数据
     loading.value = true
     dashboardStore.setLoading(true)
     error.value = ''
@@ -243,10 +256,10 @@ const loadDashboardData = async (forceRefresh = false) => {
       const data = result.result.data
       console.log('仪表盘数据加载成功:', data)
       
-      // 更新数据和缓存
+      // 3. 更新数据、缓存、store、时间
       dashboardData.value = data
       dashboardStore.setData(data)
-      lastUpdateTime.value = dashboardStore.getUpdateTime()
+      updatePageTime({ lastUpdateTime }, dashboardStore)
       
       ElMessage.success('数据加载成功')
     } else {

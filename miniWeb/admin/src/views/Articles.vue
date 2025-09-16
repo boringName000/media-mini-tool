@@ -538,7 +538,7 @@ import {
   getTrackTypeIcon, 
   getTrackTypeOptions 
 } from '@/utils/trackTypeUtils'
-import { formatTime } from '@/utils/timeUtils'
+import { formatTime, updatePageTime } from '@/utils/timeUtils'
 
 // 响应式数据
 const loading = ref(false)
@@ -679,13 +679,26 @@ const loadArticleData = async (forceRefresh = false) => {
   try {
     loading.value = true
     
-    // 检查缓存
-    if (!forceRefresh && articlesStore.hasData() && articlesStore.isDataValid()) {
-      const cachedData = articlesStore.getData()
-      if (cachedData) {
-        articleStats.value = cachedData.articleStats || articleStats.value
-        needRevisionArticles.value = cachedData.needRevisionArticles || []
+    // 1. 检查缓存（如果不是强制刷新）
+    if (!forceRefresh) {
+      const cached = articlesStore.getData() // 内部已检查isDataValid()
+      if (cached) {
         console.log('使用缓存的文章数据')
+        articleStats.value = cached.articleStats || articleStats.value
+        needRevisionArticles.value = cached.needRevisionArticles || []
+        
+        // 显示缓存时间
+        const cachedTime = articlesStore.getUpdateTime()
+        if (cachedTime) {
+          lastUpdateTime.value = cachedTime.toLocaleString('zh-CN', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })
+        }
         return
       }
     }
@@ -713,6 +726,13 @@ const loadArticleData = async (forceRefresh = false) => {
       // 更新待修改文章列表
       needRevisionArticles.value = data.needRevisionArticles || []
       
+      // 3. 更新 store 数据和时间戳
+      const cacheData = {
+        articleStats: articleStats.value,
+        needRevisionArticles: needRevisionArticles.value
+      }
+      articlesStore.setData(cacheData)
+      
       // 缓存数据
       articlesStore.setData({
         articleStats: articleStats.value,
@@ -720,14 +740,8 @@ const loadArticleData = async (forceRefresh = false) => {
       })
       
       // 更新数据更新时间
-      lastUpdateTime.value = new Date().toLocaleString('zh-CN', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      })
+      // 3. 更新数据、缓存、store、时间
+      updatePageTime({ lastUpdateTime }, articlesStore)
       
       console.log('文章数据加载成功:', {
         totalCount: articleStats.value.totalCount,
