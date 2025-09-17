@@ -107,12 +107,11 @@ async function queryUserInfo(queryConditions) {
       .aggregate()
       .match(conditions)
       .project({
-        // 用户基础信息
+        // 用户基础信息（不包含密码字段）
         _id: 1,
         userId: 1,
         nickname: 1,
         phone: 1,
-        password: 0, // 不返回密码字段
         status: 1,
         userLevel: 1,
         userType: 1,

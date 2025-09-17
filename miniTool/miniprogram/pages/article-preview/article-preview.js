@@ -12,7 +12,7 @@ Page({
 
     // web-view 配置
     webViewUrl: "", // web-view 要打开的URL
-    defaultDomain: "cloud1-5g6ik91va74262bb-1367027189.tcloudbaseapp.com", // 默认域名
+    defaultDomain: "cloudbase-3gdsccxb5e1e5865-1378918806.tcloudbaseapp.com", // 默认域名
   },
 
   onLoad: function (options) {
@@ -49,7 +49,7 @@ Page({
     const { defaultDomain, downloadUrl, articleTitle } = this.data;
 
     // 构建完整的web-view URL，直接使用传递的长期下载URL
-    const webViewUrl = `https://${defaultDomain}/miniWeb/index.html?tempUrl=${encodeURIComponent(
+    const webViewUrl = `https://${defaultDomain}/preview-page/index.html?tempUrl=${encodeURIComponent(
       downloadUrl
     )}&fileName=${encodeURIComponent(articleTitle)}`;
 

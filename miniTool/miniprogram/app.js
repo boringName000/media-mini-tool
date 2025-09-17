@@ -1,6 +1,7 @@
 // app.js
 const userInfoUtils = require("./utils/userInfoUtils");
 const updateDailyTasksUtils = require("./utils/updateDailyTasksUtils");
+const { checkAndHandleUserPermission } = require("./utils/permissionUtils");
 
 App({
   globalData: {
@@ -58,6 +59,13 @@ App({
       .loginGetLatestUserInfo()
       .then((result) => {
         if (result.success) {
+          // 检查用户权限状态
+          if (!checkAndHandleUserPermission(result.userInfo)) {
+            console.log("用户权限被禁用，清除登录状态");
+            this.clearLoginStatus();
+            return; // 权限检查失败，已处理跳转
+          }
+
           // 更新全局数据
           this.globalData.loginResult = {
             success: true,

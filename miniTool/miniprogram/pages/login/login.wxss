@@ -1,5 +1,28 @@
+/* 自定义导航栏样式 */
+.custom-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 88rpx;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1rpx solid #e5e5e5;
+  z-index: 1000;
+  padding-top: var(--status-bar-height, 44rpx);
+}
+
+.navbar-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
 /* 登录页面样式 */
 .login-container {
+  padding-top: calc(88rpx + var(--status-bar-height, 44rpx));
   min-height: 100vh;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   padding-bottom: 40rpx;

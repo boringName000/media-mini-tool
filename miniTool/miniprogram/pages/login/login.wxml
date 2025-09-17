@@ -1,4 +1,9 @@
 <!-- 登录页面 -->
+<!-- 自定义导航栏 -->
+<view class="custom-navbar" style="{{navbarStyle}}">
+  <view class="navbar-title">登录</view>
+</view>
+
 <view class="login-container">
   <!-- 顶部固定banner -->
   <view class="top-banner">

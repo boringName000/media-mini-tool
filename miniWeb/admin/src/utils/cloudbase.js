@@ -255,7 +255,7 @@ export const adminCloudFunctions = {
 
   // ===== 用户管理 =====
   // 获取用户信息
-  getUserInfo: (searchType, searchValue) => callAdminCloudFunction('admin-get-user-info', { searchType, searchValue }),
+  getUserInfo: (params) => callAdminCloudFunction('admin-get-user-info', params),
   
   // 获取所有用户列表（需要新建云函数）
   getAllUsers: (params = {}) => callAdminCloudFunction('admin-get-all-users', params),

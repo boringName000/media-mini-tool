@@ -176,9 +176,6 @@
 
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="待审核账号" name="pendingAudit">
-          <div class="tab-header">
-            <span class="data-count">共 {{ filteredData.length }} 条数据</span>
-          </div>
           <el-table :data="paginatedData" v-loading="loading" stripe>
             <el-table-column prop="userId" label="用户ID" min-width="150" show-overflow-tooltip />
             <el-table-column label="用户昵称" width="120">
@@ -251,9 +248,6 @@
         </el-tab-pane>
 
         <el-tab-pane label="禁用用户" name="disabledUsers">
-          <div class="tab-header">
-            <span class="data-count">共 {{ filteredData.length }} 条数据</span>
-          </div>
           <el-table :data="paginatedData" v-loading="loading" stripe>
             <el-table-column prop="userId" label="用户ID" min-width="150" show-overflow-tooltip />
             <el-table-column prop="nickname" label="用户昵称" min-width="150" show-overflow-tooltip />
@@ -302,9 +296,6 @@
         </el-tab-pane>
 
         <el-tab-pane label="禁用账号" name="disabledAccounts">
-          <div class="tab-header">
-            <span class="data-count">共 {{ filteredData.length }} 条数据</span>
-          </div>
           <el-table :data="paginatedData" v-loading="loading" stripe>
             <el-table-column prop="userId" label="用户ID" min-width="200" show-overflow-tooltip />
             <el-table-column label="用户昵称" width="120">
@@ -377,6 +368,263 @@
         </el-tab-pane>
       </el-tabs>
     </el-card>
+
+    <!-- 用户详情弹出面板 -->
+    <el-dialog
+      v-model="showUserDetailDialog"
+      title="用户详细信息"
+      width="80%"
+      :close-on-click-modal="false"
+    >
+      <div v-if="searchResultData" class="user-detail-container">
+        <!-- 用户基本信息 -->
+        <el-card class="user-basic-info" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>用户基本信息</span>
+            </div>
+          </template>
+          <el-descriptions :column="3" border>
+            <el-descriptions-item label="用户ID">{{ searchResultData.userId }}</el-descriptions-item>
+            <el-descriptions-item label="昵称">{{ searchResultData.nickname }}</el-descriptions-item>
+            <el-descriptions-item label="手机号">{{ searchResultData.phone }}</el-descriptions-item>
+            <el-descriptions-item label="邀请码">{{ searchResultData.inviteCode }}</el-descriptions-item>
+            <el-descriptions-item label="用户状态">
+              <el-tag :type="searchResultData.status === 1 ? 'success' : 'danger'">
+                {{ searchResultData.status === 1 ? '正常' : '禁用' }}
+              </el-tag>
+              <el-button 
+                v-if="searchResultData.status === 1" 
+                size="small" 
+                type="warning" 
+                style="margin-left: 10px;"
+                @click="handleDisableUserFromDetail(searchResultData)"
+              >
+                禁用用户
+              </el-button>
+              <el-button 
+                v-else 
+                size="small" 
+                type="success" 
+                style="margin-left: 10px;"
+                @click="handleEnableUserFromDetail(searchResultData)"
+              >
+                启用用户
+              </el-button>
+            </el-descriptions-item>
+            <el-descriptions-item label="用户等级">{{ searchResultData.userLevel }}</el-descriptions-item>
+            <el-descriptions-item label="用户类型">{{ searchResultData.userType }}</el-descriptions-item>
+            <el-descriptions-item label="注册时间">{{ formatTime(searchResultData.registerTimestamp, 'YYYY-MM-DD HH:mm:ss') }}</el-descriptions-item>
+            <el-descriptions-item label="最后登录">{{ formatTime(searchResultData.lastLoginTimestamp, 'YYYY-MM-DD HH:mm:ss') }}</el-descriptions-item>
+          </el-descriptions>
+          
+          <!-- 统计信息 -->
+          <div class="user-stats" style="margin-top: 20px;">
+            <el-row :gutter="20">
+              <el-col :span="6">
+                <el-statistic title="总账号数" :value="searchResultData.totalAccounts" />
+              </el-col>
+              <el-col :span="6">
+                <el-statistic title="活跃账号" :value="searchResultData.activeAccounts" />
+              </el-col>
+              <el-col :span="6">
+                <el-statistic title="禁用账号" :value="searchResultData.disabledAccounts" />
+              </el-col>
+              <el-col :span="6">
+                <el-statistic title="待审核账号" :value="searchResultData.pendingAuditAccounts" />
+              </el-col>
+            </el-row>
+            <el-row :gutter="20" style="margin-top: 20px;">
+              <el-col :span="6">
+                <el-statistic title="已通过账号" :value="searchResultData.approvedAccounts" />
+              </el-col>
+              <el-col :span="6">
+                <el-statistic title="已拒绝账号" :value="searchResultData.rejectedAccounts" />
+              </el-col>
+              <el-col :span="6">
+                <el-statistic title="总发文数" :value="searchResultData.totalPosts" />
+              </el-col>
+              <el-col :span="6">
+                <el-statistic title="总拒绝文章" :value="searchResultData.totalRejectPosts" />
+              </el-col>
+            </el-row>
+          </div>
+        </el-card>
+
+        <!-- 账号列表 -->
+        <el-card v-if="searchResultData.accounts && searchResultData.accounts.length > 0" class="accounts-info" shadow="never" style="margin-top: 20px;">
+          <template #header>
+            <div class="card-header">
+              <span>账号列表 ({{ searchResultData.accounts.length }})</span>
+            </div>
+          </template>
+          
+          <div v-for="(account, index) in searchResultData.accounts" :key="account.accountId" class="account-item">
+            <el-card shadow="hover" style="margin-bottom: 15px;">
+              <template #header>
+                <div class="account-header">
+                  <span class="account-title">账号 {{ index + 1 }}: {{ account.accountNickname }}</span>
+                  <div class="account-actions">
+                    <!-- 账号状态操作 -->
+                    <el-tag :type="account.status === 1 ? 'success' : 'danger'" style="margin-right: 10px;">
+                      {{ account.status === 1 ? '正常' : '禁用' }}
+                    </el-tag>
+                    <el-button 
+                      v-if="account.status === 1" 
+                      size="small" 
+                      type="warning"
+                      @click="handleDisableAccountFromDetail(searchResultData, account)"
+                    >
+                      禁用账号
+                    </el-button>
+                    <el-button 
+                      v-else 
+                      size="small" 
+                      type="success"
+                      @click="handleEnableAccountFromDetail(searchResultData, account)"
+                    >
+                      启用账号
+                    </el-button>
+                    
+                    <!-- 审核状态操作 -->
+                    <el-tag 
+                      :type="account.auditStatus === 1 ? 'success' : account.auditStatus === 2 ? 'danger' : 'warning'" 
+                      style="margin-left: 10px; margin-right: 10px;"
+                    >
+                      {{ account.auditStatus === 1 ? '审核通过' : account.auditStatus === 2 ? '审核拒绝' : '待审核' }}
+                    </el-tag>
+                    <el-button 
+                      v-if="account.auditStatus === 0" 
+                      size="small" 
+                      type="success"
+                      @click="handleApproveFromDetail(searchResultData, account)"
+                    >
+                      审核通过
+                    </el-button>
+                    <el-button 
+                      v-if="account.auditStatus === 0" 
+                      size="small" 
+                      type="danger"
+                      @click="handleRejectFromDetail(searchResultData, account)"
+                    >
+                      审核拒绝
+                    </el-button>
+                  </div>
+                </div>
+              </template>
+              
+              <!-- 账号详细信息 -->
+              <el-descriptions :column="2" border size="small">
+                <el-descriptions-item label="账号ID">{{ account.accountId }}</el-descriptions-item>
+                <el-descriptions-item label="原始账号ID">{{ account.originalAccountId }}</el-descriptions-item>
+                <el-descriptions-item label="手机号">{{ account.phoneNumber }}</el-descriptions-item>
+                <el-descriptions-item label="平台">{{ getPlatformName(account.platform) }}</el-descriptions-item>
+                <el-descriptions-item label="赛道">{{ getTrackTypeName(account.trackType) }}</el-descriptions-item>
+                <el-descriptions-item label="每日发文数">{{ account.dailyPostCount }}</el-descriptions-item>
+                <el-descriptions-item label="是否违规">
+                  <el-tag :type="account.isViolation ? 'danger' : 'success'">
+                    {{ account.isViolation ? '是' : '否' }}
+                  </el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="创建时间">{{ formatTime(account.createTimestamp, 'YYYY-MM-DD HH:mm:ss') }}</el-descriptions-item>
+              </el-descriptions>
+              
+              <!-- 账号统计 -->
+              <div class="account-stats" style="margin-top: 15px;">
+                <el-row :gutter="15">
+                  <el-col :span="6">
+                    <el-statistic title="发文数" :value="account.totalPosts" />
+                  </el-col>
+                  <el-col :span="6">
+                    <el-statistic title="拒绝文章" :value="account.totalRejectPosts" />
+                  </el-col>
+                  <el-col :span="6">
+                    <el-statistic title="每日任务" :value="account.totalDailyTasks" />
+                  </el-col>
+                  <el-col :span="6">
+                    <el-statistic title="已完成任务" :value="account.completedTasks" />
+                  </el-col>
+                </el-row>
+              </div>
+              
+              <!-- 拒绝文章列表 -->
+              <div v-if="account.rejectPosts && account.rejectPosts.length > 0" style="margin-top: 15px;">
+                <el-divider content-position="left">拒绝文章 ({{ account.rejectPosts.length }})</el-divider>
+                <el-table :data="account.rejectPosts" size="small" max-height="200">
+                  <el-table-column prop="articleId" label="文章ID" width="150" />
+                  <el-table-column prop="title" label="文章标题" show-overflow-tooltip />
+                  <el-table-column prop="rejectTime" label="拒绝时间" width="180">
+                    <template #default="{ row }">
+                      {{ formatTime(row.rejectTime, 'YYYY-MM-DD HH:mm:ss') }}
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+              
+              <!-- 每日任务列表 -->
+              <div v-if="account.dailyTasks && account.dailyTasks.length > 0" style="margin-top: 15px;">
+                <el-divider content-position="left">每日任务 ({{ account.dailyTasks.length }})</el-divider>
+                <el-table :data="account.dailyTasks" size="small" max-height="200">
+                  <el-table-column prop="articleId" label="文章ID" width="150" />
+                  <el-table-column prop="articleTitle" label="文章标题" show-overflow-tooltip />
+                  <el-table-column label="完成状态" width="100">
+                    <template #default="{ row }">
+                      <el-tag :type="row.isCompleted ? 'success' : 'info'" size="small">
+                        {{ row.isCompleted ? '已完成' : '未完成' }}
+                      </el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="领取状态" width="100">
+                    <template #default="{ row }">
+                      <el-tag :type="row.isClaimed ? 'success' : 'warning'" size="small">
+                        {{ row.isClaimed ? '已领取' : '未领取' }}
+                      </el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="taskTime" label="任务时间" width="180">
+                    <template #default="{ row }">
+                      {{ formatTime(row.taskTime, 'YYYY-MM-DD HH:mm:ss') }}
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+              
+              <!-- 收益记录 -->
+              <div v-if="account.earnings && account.earnings.length > 0" style="margin-top: 15px;">
+                <el-divider content-position="left">收益记录 ({{ account.earnings.length }})</el-divider>
+                <el-table :data="account.earnings" size="small" max-height="200">
+                  <el-table-column label="结算方式" width="100">
+                    <template #default="{ row }">
+                      {{ row.settlementMethod === 1 ? '微信' : '其他' }}
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="accountEarnings" label="账号收益" width="100" />
+                  <el-table-column prop="settlementEarnings" label="结算收益" width="100" />
+                  <el-table-column label="结算状态" width="100">
+                    <template #default="{ row }">
+                      <el-tag :type="row.settlementStatus === 2 ? 'success' : 'warning'" size="small">
+                        {{ row.settlementStatus === 2 ? '已结算' : '待结算' }}
+                      </el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column prop="settlementTime" label="结算时间" width="180">
+                    <template #default="{ row }">
+                      {{ formatTime(row.settlementTime, 'YYYY-MM-DD HH:mm:ss') }}
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-card>
+          </div>
+        </el-card>
+      </div>
+      
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="showUserDetailDialog = false">关闭</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -429,6 +677,10 @@ const serverSearch = reactive({
   type: 'nickname',
   keyword: ''
 })
+
+// 用户详情弹出面板
+const showUserDetailDialog = ref(false)
+const searchResultData = ref(null)
 
 // 平台和赛道选项
 const platformOptions = getPlatformOptions()
@@ -519,8 +771,8 @@ const fetchDataByType = async (type) => {
     let data = []
     if (result && result.result && result.result.success && result.result.data) {
       data = result.result.data
-    } else if (result && result.success && result.data) {
-      data = result.data
+    } else if (result?.result?.success && result.result.data) {
+      data = result.result.data
     }
     
     if (data && data.length >= 0) {
@@ -614,24 +866,19 @@ const handleServerSearch = async () => {
     searchLoading.value = true
     
     const params = {
-      searchType: serverSearch.type,
-      keyword: serverSearch.keyword.trim()
+      [serverSearch.type]: serverSearch.keyword.trim()
     }
     
     const result = await adminCloudFunctions.getUserInfo(params)
     
-    if (result && result.success && result.data) {
-      // 将搜索结果添加到当前tab的数据中（去重）
-      const currentData = rawData[activeTab.value] || []
-      const newData = result.data.filter(newItem => 
-        !currentData.some(existingItem => existingItem.userId === newItem.userId)
-      )
-      
-      if (newData.length > 0) {
-        rawData[activeTab.value] = [...currentData, ...newData]
-        ElMessage.success(`找到 ${newData.length} 条新数据`)
+    if (result?.result?.success && result.result.data) {
+      if (result.result.data.length > 0) {
+        // 显示用户详情弹出面板
+        searchResultData.value = result.result.data[0] // 取第一个用户
+        showUserDetailDialog.value = true
+        ElMessage.success(`找到用户信息`)
       } else {
-        ElMessage.info('未找到新的用户数据')
+        ElMessage.info('未找到匹配的用户')
       }
     } else {
       ElMessage.warning('未找到匹配的用户')
@@ -660,7 +907,7 @@ const handleApprove = async (row) => {
       statusValue: 1           // 审核通过
     })
     
-    if (result && result.success) {
+    if (result?.result?.success) {
       ElMessage.success('审核通过成功')
       // 清除缓存并刷新数据（不显示刷新成功消息）
       usersStore.clearData()
@@ -696,7 +943,7 @@ const handleReject = async (row) => {
       statusValue: 2           // 审核拒绝
     })
     
-    if (result && result.success) {
+    if (result?.result?.success) {
       ElMessage.success('审核拒绝成功')
       // 清除缓存并刷新数据（不显示刷新成功消息）
       usersStore.clearData()
@@ -731,7 +978,7 @@ const handleDisableUser = async (row) => {
       statusValue: 0           // 禁用用户
     })
     
-    if (result && result.success) {
+    if (result?.result?.success) {
       ElMessage.success('用户禁用成功')
       // 清除缓存并刷新数据（不显示刷新成功消息）
       usersStore.clearData()
@@ -766,7 +1013,7 @@ const handleEnableUser = async (row) => {
       statusValue: 1           // 启用用户
     })
     
-    if (result && result.success) {
+    if (result?.result?.success) {
       ElMessage.success('用户启用成功')
       // 清除缓存并刷新数据（不显示刷新成功消息）
       usersStore.clearData()
@@ -802,7 +1049,7 @@ const handleDisableAccount = async (row) => {
       statusValue: 0           // 禁用账号
     })
     
-    if (result && result.success) {
+    if (result?.result?.success) {
       ElMessage.success('账号禁用成功')
       // 清除缓存并刷新数据（不显示刷新成功消息）
       usersStore.clearData()
@@ -838,7 +1085,7 @@ const handleEnableAccount = async (row) => {
       statusValue: 1           // 启用账号
     })
     
-    if (result && result.success) {
+    if (result?.result?.success) {
       ElMessage.success('账号启用成功')
       // 清除缓存并刷新数据（不显示刷新成功消息）
       usersStore.clearData()
@@ -856,6 +1103,185 @@ const handleEnableAccount = async (row) => {
     }
   } finally {
     row.enabling = false
+  }
+}
+
+// 弹出面板中的操作方法
+const handleDisableUserFromDetail = async (userData) => {
+  try {
+    await ElMessageBox.confirm('确认禁用该用户？', '确认操作', {
+      type: 'warning'
+    })
+    
+    const result = await adminCloudFunctions.manageUserPermissions({
+      operationType: 1,        // 更新用户状态
+      userId: userData.userId,
+      statusValue: 0           // 禁用用户
+    })
+    
+    if (result?.result?.success) {
+      ElMessage.success('用户禁用成功')
+      // 更新弹出面板中的数据
+      searchResultData.value.status = 0
+    } else {
+      ElMessage.error('用户禁用失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('用户禁用失败:', error)
+      ElMessage.error('用户禁用失败')
+    }
+  }
+}
+
+const handleEnableUserFromDetail = async (userData) => {
+  try {
+    await ElMessageBox.confirm('确认启用该用户？', '确认操作', {
+      type: 'warning'
+    })
+    
+    const result = await adminCloudFunctions.manageUserPermissions({
+      operationType: 1,        // 更新用户状态
+      userId: userData.userId,
+      statusValue: 1           // 启用用户
+    })
+    
+    if (result?.result?.success) {
+      ElMessage.success('用户启用成功')
+      // 更新弹出面板中的数据
+      searchResultData.value.status = 1
+    } else {
+      ElMessage.error('用户启用失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('用户启用失败:', error)
+      ElMessage.error('用户启用失败')
+    }
+  }
+}
+
+const handleDisableAccountFromDetail = async (userData, accountData) => {
+  try {
+    await ElMessageBox.confirm('确认禁用该账号？', '确认操作', {
+      type: 'warning'
+    })
+    
+    const result = await adminCloudFunctions.manageUserPermissions({
+      operationType: 2,        // 更新账号状态
+      userId: userData.userId,
+      accountId: accountData.accountId,
+      statusValue: 0           // 禁用账号
+    })
+    
+    if (result?.result?.success) {
+      ElMessage.success('账号禁用成功')
+      // 更新弹出面板中的数据
+      accountData.status = 0
+      // 更新统计数据
+      searchResultData.value.activeAccounts--
+      searchResultData.value.disabledAccounts++
+    } else {
+      ElMessage.error('账号禁用失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('账号禁用失败:', error)
+      ElMessage.error('账号禁用失败')
+    }
+  }
+}
+
+const handleEnableAccountFromDetail = async (userData, accountData) => {
+  try {
+    await ElMessageBox.confirm('确认启用该账号？', '确认操作', {
+      type: 'warning'
+    })
+    
+    const result = await adminCloudFunctions.manageUserPermissions({
+      operationType: 2,        // 更新账号状态
+      userId: userData.userId,
+      accountId: accountData.accountId,
+      statusValue: 1           // 启用账号
+    })
+    
+    if (result?.result?.success) {
+      ElMessage.success('账号启用成功')
+      // 更新弹出面板中的数据
+      accountData.status = 1
+      // 更新统计数据
+      searchResultData.value.activeAccounts++
+      searchResultData.value.disabledAccounts--
+    } else {
+      ElMessage.error('账号启用失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('账号启用失败:', error)
+      ElMessage.error('账号启用失败')
+    }
+  }
+}
+
+const handleApproveFromDetail = async (userData, accountData) => {
+  try {
+    await ElMessageBox.confirm('确认通过该账号的审核？', '确认操作', {
+      type: 'warning'
+    })
+    
+    const result = await adminCloudFunctions.manageUserPermissions({
+      operationType: 3,        // 更新账号审核状态
+      userId: userData.userId,
+      accountId: accountData.accountId,
+      statusValue: 1           // 审核通过
+    })
+    
+    if (result?.result?.success) {
+      ElMessage.success('审核通过成功')
+      // 更新弹出面板中的数据
+      accountData.auditStatus = 1
+      // 更新统计数据
+      searchResultData.value.pendingAuditAccounts--
+      searchResultData.value.approvedAccounts++
+    } else {
+      ElMessage.error('审核通过失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('审核通过失败:', error)
+      ElMessage.error('审核通过失败')
+    }
+  }
+}
+
+const handleRejectFromDetail = async (userData, accountData) => {
+  try {
+    await ElMessageBox.confirm('确认拒绝该账号的审核？', '确认操作', {
+      type: 'warning'
+    })
+    
+    const result = await adminCloudFunctions.manageUserPermissions({
+      operationType: 3,        // 更新账号审核状态
+      userId: userData.userId,
+      accountId: accountData.accountId,
+      statusValue: 2           // 审核拒绝
+    })
+    
+    if (result?.result?.success) {
+      ElMessage.success('审核拒绝成功')
+      // 更新弹出面板中的数据
+      accountData.auditStatus = 2
+      // 更新统计数据
+      searchResultData.value.pendingAuditAccounts--
+      searchResultData.value.rejectedAccounts++
+    } else {
+      ElMessage.error('审核拒绝失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('审核拒绝失败:', error)
+      ElMessage.error('审核拒绝失败')
+    }
   }
 }
 
@@ -1221,6 +1647,96 @@ onMounted(async () => {
   .filter-form {
     :deep(.el-col) {
       margin-bottom: 16px;
+    }
+  }
+}
+
+/* 用户详情弹出面板样式 */
+.user-detail-container {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.user-basic-info {
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: #303133;
+  }
+  
+  .user-stats {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+}
+
+.accounts-info {
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: #303133;
+  }
+  
+  .account-item {
+    .account-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      .account-title {
+        font-weight: 600;
+        color: #303133;
+      }
+      
+      .account-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+    }
+    
+    .account-stats {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 15px;
+    }
+  }
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .user-detail-container {
+    max-height: 60vh;
+  }
+  
+  .account-header {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 10px;
+    
+    .account-actions {
+      width: 100%;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+  }
+  
+  .user-stats .el-row,
+  .account-stats .el-row {
+    .el-col {
+      margin-bottom: 10px;
     }
   }
 }

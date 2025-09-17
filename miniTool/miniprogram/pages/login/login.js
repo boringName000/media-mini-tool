@@ -1,7 +1,10 @@
 // 登录页面
 const authUtils = require("../../utils/authUtils");
+const { checkLoginPermission, ADMIN_CONTACT } = require('../../utils/permissionUtils.js');
 Page({
   data: {
+    statusBarHeight: 0, // 状态栏高度
+    navbarStyle: '', // 导航栏样式
     // 页面状态
     isLoginMode: true, // true: 登录模式, false: 注册模式
 
@@ -32,6 +35,13 @@ Page({
 
   onLoad: function (options) {
     console.log("登录页面加载");
+    
+    // 获取系统信息，设置状态栏高度
+    const systemInfo = wx.getSystemInfoSync();
+    this.setData({
+      statusBarHeight: systemInfo.statusBarHeight,
+      navbarStyle: `--status-bar-height: ${systemInfo.statusBarHeight}px;`
+    });
   },
 
   onShow: function () {
@@ -334,7 +344,19 @@ Page({
       } else {
         const errMsg =
           (res && res.result && res.result.error) || "登录失败，请稍后重试";
-        wx.showToast({ title: errMsg, icon: "none", duration: 2500 });
+        
+        // 检查是否是用户被禁用的错误，如果是则显示统一的提示
+        if (errMsg.includes('用户账号已被禁用') || errMsg.includes('用户已被禁用') || 
+            (res.result && res.result.status === 0)) {
+          wx.showModal({
+            title: '登录失败',
+            content: `用户已被禁止使用，请联系管理员 ${ADMIN_CONTACT}`,
+            showCancel: false,
+            confirmText: '确定'
+          });
+        } else {
+          wx.showToast({ title: errMsg, icon: "none", duration: 2500 });
+        }
       }
     } catch (e) {
       wx.hideLoading();
@@ -349,6 +371,11 @@ Page({
 
   // 登录成功统一处理
   onLoginSuccess: function (result) {
+    // 检查登录权限
+    if (!checkLoginPermission(result)) {
+      return; // 权限检查失败，已显示提示
+    }
+
     wx.showToast({ title: "登录成功", icon: "success", duration: 1200 });
 
     // 使用工具函数处理登录成功

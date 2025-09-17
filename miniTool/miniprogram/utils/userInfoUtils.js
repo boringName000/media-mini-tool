@@ -1,4 +1,6 @@
 // 用户信息工具函数
+const { checkAndHandleUserPermission, ADMIN_CONTACT } = require('./permissionUtils.js');
+
 const userInfoUtils = {
   // 获取当前用户信息
   getCurrentUserInfo: async function () {
@@ -57,6 +59,16 @@ const userInfoUtils = {
           console.warn("无法更新全局数据：应用实例未初始化");
         }
 
+        // 检查用户权限状态（会自动处理跳转和提示）
+        const hasPermission = checkAndHandleUserPermission(res.result.userInfo);
+        if (!hasPermission) {
+          // checkAndHandleUserPermission 已经处理了跳转和提示
+          return {
+            success: false,
+            error: "用户权限被禁用",
+          };
+        }
+
         // 返回数据供外部使用
         return {
           success: true,
@@ -64,9 +76,52 @@ const userInfoUtils = {
           queryContext: res.result.queryContext,
         };
       } else {
+        const errorMsg = res.result.error || "获取用户信息失败";
+        console.error("获取用户信息失败:", res.result);
+        
+        // 检查是否是用户被禁用的错误
+        // 云函数可能返回包含status字段的对象，或者错误信息中包含禁用文字
+        const isUserDisabled = (res.result.status === 0) || 
+                              (errorMsg && (errorMsg.includes('用户账号已被禁用') || errorMsg.includes('用户已被禁用')));
+        
+        if (isUserDisabled) {
+          console.log('检测到用户被禁用，显示提示并跳转到登录页');
+          
+          wx.showModal({
+            title: '账号状态异常',
+            content: `用户已被禁止使用，请联系管理员 ${ADMIN_CONTACT}`,
+            showCancel: false,
+            confirmText: '确定',
+            success: (modalRes) => {
+              if (modalRes.confirm) {
+                // 清除本地存储
+                wx.removeStorageSync('userInfo');
+                wx.removeStorageSync('loginResult');
+                
+                // 清除全局数据
+                const app = getApp();
+                if (app && app.globalData) {
+                  app.globalData.loginResult = null;
+                }
+                
+                // 跳转到登录页面
+                wx.reLaunch({
+                  url: '/pages/login/login',
+                  success: () => {
+                    console.log('成功跳转到登录页');
+                  },
+                  fail: (err) => {
+                    console.error('跳转失败:', err);
+                  }
+                });
+              }
+            }
+          });
+        }
+        
         return {
           success: false,
-          error: res.result.error || "获取用户信息失败",
+          error: errorMsg,
         };
       }
     } catch (error) {

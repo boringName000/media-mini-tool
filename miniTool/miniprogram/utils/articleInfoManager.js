@@ -7,6 +7,7 @@ const {
   deleteArticleInfo,
   clearAllArticleInfo,
 } = require("./articleStorageCore");
+const { checkDownloadPermission } = require("./permissionUtils");
 
 /**
  * 保存文章信息到本地存储
@@ -38,6 +39,27 @@ function saveArticleInfo(options) {
     else {
       wx.showToast({ title: error, icon: "none" });
     }
+    return;
+  }
+
+  // 检查账号权限
+  const app = getApp();
+  const userInfo = app.globalData.loginResult;
+
+  if (!userInfo) {
+    const error = "无法获取用户信息";
+    if (onError) onError(error);
+    else {
+      wx.showToast({ title: error, icon: "none" });
+    }
+    return;
+  }
+
+  // 检查下载权限（仅检查账号权限，用户权限已在 getCurrentUserInfo 中检查）
+  const hasPermission = checkDownloadPermission(userInfo, accountId);
+  if (!hasPermission) {
+    // 权限检查失败，已显示提示
+    if (onError) onError("权限检查失败");
     return;
   }
 

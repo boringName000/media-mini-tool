@@ -2,6 +2,7 @@
 const { PlatformEnum, getPlatformName } = require("../../utils/platformUtils");
 const accountUtils = require("../../utils/accountUtils");
 const updateDailyTasksUtils = require("../../utils/updateDailyTasksUtils");
+const { checkAndHandleAccountPermission } = require("../../utils/permissionUtils");
 
 Page({
   data: {
@@ -17,6 +18,8 @@ Page({
     this.loadTrackTypes();
     this.startNoticeScroll();
   },
+
+
 
   onShow: function () {
     // 更新自定义tabBar的选中状态
@@ -199,7 +202,9 @@ Page({
         platform: getPlatformName(account.platform),
         status: account.status,
         auditStatus: account.auditStatus,
-        statusText: this.getAccountStatusText(account),
+        statusText: account.status === 0 
+          ? accountUtils.getAccountStatusText(account.status)
+          : accountUtils.getAuditStatusText(account.auditStatus),
         originalData: account,
       };
     });
@@ -211,31 +216,19 @@ Page({
     });
   },
 
-  // 获取账号状态文本
-  getAccountStatusText: function (account) {
-    if (account.status === 0) {
-      return "已禁用";
-    } else if (account.status === 1) {
-      return accountUtils.getAuditStatusText(account.auditStatus);
-    }
-    return "未知状态";
-  },
+
 
   // 点击账号选择弹出卡片中的账号项
   onAccountItemTap: function (e) {
     const index = e.currentTarget.dataset.index;
     const account = this.data.matchedAccounts[index];
 
-    // 检查账号状态
-    if (account.status === 0) {
-      // 如果是禁用状态，弹出提示框
-      wx.showModal({
-        title: "账号已禁用",
-        content: "该账号已被禁用，请联系管理员处理",
-        showCancel: false,
-        confirmText: "知道了",
-      });
-      return;
+    // 检查账号权限
+    const app = getApp();
+    const userInfo = app.globalData.loginResult;
+    
+    if (!checkAndHandleAccountPermission(userInfo, account.accountId)) {
+      return; // 权限检查失败，已显示提示
     }
 
     // 关闭弹出卡片

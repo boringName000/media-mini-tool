@@ -7,6 +7,7 @@ const {
 const { PlatformEnum, getPlatformName } = require("../../utils/platformUtils");
 const timeUtils = require("../../utils/timeUtils");
 const { saveArticleInfo } = require("../../utils/articleInfoManager");
+const { checkAndHandleAccountPermission } = require("../../utils/permissionUtils");
 
 Page({
   data: {
@@ -485,6 +486,15 @@ Page({
     }
 
     if (pageType === "account") {
+      // 检查账号权限
+      const app = getApp();
+      const userInfo = app.globalData.loginResult;
+      const currentAccountId = this.data.currentAccountId;
+    
+      if (!checkAndHandleAccountPermission(userInfo, currentAccountId)) {
+        return; // 权限检查失败，已显示提示
+      }
+
       // 通过账号ID进入的情况，检查是否有已领取的文章
       const hasClaimedTasks = this.data.articleList.some(
         (item) => item.isClaimed === true
@@ -544,6 +554,8 @@ Page({
       return;
     }
 
+    // 调用 saveArticleInfo，它会进行用户和账号权限检查
+    // 业务逻辑检查已在 onDownloadTap 中完成
     saveArticleInfo({
       downloadUrl: article.downloadUrl,
       articleTitle: article.articleTitle,

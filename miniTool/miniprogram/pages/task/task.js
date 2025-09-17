@@ -14,6 +14,7 @@ const authUtils = require("../../utils/authUtils");
 const userInfoUtils = require("../../utils/userInfoUtils");
 const accountUtils = require("../../utils/accountUtils");
 const updateDailyTasksUtils = require("../../utils/updateDailyTasksUtils");
+const { checkAndHandleAccountPermission } = require("../../utils/permissionUtils");
 
 Page({
   data: {
@@ -143,8 +144,10 @@ Page({
         account.dailyTasks || []
       );
 
-      // 获取账号状态
-      const status = this.getAccountStatus(account);
+      // 获取账号状态（使用 accountUtils 中的统一函数）
+      const statusText = account.status === 0 
+        ? accountUtils.getAccountStatusText(account.status)
+        : accountUtils.getAuditStatusText(account.auditStatus);
 
       return {
         accountId: account.accountId,
@@ -157,7 +160,7 @@ Page({
         trackType: trackTypeName,
         trackIcon: trackTypeIcon,
         todayArticles: todayArticles,
-        status: status,
+        statusText: statusText,
         // 保留原始数据用于其他操作
         originalData: account,
       };
@@ -178,17 +181,7 @@ Page({
     }).length;
   },
 
-  /**
-   * 获取账号状态
-   */
-  getAccountStatus: function (account) {
-    if (account.status === 0) {
-      return "已禁用";
-    } else if (account.status === 1) {
-      return accountUtils.getAuditStatusText(account.auditStatus);
-    }
-    return "未知状态";
-  },
+
 
   /**
    * 更新任务统计数据
@@ -281,6 +274,8 @@ Page({
     });
   },
 
+
+
   /**
    * 点击账号项
    */
@@ -288,16 +283,12 @@ Page({
     const index = e.currentTarget.dataset.index;
     const account = this.data.accountList[index];
 
-    // 检查账号状态
-    if (account.originalData.status === 0) {
-      // 如果是禁用状态，弹出提示框
-      wx.showModal({
-        title: "账号已禁用",
-        content: "该账号已被禁用，请联系管理员处理",
-        showCancel: false,
-        confirmText: "知道了",
-      });
-      return;
+    // 检查账号权限
+    const app = getApp();
+    const userInfo = app.globalData.loginResult;
+    
+    if (!checkAndHandleAccountPermission(userInfo, account.accountId)) {
+      return; // 权限检查失败，已显示提示
     }
 
     // 显示加载提示
