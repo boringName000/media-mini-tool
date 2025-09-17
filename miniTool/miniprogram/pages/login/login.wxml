@@ -52,13 +52,19 @@
 
     <view class="form-group">
       <view class="input-label">密码</view>
-      <input 
-        class="form-input {{loginPasswordError ? 'error' : ''}}"
-        type="password"
-        placeholder="请输入密码"
-        value="{{loginPassword}}"
-        bindinput="onLoginPasswordInput"
-      />
+      <view class="password-input-container">
+        <input 
+          class="form-input password-input {{loginPasswordError ? 'error' : ''}}"
+          type="{{showLoginPassword ? 'text' : 'password'}}"
+          placeholder="请输入密码"
+          value="{{loginPassword}}"
+          bindinput="onLoginPasswordInput"
+        />
+        <view class="password-toggle" bindtap="toggleLoginPasswordVisibility">
+          <text class="toggle-icon">{{showLoginPassword ? '●' : '○'}}</text>
+          <text class="toggle-text">{{showLoginPassword ? '隐藏' : '显示'}}</text>
+        </view>
+      </view>
       <view class="error-text" wx:if="{{loginPasswordError}}">{{loginPasswordError}}</view>
     </view>
 
@@ -104,25 +110,37 @@
 
     <view class="form-group">
       <view class="input-label">密码</view>
-      <input 
-        class="form-input {{registerPasswordError ? 'error' : ''}}"
-        type="password"
-        placeholder="请输入密码（不少于6位）"
-        value="{{registerPassword}}"
-        bindinput="onRegisterPasswordInput"
-      />
+      <view class="password-input-container">
+        <input 
+          class="form-input password-input {{registerPasswordError ? 'error' : ''}}"
+          type="{{showRegisterPassword ? 'text' : 'password'}}"
+          placeholder="请输入密码（不少于6位）"
+          value="{{registerPassword}}"
+          bindinput="onRegisterPasswordInput"
+        />
+        <view class="password-toggle" bindtap="toggleRegisterPasswordVisibility">
+          <text class="toggle-icon">{{showRegisterPassword ? '●' : '○'}}</text>
+          <text class="toggle-text">{{showRegisterPassword ? '隐藏' : '显示'}}</text>
+        </view>
+      </view>
       <view class="error-text" wx:if="{{registerPasswordError}}">{{registerPasswordError}}</view>
     </view>
 
     <view class="form-group">
       <view class="input-label">确认密码</view>
-      <input 
-        class="form-input {{confirmPasswordError ? 'error' : ''}}"
-        type="password"
-        placeholder="请再次输入密码"
-        value="{{confirmPassword}}"
-        bindinput="onConfirmPasswordInput"
-      />
+      <view class="password-input-container">
+        <input 
+          class="form-input password-input {{confirmPasswordError ? 'error' : ''}}"
+          type="{{showConfirmPassword ? 'text' : 'password'}}"
+          placeholder="请再次输入密码"
+          value="{{confirmPassword}}"
+          bindinput="onConfirmPasswordInput"
+        />
+        <view class="password-toggle" bindtap="toggleConfirmPasswordVisibility">
+          <text class="toggle-icon">{{showConfirmPassword ? '●' : '○'}}</text>
+          <text class="toggle-text">{{showConfirmPassword ? '隐藏' : '显示'}}</text>
+        </view>
+      </view>
       <view class="error-text" wx:if="{{confirmPasswordError}}">{{confirmPasswordError}}</view>
     </view>
 

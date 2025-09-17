@@ -1,7 +1,7 @@
 {
   "name": "media-mini-tool-admin",
   "version": "1.0.0",
-  "description": "西瓜🍉创作者管理中心",
+  "description": "永贯创作者管理中心",
   "type": "module",
   "scripts": {
     "dev": "vite",

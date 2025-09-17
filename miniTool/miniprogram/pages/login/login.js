@@ -2,6 +2,24 @@
 const authUtils = require("../../utils/authUtils");
 const { checkLoginPermission, ADMIN_CONTACT } = require('../../utils/permissionUtils.js');
 Page({
+  // 密码字符过滤工具方法
+  filterPasswordInput: function(value) {
+    // 只允许大小写字母、数字和常用符号
+    const allowedChars = /^[A-Za-z0-9!@#$%^&*()_+\-=\[\]{}|;:,.<>?]*$/;
+    
+    if (!allowedChars.test(value)) {
+      wx.showToast({
+        title: '密码只能包含字母、数字和常用符号',
+        icon: 'none',
+        duration: 1500
+      });
+      // 过滤掉不允许的字符
+      value = value.replace(/[^A-Za-z0-9!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/g, '');
+    }
+    
+    return value;
+  },
+
   data: {
     statusBarHeight: 0, // 状态栏高度
     navbarStyle: '', // 导航栏样式
@@ -11,6 +29,7 @@ Page({
     // 登录表单数据
     loginPhone: "",
     loginPassword: "",
+    showLoginPassword: false, // 是否显示登录密码明文
 
     // 注册表单数据
     registerNickname: "",
@@ -18,6 +37,8 @@ Page({
     registerPassword: "",
     confirmPassword: "",
     inviteCode: "",
+    showRegisterPassword: false, // 是否显示注册密码明文
+    showConfirmPassword: false, // 是否显示确认密码明文
 
     // 协议确认
     agreedToTerms: false,
@@ -61,11 +82,14 @@ Page({
       // 清空表单数据
       loginPhone: "",
       loginPassword: "",
+      showLoginPassword: false,
       registerNickname: "",
       registerPhone: "",
       registerPassword: "",
       confirmPassword: "",
       inviteCode: "",
+      showRegisterPassword: false,
+      showConfirmPassword: false,
       // 清空错误信息
       loginPhoneError: "",
       loginPasswordError: "",
@@ -86,9 +110,17 @@ Page({
   },
 
   onLoginPasswordInput: function (e) {
+    const filteredValue = this.filterPasswordInput(e.detail.value);
     this.setData({
-      loginPassword: e.detail.value,
+      loginPassword: filteredValue,
       loginPasswordError: "",
+    });
+  },
+
+  // 切换登录密码显示/隐藏
+  toggleLoginPasswordVisibility: function () {
+    this.setData({
+      showLoginPassword: !this.data.showLoginPassword
     });
   },
 
@@ -108,16 +140,32 @@ Page({
   },
 
   onRegisterPasswordInput: function (e) {
+    const filteredValue = this.filterPasswordInput(e.detail.value);
     this.setData({
-      registerPassword: e.detail.value,
+      registerPassword: filteredValue,
       registerPasswordError: "",
     });
   },
 
   onConfirmPasswordInput: function (e) {
+    const filteredValue = this.filterPasswordInput(e.detail.value);
     this.setData({
-      confirmPassword: e.detail.value,
+      confirmPassword: filteredValue,
       confirmPasswordError: "",
+    });
+  },
+
+  // 切换注册密码显示/隐藏
+  toggleRegisterPasswordVisibility: function () {
+    this.setData({
+      showRegisterPassword: !this.data.showRegisterPassword
+    });
+  },
+
+  // 切换确认密码显示/隐藏
+  toggleConfirmPasswordVisibility: function () {
+    this.setData({
+      showConfirmPassword: !this.data.showConfirmPassword
     });
   },
 

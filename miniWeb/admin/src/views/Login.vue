@@ -51,7 +51,7 @@
       </el-form>
       
       <div class="login-footer">
-        <p>© 2025 西瓜🍉创作者中心管理系统</p>
+        <p>© 2025 永贯⚡️创作者中心管理系统</p>
       </div>
     </div>
   </div>

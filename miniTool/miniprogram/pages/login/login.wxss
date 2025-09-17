@@ -132,6 +132,56 @@
   box-sizing: border-box;
 }
 
+/* 密码输入框容器 */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input {
+  padding-right: 120rpx; /* 为切换按钮留出空间 */
+}
+
+/* 密码显示/隐藏切换按钮 */
+.password-toggle {
+  position: absolute;
+  right: 12rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100rpx;
+  height: 60rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 8rpx;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.password-toggle:active {
+  background: rgba(102, 126, 234, 0.2);
+  transform: translateY(-50%) scale(0.95);
+}
+
+.toggle-icon {
+  font-size: 20rpx;
+  color: #667eea;
+  font-weight: bold;
+  user-select: none;
+  line-height: 1;
+}
+
+.toggle-text {
+  font-size: 18rpx;
+  color: #667eea;
+  font-weight: 500;
+  user-select: none;
+  margin-top: 2rpx;
+}
+
 .form-input:focus {
   border-color: #667eea;
   background: #fff;

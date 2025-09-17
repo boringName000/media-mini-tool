@@ -27,9 +27,115 @@
 }
 
 .agreement-text {
-  line-height: 1.8;
+  line-height: 1.6;
 }
 
+/* 引言部分样式 */
+.intro-section {
+  margin-bottom: 40rpx;
+  padding: 24rpx;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12rpx;
+  border-left: 6rpx solid #007aff;
+}
+
+.intro-text {
+  display: block;
+  font-size: 28rpx;
+  color: #007aff;
+  line-height: 1.7;
+  font-weight: 500;
+}
+
+/* 章节样式 */
+.section {
+  margin-bottom: 32rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.section-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 16rpx;
+  line-height: 1.4;
+}
+
+.section-content {
+  display: block;
+  font-size: 28rpx;
+  color: #34495e;
+  line-height: 1.7;
+  text-align: justify;
+}
+
+/* 子项目样式 */
+.sub-item {
+  display: block;
+  font-size: 28rpx;
+  color: #34495e;
+  line-height: 1.7;
+  margin-bottom: 12rpx;
+  padding-left: 20rpx;
+  position: relative;
+}
+
+.sub-item:last-child {
+  margin-bottom: 0;
+}
+
+.sub-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14rpx;
+  width: 8rpx;
+  height: 8rpx;
+  background: #007aff;
+  border-radius: 50%;
+}
+
+/* 项目符号列表样式 */
+.bullet-list {
+  margin-top: 12rpx;
+  padding-left: 20rpx;
+}
+
+.bullet-item {
+  display: block;
+  font-size: 26rpx;
+  color: #6c757d;
+  line-height: 1.6;
+  margin-bottom: 8rpx;
+  padding-left: 16rpx;
+}
+
+.bullet-item:last-child {
+  margin-bottom: 0;
+}
+
+/* 更新日期样式 */
+.update-date {
+  margin-top: 40rpx;
+  padding-top: 24rpx;
+  border-top: 2rpx solid #e9ecef;
+  text-align: center;
+}
+
+.date-text {
+  font-size: 24rpx;
+  color: #8e8e93;
+  font-style: italic;
+}
+
+/* 保持原有的段落样式作为备用 */
 .paragraph {
   display: block;
   font-size: 28rpx;

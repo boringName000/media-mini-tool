@@ -87,7 +87,7 @@ const basicLoading = ref(false)
 
 // 基础设置
 const basicSettings = reactive({
-  systemName: '西瓜🍉创作者管理中心',
+  systemName: '永贯⚡️创作者管理中心',
   systemDescription: '基于微信云开发的内容创作管理系统',
   adminEmail: 'admin@example.com',
   servicePhone: '400-123-4567'
