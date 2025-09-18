@@ -365,7 +365,11 @@ export const adminCloudFunctions = {
   getSettings: (params = {}) => callAdminCloudFunction('admin-get-settings', params),
   
   // 保存基础设置
-  saveBasicSettings: (params) => callAdminCloudFunction('admin-save-basic-settings', params)
+  saveBasicSettings: (params) => callAdminCloudFunction('admin-save-basic-settings', params),
+  
+  // ===== 文件管理 =====
+  // 批量获取文件访问URL
+  getFileUrls: (fileIds) => callAdminCloudFunction('admin-get-file-urls', { fileIds })
 }
 
 // 向后兼容的云函数封装

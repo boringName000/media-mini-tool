@@ -176,7 +176,7 @@
     <el-card class="table-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <span>过期任务用户列表 ({{ filteredGroupedUsers.length }} 用户，{{ filteredUserList.length }} 任务)</span>
+          <span>过期没回传文章任务用户列表 ({{ filteredGroupedUsers.length }} 用户，{{ filteredUserList.length }} 任务)</span>
           <div class="header-actions">
             <el-button type="danger" @click="handleBatchReject" :disabled="!selectedUsers.length">
               <el-icon><Close /></el-icon>

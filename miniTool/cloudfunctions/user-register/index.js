@@ -135,21 +135,36 @@ exports.main = async (event, context) => {
       };
     }
 
-    // 调用删除邀请码云函数（注册成功后删除邀请码）
+    // 直接删除邀请码（注册成功后删除邀请码）
     let deleteInvitation = null;
     try {
-      const delRes = await cloud.callFunction({
-        name: "delete-invitation-code",
-        data: { invitationCode: inviteCode },
-      });
-      deleteInvitation = {
-        success: !!(delRes.result && delRes.result.success),
-        deletedCount: delRes.result && delRes.result.deletedCount,
-        error: delRes.result && delRes.result.error,
-      };
-      console.log("邀请码删除调用结果：", deleteInvitation);
+      // 删除邀请码数据库记录
+      const deleteResult = await db
+        .collection("invitation-code-mgr")
+        .where({
+          invitationCode: inviteCode.trim(),
+        })
+        .remove();
+
+      console.log("邀请码删除结果：", deleteResult);
+
+      // 检查删除操作是否成功
+      if (deleteResult.stats && deleteResult.stats.removed > 0) {
+        deleteInvitation = {
+          success: true,
+          deletedCount: deleteResult.stats.removed,
+        };
+        console.log("邀请码删除成功：", inviteCode, "删除数量：", deleteResult.stats.removed);
+      } else {
+        deleteInvitation = {
+          success: false,
+          deletedCount: 0,
+          error: "删除邀请码失败，未找到对应记录",
+        };
+        console.warn("邀请码删除失败：未找到对应记录", inviteCode);
+      }
     } catch (e) {
-      console.error("调用删除邀请码云函数失败：", e);
+      console.error("删除邀请码数据库操作失败：", e);
       deleteInvitation = { success: false, error: e.message };
     }
 

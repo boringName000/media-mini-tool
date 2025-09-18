@@ -137,28 +137,10 @@
         <!-- 第二行：服务器搜索 -->
         <el-row class="filter-row" :gutter="20">
           <el-col :xs="24" :sm="12" :md="8" :lg="6">
-            <el-form-item label="搜索选项">
-              <el-select v-model="serverSearch.type" placeholder="搜索类型" style="width: 120px;">
-                <el-option label="昵称" value="nickname" />
-                <el-option label="用户ID" value="userId" />
-                <el-option label="电话" value="phone" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :xs="24" :sm="12" :md="8" :lg="6">
-            <el-form-item label="搜索数据库用户">
-              <el-input 
-                v-model="serverSearch.keyword" 
-                placeholder="请输入搜索关键词" 
-                style="width: 200px;"
-                @keyup.enter="handleServerSearch"
-              />
-            </el-form-item>
-          </el-col>
-          <el-col :xs="24" :sm="12" :md="8" :lg="6">
             <el-form-item>
-              <el-button type="primary" @click="handleServerSearch" :loading="searchLoading">
-                确定
+              <el-button type="primary" @click="showUserSearchPanel = true">
+                <el-icon><Search /></el-icon>
+                服务器搜索用户
               </el-button>
             </el-form-item>
           </el-col>
@@ -215,7 +197,17 @@
             </el-table-column>
             <el-table-column label="账号资料图" width="120">
               <template #default="{ row }">
-                <el-button size="small" type="primary" link>查看</el-button>
+                <el-button 
+                  v-if="row.screenshotUrl" 
+                  size="small" 
+                  type="primary" 
+                  link 
+                  @click="handleViewAccountImage(row)" 
+                  :loading="row.viewingImage"
+                >
+                  查看
+                </el-button>
+                <span v-else class="text-muted">无资料图</span>
               </template>
             </el-table-column>
             <el-table-column label="操作" width="150" fixed="right">
@@ -335,7 +327,17 @@
             </el-table-column>
             <el-table-column label="账号资料图" width="120">
               <template #default="{ row }">
-                <el-button size="small" type="primary" link>查看</el-button>
+                <el-button 
+                  v-if="row.screenshotUrl" 
+                  size="small" 
+                  type="primary" 
+                  link 
+                  @click="handleViewAccountImage(row)" 
+                  :loading="row.viewingImage"
+                >
+                  查看
+                </el-button>
+                <span v-else class="text-muted">无资料图</span>
               </template>
             </el-table-column>
             <el-table-column label="操作" width="200" fixed="right">
@@ -368,6 +370,12 @@
         </el-tab-pane>
       </el-tabs>
     </el-card>
+
+    <!-- 搜索用户面板 -->
+    <UserSearchPanel 
+      v-model="showUserSearchPanel" 
+      @refresh-data="handleRefreshFromSearch"
+    />
 
     <!-- 用户详情弹出面板 -->
     <el-dialog
@@ -636,7 +644,9 @@ import { adminCloudFunctions } from '@/utils/cloudbase'
 import { formatTime, updatePageTime } from '@/utils/timeUtils'
 import { getPlatformOptions, getPlatformName } from '@/utils/platformUtils'
 import { getTrackTypeOptions, getTrackTypeName } from '@/utils/trackTypeUtils'
+import { viewImage } from '@/utils/imageUtils'
 import { usersStore } from '@/store'
+import UserSearchPanel from '@/components/UserSearchPanel.vue'
 
 // Store - 直接使用导入的usersStore
 const lastUpdateTime = ref('')
@@ -672,11 +682,8 @@ const filterForm = reactive({
   trackType: ''
 })
 
-// 服务器搜索
-const serverSearch = reactive({
-  type: 'nickname',
-  keyword: ''
-})
+// 搜索用户面板
+const showUserSearchPanel = ref(false)
 
 // 用户详情弹出面板
 const showUserDetailDialog = ref(false)
@@ -856,38 +863,32 @@ const handleCurrentChange = (newPage) => {
   }
 }
 
-const handleServerSearch = async () => {
-  if (!serverSearch.keyword.trim()) {
-    ElMessage.warning('请输入搜索关键词')
-    return
-  }
-  
+// 处理搜索面板的刷新请求
+const handleRefreshFromSearch = async () => {
   try {
-    searchLoading.value = true
-    
-    const params = {
-      [serverSearch.type]: serverSearch.keyword.trim()
-    }
-    
-    const result = await adminCloudFunctions.getUserInfo(params)
-    
-    if (result?.result?.success && result.result.data) {
-      if (result.result.data.length > 0) {
-        // 显示用户详情弹出面板
-        searchResultData.value = result.result.data[0] // 取第一个用户
-        showUserDetailDialog.value = true
-        ElMessage.success(`找到用户信息`)
-      } else {
-        ElMessage.info('未找到匹配的用户')
-      }
-    } else {
-      ElMessage.warning('未找到匹配的用户')
-    }
+    // 清除缓存并刷新数据
+    usersStore.clearData()
+    rawData.pendingAudit = []
+    rawData.disabledUsers = []
+    rawData.disabledAccounts = []
+    await loadAllData()
   } catch (error) {
-    console.error('搜索用户失败:', error)
-    ElMessage.error('搜索用户失败')
+    console.error('刷新数据失败:', error)
+  }
+}
+
+// 查看账号资料图
+const handleViewAccountImage = async (row) => {
+  try {
+    row.viewingImage = true
+    await viewImage(row.screenshotUrl, {
+      emptyMessage: '该账号暂无资料图',
+      errorMessage: '获取账号资料图失败'
+    })
+  } catch (error) {
+    console.error('查看账号资料图失败:', error)
   } finally {
-    searchLoading.value = false
+    row.viewingImage = false
   }
 }
 
@@ -1708,6 +1709,11 @@ onMounted(async () => {
       margin-top: 15px;
     }
   }
+}
+
+.text-muted {
+  color: #909399;
+  font-size: 12px;
 }
 
 .dialog-footer {

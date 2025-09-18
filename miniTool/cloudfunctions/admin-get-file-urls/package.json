@@ -1,0 +1,9 @@
+{
+  "name": "admin-get-file-urls",
+  "version": "1.0.0",
+  "description": "批量获取微信云存储文件的长期访问URL",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
