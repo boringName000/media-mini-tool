@@ -374,6 +374,7 @@
     <!-- 搜索用户面板 -->
     <UserSearchPanel 
       v-model="showUserSearchPanel" 
+      :view-type="1"
       @refresh-data="handleRefreshFromSearch"
     />
 

@@ -201,9 +201,106 @@
               <el-descriptions-item label="平台">{{ getPlatformName(account.platform) }}</el-descriptions-item>
               <el-descriptions-item label="赛道">{{ getTrackTypeName(account.trackType) }}</el-descriptions-item>
               <el-descriptions-item label="创建时间">{{ formatTime(account.createTimestamp, 'YYYY-MM-DD HH:mm:ss') }}</el-descriptions-item>
-              <el-descriptions-item label="当前收益">{{ account.currentAccountEarnings || 0 }}</el-descriptions-item>
-              <el-descriptions-item label="发文数">{{ (account.posts && account.posts.length) || 0 }}</el-descriptions-item>
+              <el-descriptions-item label="已发布文章">{{ (account.posts && account.posts.length) || 0 }}</el-descriptions-item>
+              <el-descriptions-item label="已拒绝文章">{{ (account.rejectPosts && account.rejectPosts.length) || 0 }}</el-descriptions-item>
+              <el-descriptions-item v-if="props.viewType === 2" label="当前收益">{{ account.currentAccountEarnings || 0 }}</el-descriptions-item>
             </el-descriptions>
+
+            <!-- 收益信息 (仅在查看全部信息时显示) -->
+            <div v-if="props.viewType === 2 && account.earnings && account.earnings.length > 0" style="margin-top: 15px;">
+              <el-collapse>
+                <el-collapse-item :title="`收益记录 (${account.earnings.length})`" name="earnings">
+                  <el-table :data="account.earnings" size="small" max-height="300">
+                    <el-table-column prop="startTime" label="开始时间" width="120">
+                      <template #default="{ row }">
+                        {{ formatTime(row.startTime, 'YYYY-MM-DD') }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="endTime" label="结束时间" width="120">
+                      <template #default="{ row }">
+                        {{ formatTime(row.endTime, 'YYYY-MM-DD') }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="monthlyPostCount" label="月发文数" width="100" />
+                    <el-table-column prop="accountEarnings" label="账号收益" width="100" />
+                    <el-table-column prop="settlementEarnings" label="结算收益" width="100" />
+                    <el-table-column prop="settlementStatus" label="结算状态" width="100">
+                      <template #default="{ row }">
+                        <el-tag :type="row.settlementStatus === 2 ? 'success' : row.settlementStatus === 1 ? 'warning' : 'info'" size="small">
+                          {{ row.settlementStatus === 2 ? '已结算' : row.settlementStatus === 1 ? '待结算' : '未结算' }}
+                        </el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="settlementTime" label="结算时间" width="120">
+                      <template #default="{ row }">
+                        {{ row.settlementTime ? formatTime(row.settlementTime, 'YYYY-MM-DD') : '-' }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="transferOrderNo" label="转账订单号" width="150" show-overflow-tooltip />
+                  </el-table>
+                </el-collapse-item>
+              </el-collapse>
+            </div>
+
+            <!-- 已发布文章列表 -->
+            <div v-if="account.posts && account.posts.length > 0" style="margin-top: 15px;">
+              <el-collapse>
+                <el-collapse-item :title="`已发布文章 (${account.posts.length})`" name="posts">
+                  <el-table :data="account.posts" size="small" max-height="300">
+                    <el-table-column prop="articleId" label="文章ID" width="150" show-overflow-tooltip />
+                    <el-table-column prop="title" label="文章标题" min-width="200" show-overflow-tooltip />
+                    <el-table-column prop="trackType" label="赛道" width="100">
+                      <template #default="{ row }">
+                        {{ getTrackTypeName(row.trackType) }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="publishTime" label="发布时间" width="150">
+                      <template #default="{ row }">
+                        {{ formatTime(row.publishTime, 'YYYY-MM-DD HH:mm') }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="viewCount" label="浏览量" width="100" />
+                    <el-table-column v-if="props.viewType === 2" prop="dailyEarnings" label="日收益" width="100" />
+                    <el-table-column prop="callbackUrl" label="回传地址" width="120">
+                      <template #default="{ row }">
+                        <el-button 
+                          v-if="row.callbackUrl" 
+                          size="small" 
+                          type="primary" 
+                          link 
+                          @click="handleOpenUrl(row.callbackUrl)"
+                        >
+                          查看链接
+                        </el-button>
+                        <span v-else>-</span>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </el-collapse-item>
+              </el-collapse>
+            </div>
+
+            <!-- 已拒绝文章列表 -->
+            <div v-if="account.rejectPosts && account.rejectPosts.length > 0" style="margin-top: 15px;">
+              <el-collapse>
+                <el-collapse-item :title="`已拒绝文章 (${account.rejectPosts.length})`" name="rejectPosts">
+                  <el-table :data="account.rejectPosts" size="small" max-height="300">
+                    <el-table-column prop="articleId" label="文章ID" width="150" show-overflow-tooltip />
+                    <el-table-column prop="title" label="文章标题" min-width="200" show-overflow-tooltip />
+                    <el-table-column prop="trackType" label="赛道" width="100">
+                      <template #default="{ row }">
+                        {{ getTrackTypeName(row.trackType) }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="rejectTime" label="拒绝时间" width="150">
+                      <template #default="{ row }">
+                        {{ formatTime(row.rejectTime, 'YYYY-MM-DD HH:mm') }}
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </el-collapse-item>
+              </el-collapse>
+            </div>
 
             <!-- 账号资料图 -->
             <div v-if="account.screenshotUrl" style="margin-top: 15px;">
@@ -243,6 +340,11 @@ const props = defineProps({
   modelValue: {
     type: Boolean,
     default: false
+  },
+  viewType: {
+    type: Number,
+    default: 1, // 1-查看用户状态，2-查看全部信息
+    validator: (value) => [1, 2].includes(value)
   }
 })
 
@@ -329,6 +431,13 @@ const handleViewAccountImage = async (account) => {
     console.error('查看账号资料图失败:', error)
   } finally {
     account.viewingImage = false
+  }
+}
+
+// 打开URL链接
+const handleOpenUrl = (url) => {
+  if (url) {
+    window.open(url, '_blank')
   }
 }
 
