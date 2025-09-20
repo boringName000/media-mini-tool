@@ -28,10 +28,10 @@ const routes = [
         meta: { title: '文章管理', icon: 'Document' }
       },
       {
-        path: '/accounts',
-        name: 'Accounts',
-        component: () => import('@/views/Accounts.vue'),
-        meta: { title: '用户收益', icon: 'Money' }
+        path: '/user-info',
+        name: 'UserInfo',
+        component: () => import('@/views/UserInfo.vue'),
+        meta: { title: '用户信息', icon: 'User' }
       },
       {
         path: '/users',

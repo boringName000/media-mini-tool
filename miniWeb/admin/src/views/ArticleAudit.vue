@@ -2,7 +2,7 @@
   <div class="expired-task-page">
     <!-- 页面标题 -->
     <div class="page-header">
-      <h1>过期文章任务管理</h1>
+      <h1>用户过期文章任务管理</h1>
       <p>管理用户过期没有按时回传的文章任务，查看文章任务统计信息 | 最后更新：{{ lastUpdateTime }}</p>
     </div>
 

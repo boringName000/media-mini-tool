@@ -25,6 +25,13 @@ const accountsStore = new BaseStore('accounts', {
   debug: import.meta.env.VITE_DEBUG === 'true'
 })
 
+// ===== 用户信息Store =====
+const userInfoStore = new BaseStore('userInfo', {
+  expireTime: 2 * 60 * 60 * 1000,  // 2小时过期
+  enablePersist: false,        // 用户信息变化频繁，不持久化
+  debug: import.meta.env.VITE_DEBUG === 'true'
+})
+
 // ===== 文章管理Store =====
 const articlesStore = new BaseStore('articles', {
   expireTime: 2 * 60 * 60 * 1000,  // 2小时过期
@@ -88,6 +95,7 @@ export const getAllStoreStatus = () => {
     dashboard: dashboardStore.getStatus(),
     users: usersStore.getStatus(),
     accounts: accountsStore.getStatus(),
+    userInfo: userInfoStore.getStatus(),
     articles: articlesStore.getStatus(),
     articleAudit: articleAuditStore.getStatus(),
     invitations: invitationsStore.getStatus(),
@@ -102,6 +110,7 @@ export const clearAllStores = () => {
   dashboardStore.reset()
   usersStore.reset()
   accountsStore.reset()
+  userInfoStore.reset()
   articlesStore.reset()
   articleAuditStore.reset()
   invitationsStore.reset()
@@ -115,7 +124,7 @@ export const clearAllStores = () => {
  */
 export const clearExpiredStores = () => {
   const stores = [
-    dashboardStore, usersStore, accountsStore, 
+    dashboardStore, usersStore, accountsStore, userInfoStore,
     articlesStore, articleAuditStore, invitationsStore, settingsStore
   ]
   
@@ -132,6 +141,7 @@ export {
   dashboardStore,
   usersStore,
   accountsStore,
+  userInfoStore,
   articlesStore,
   articleAuditStore,
   invitationsStore,

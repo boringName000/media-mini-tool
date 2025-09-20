@@ -260,6 +260,9 @@ export const adminCloudFunctions = {
   // 获取所有用户列表（需要新建云函数）
   getAllUsers: (params = {}) => callAdminCloudFunction('admin-get-all-users', params),
   
+  // 获取所有用户信息（分页）
+  getAllUserInfo: (params = {}) => callAdminCloudFunction('admin-get-all-user-info', params),
+  
   // 更新用户信息（需要新建云函数）
   updateUserInfo: (userId, updateData) => callAdminCloudFunction('admin-update-user', { userId, updateData }),
   
