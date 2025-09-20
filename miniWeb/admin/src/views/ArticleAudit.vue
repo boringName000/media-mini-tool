@@ -207,24 +207,24 @@
                 <h4>{{ row.username }} 的账号详情 ({{ row.accounts.length }} 个账号)</h4>
               </div>
               <el-table :data="row.accounts" size="small" class="account-table">
-                <el-table-column prop="accountNickname" label="账号昵称" width="150" show-overflow-tooltip />
-                <el-table-column prop="platformType" label="平台" width="100" align="center">
+                <el-table-column prop="accountNickname" label="账号昵称" min-width="150" show-overflow-tooltip align="center" />
+                <el-table-column prop="platformType" label="平台" min-width="100" align="center">
                   <template #default="{ row: account }">
                     <el-tag size="small">{{ getPlatformName(account.platformType) }}</el-tag>
                   </template>
                 </el-table-column>
-                <el-table-column prop="trackType" label="赛道" width="100" align="center">
+                <el-table-column prop="trackType" label="赛道" min-width="100" align="center">
                   <template #default="{ row: account }">
                     <el-tag size="small">{{ getTrackTypeName(account.trackType) }}</el-tag>
                   </template>
                 </el-table-column>
-                <el-table-column prop="phoneNumber" label="账号手机" width="130" show-overflow-tooltip />
-                <el-table-column prop="expiredTasksCount" label="过期文章数" width="100" align="center">
+                <el-table-column prop="phoneNumber" label="账号手机" min-width="130" show-overflow-tooltip align="center" />
+                <el-table-column prop="expiredTasksCount" label="过期文章数" min-width="100" align="center">
                   <template #default="{ row: account }">
                     <el-tag type="danger" size="small">{{ account.expiredTasksCount }}</el-tag>
                   </template>
                 </el-table-column>
-                <el-table-column label="过期时间" width="120" align="center">
+                <el-table-column label="过期时间" min-width="120" align="center">
                   <template #default="{ row: account }">
                     <el-tag :type="getExpiredDaysTagType(account.maxExpiredDays)" size="small">
                       {{ account.maxExpiredDays }}天
@@ -234,7 +234,7 @@
                 <el-table-column label="操作" width="120" align="center">
                   <template #default="{ row: account }">
                     <el-button type="primary" size="small" @click="showAccountTasks(account)">
-                      查看任务
+                      查看文章任务
                     </el-button>
                   </template>
                 </el-table-column>
@@ -243,16 +243,16 @@
           </template>
         </el-table-column>
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="userId" label="用户ID" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="username" label="用户名" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="phone" label="手机号" min-width="130" show-overflow-tooltip />
-        <el-table-column prop="totalAccounts" label="账号数" width="100" align="center" />
-        <el-table-column prop="accountsWithExpiredTasks" label="过期文章账号" width="140" align="center">
+        <el-table-column prop="userId" label="用户ID" min-width="120" show-overflow-tooltip align="center" />
+        <el-table-column prop="username" label="用户名" min-width="150" show-overflow-tooltip align="center" />
+        <el-table-column prop="phone" label="手机号" min-width="130" show-overflow-tooltip align="center" />
+        <el-table-column prop="totalAccounts" label="账号数" min-width="100" align="center" />
+        <el-table-column prop="accountsWithExpiredTasks" label="过期文章账号" min-width="140" align="center">
           <template #default="{ row }">
             <el-tag type="warning" size="small">{{ row.accountsWithExpiredTasks }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="过期时间" width="120" align="center" sortable="maxExpiredDays">
+        <el-table-column label="过期时间" min-width="120" align="center" sortable="maxExpiredDays">
           <template #default="{ row }">
             <el-tag :type="getExpiredDaysTagType(row.maxExpiredDays)" size="small">
               {{ row.maxExpiredDays }}天
@@ -295,25 +295,25 @@
       :before-close="handleCloseTaskDialog"
     >
       <el-table :data="selectedAccountTasks" stripe>
-        <el-table-column prop="taskTitle" label="任务标题" show-overflow-tooltip />
-        <el-table-column prop="taskTime" label="任务时间" width="160">
+        <el-table-column prop="taskTitle" label="文章标题" min-width="200" show-overflow-tooltip align="center" />
+        <el-table-column prop="taskTime" label="任务时间" min-width="160" align="center">
           <template #default="{ row }">
             {{ formatTime(row.taskTime) }}
           </template>
         </el-table-column>
-        <el-table-column prop="expiredDays" label="过期天数" width="100" align="center">
+        <el-table-column prop="expiredDays" label="过期天数" min-width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="getExpiredDaysTagType(row.expiredDays)" size="small">
               {{ row.expiredDays }}天
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="任务状态" width="100" align="center">
+        <el-table-column label="任务状态" min-width="100" align="center">
           <template #default="{ row }">
             <el-tag type="info" size="small">{{ row.taskStatus || '待处理' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="领取状态" width="100" align="center">
+        <el-table-column label="领取状态" min-width="100" align="center">
           <template #default="{ row }">
             <el-tag type="success" size="small">{{ row.claimStatus || '已领取' }}</el-tag>
           </template>

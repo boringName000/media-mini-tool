@@ -159,43 +159,43 @@
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="待审核账号" name="pendingAudit">
           <el-table :data="paginatedData" v-loading="loading" stripe>
-            <el-table-column prop="userId" label="用户ID" min-width="150" show-overflow-tooltip />
-            <el-table-column label="用户昵称" width="120">
+            <el-table-column prop="userId" label="用户ID" min-width="120" show-overflow-tooltip align="center" />
+            <el-table-column label="用户昵称" min-width="120" align="center">
               <template #default="{ row }">
                 {{ row.nickname }}
               </template>
             </el-table-column>
-            <el-table-column label="注册手机" width="120">
+            <el-table-column label="注册手机" min-width="120" align="center">
               <template #default="{ row }">
                 {{ row.phoneNumber || row.phone || '-' }}
               </template>
             </el-table-column>
-            <el-table-column label="账号昵称" width="120">
+            <el-table-column label="账号昵称" min-width="120" align="center">
               <template #default="{ row }">
                 {{ row.accountNickname || '-' }}
               </template>
             </el-table-column>
-            <el-table-column label="账号手机" width="120">
+            <el-table-column label="账号手机" min-width="120" align="center">
               <template #default="{ row }">
                 {{ row.phoneNumber || '-' }}
               </template>
             </el-table-column>
-            <el-table-column label="平台" width="100">
+            <el-table-column label="平台" min-width="100" align="center">
               <template #default="{ row }">
                 <el-tag size="small">{{ getPlatformName(row.platform) }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="赛道" width="100">
+            <el-table-column label="赛道" min-width="100" align="center">
               <template #default="{ row }">
                 <el-tag size="small" type="success">{{ getTrackTypeName(row.trackType) }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="绑定时间" width="180" sortable>
+            <el-table-column label="绑定时间" min-width="180" sortable align="center">
               <template #default="{ row }">
                 {{ formatTime(row.createTimestamp, 'YYYY-MM-DD HH:mm:ss') }}
               </template>
             </el-table-column>
-            <el-table-column label="账号资料图" width="120">
+            <el-table-column label="账号资料图" min-width="120" align="center">
               <template #default="{ row }">
                 <el-button 
                   v-if="row.screenshotUrl" 
@@ -210,7 +210,7 @@
                 <span v-else class="text-muted">无资料图</span>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="150" fixed="right">
+            <el-table-column label="操作" width="150" fixed="right" align="center">
               <template #default="{ row }">
                 <el-button size="small" type="success" @click="handleApprove(row)" :loading="row.approving">
                   通过
@@ -241,24 +241,24 @@
 
         <el-tab-pane label="禁用用户" name="disabledUsers">
           <el-table :data="paginatedData" v-loading="loading" stripe>
-            <el-table-column prop="userId" label="用户ID" min-width="150" show-overflow-tooltip />
-            <el-table-column prop="nickname" label="用户昵称" min-width="150" show-overflow-tooltip />
-            <el-table-column prop="phoneNumber" label="注册手机" min-width="130" show-overflow-tooltip>
+            <el-table-column prop="userId" label="用户ID" min-width="120" show-overflow-tooltip align="center" />
+            <el-table-column prop="nickname" label="用户昵称" min-width="150" show-overflow-tooltip align="center" />
+            <el-table-column prop="phoneNumber" label="注册手机" min-width="130" show-overflow-tooltip align="center">
               <template #default="{ row }">
                 {{ row.phoneNumber || row.phone || '-' }}
               </template>
             </el-table-column>
-            <el-table-column prop="accountCount" label="账号数" width="100" align="center">
+            <el-table-column prop="accountCount" label="账号数" min-width="100" align="center">
               <template #default="{ row }">
                 {{ (row.accounts && row.accounts.length) || 0 }}
               </template>
             </el-table-column>
-            <el-table-column prop="registerTimestamp" label="注册时间" min-width="180" sortable>
+            <el-table-column prop="registerTimestamp" label="注册时间" min-width="180" sortable align="center">
               <template #default="{ row }">
                 {{ formatTime(row.registerTimestamp, 'YYYY-MM-DD HH:mm:ss') }}
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="200" fixed="right">
+            <el-table-column label="操作" width="200" fixed="right" align="center">
               <template #default="{ row }">
                 <el-button size="small" type="warning" @click="handleDisableUser(row)" :loading="row.disabling">
                   禁止使用
@@ -289,43 +289,43 @@
 
         <el-tab-pane label="禁用账号" name="disabledAccounts">
           <el-table :data="paginatedData" v-loading="loading" stripe>
-            <el-table-column prop="userId" label="用户ID" min-width="200" show-overflow-tooltip />
-            <el-table-column label="用户昵称" width="120">
+            <el-table-column prop="userId" label="用户ID" min-width="120" show-overflow-tooltip align="center" />
+            <el-table-column label="用户昵称" min-width="120" align="center">
               <template #default="{ row }">
                 {{ row.nickname }}
               </template>
             </el-table-column>
-            <el-table-column label="注册手机" width="120">
+            <el-table-column label="注册手机" min-width="120" align="center">
               <template #default="{ row }">
                 {{ row.phoneNumber || row.phone || '-' }}
               </template>
             </el-table-column>
-            <el-table-column label="账号昵称" width="120">
+            <el-table-column label="账号昵称" min-width="120" align="center">
               <template #default="{ row }">
                 {{ row.accountNickname || '-' }}
               </template>
             </el-table-column>
-            <el-table-column label="账号手机" width="120">
+            <el-table-column label="账号手机" min-width="120" align="center">
               <template #default="{ row }">
                 {{ row.phoneNumber || '-' }}
               </template>
             </el-table-column>
-            <el-table-column label="平台" width="100">
+            <el-table-column label="平台" min-width="100" align="center">
               <template #default="{ row }">
                 <el-tag size="small">{{ getPlatformName(row.platform) }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="赛道" width="100">
+            <el-table-column label="赛道" min-width="100" align="center">
               <template #default="{ row }">
                 <el-tag size="small" type="success">{{ getTrackTypeName(row.trackType) }}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="绑定时间" width="180" sortable>
+            <el-table-column label="绑定时间" min-width="180" sortable align="center">
               <template #default="{ row }">
                 {{ formatTime(row.createTimestamp,'YYYY-MM-DD HH:mm:ss') }}
               </template>
             </el-table-column>
-            <el-table-column label="账号资料图" width="120">
+            <el-table-column label="账号资料图" min-width="120" align="center">
               <template #default="{ row }">
                 <el-button 
                   v-if="row.screenshotUrl" 
@@ -340,7 +340,7 @@
                 <span v-else class="text-muted">无资料图</span>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="200" fixed="right">
+            <el-table-column label="操作" width="200" fixed="right" align="center">
               <template #default="{ row }">
                 <el-button size="small" type="warning" @click="handleDisableAccount(row)" :loading="row.disabling">
                   禁止使用
