@@ -147,7 +147,7 @@ src/store/
 ├── BaseStore.js       # 基础Store类
 ├── modules/
 │   ├── articles.js    # 文章相关store
-│   ├── users.js       # 用户相关store
+│   ├── usersAudit.js  # 用户权限审核相关store
 │   ├── accounts.js    # 账号相关store
 │   └── ...
 ```

@@ -469,7 +469,7 @@ Web端使用匿名登录，权限如下：
 
 为了完整的管理后台功能，建议创建以下云函数：
 
-### 用户管理
+### 用户权限审核管理
 - `admin-get-all-users` - 获取用户列表
 - `admin-update-user` - 更新用户信息
 - `admin-delete-user` - 删除用户

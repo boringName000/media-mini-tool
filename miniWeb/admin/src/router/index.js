@@ -34,10 +34,10 @@ const routes = [
         meta: { title: '用户信息', icon: 'User' }
       },
       {
-        path: '/users',
-        name: 'Users',
-        component: () => import('@/views/Users.vue'),
-        meta: { title: '用户信息审核', icon: 'User' }
+        path: '/users-audit',
+        name: 'UsersAudit',
+        component: () => import('@/views/UsersAudit.vue'),
+        meta: { title: '用户权限审核', icon: 'User' }
       },
       {
         path: '/article-audit',
