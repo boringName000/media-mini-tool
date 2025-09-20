@@ -85,10 +85,20 @@ exports.main = async (event, context) => {
 
     // 生成账号ID
     // 格式：AC + 账号索引（5位数字，从00001开始）
-    const accountIndex = (existingAccounts.length + 1)
-      .toString()
-      .padStart(5, "0");
-    const generatedAccountId = `AC${accountIndex}`;
+    // 简单逻辑：从1开始递增，直到找到不重复的ID
+    const generateUniqueAccountId = (existingAccounts) => {
+      let accountIndex = 1;
+      let generatedAccountId;
+      
+      do {
+        generatedAccountId = `AC${accountIndex.toString().padStart(5, "0")}`;
+        accountIndex++;
+      } while (existingAccounts.some(account => account.accountId === generatedAccountId));
+      
+      return generatedAccountId;
+    };
+
+    const generatedAccountId = generateUniqueAccountId(existingAccounts);
 
     // 格式化注册日期
     let formattedRegisterDate = null;

@@ -282,6 +282,9 @@ export const adminCloudFunctions = {
   // 更新账号信息
   updateAccountInfo: (accountId, updateData) => callAdminCloudFunction('admin-update-account', { accountId, updateData }),
   
+  // 删除用户账号
+  deleteAccount: (userId, accountId) => callAdminCloudFunction('admin-delete-account', { userId, accountId }),
+  
   // 审核通过账号
   approveAccount: (params) => callAdminCloudFunction('admin-approve-account', params),
   

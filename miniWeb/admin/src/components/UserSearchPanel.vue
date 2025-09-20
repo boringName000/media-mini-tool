@@ -13,9 +13,9 @@
           <el-col :xs="24" :sm="8" :md="6">
             <el-form-item label="搜索类型">
               <el-select v-model="searchForm.type" placeholder="搜索类型" style="width: 120px;">
-                <el-option label="昵称" value="nickname" />
                 <el-option label="用户ID" value="userId" />
                 <el-option label="电话" value="phone" />
+                <el-option label="昵称" value="nickname" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -96,31 +96,14 @@
         <!-- 统计信息 -->
         <div class="user-stats" style="margin-top: 20px;">
           <el-row :gutter="20">
-            <el-col :span="6">
+            <el-col :span="8">
               <el-statistic title="总账号数" :value="searchResultData.totalAccounts" />
             </el-col>
-            <el-col :span="6">
-              <el-statistic title="活跃账号" :value="searchResultData.activeAccounts" />
+            <el-col :span="8">
+              <el-statistic title="待审核账号数" :value="searchResultData.pendingAuditAccounts" />
             </el-col>
-            <el-col :span="6">
-              <el-statistic title="禁用账号" :value="searchResultData.disabledAccounts" />
-            </el-col>
-            <el-col :span="6">
-              <el-statistic title="待审核账号" :value="searchResultData.pendingAuditAccounts" />
-            </el-col>
-          </el-row>
-          <el-row :gutter="20" style="margin-top: 20px;">
-            <el-col :span="6">
-              <el-statistic title="已通过账号" :value="searchResultData.approvedAccounts" />
-            </el-col>
-            <el-col :span="6">
-              <el-statistic title="已拒绝账号" :value="searchResultData.rejectedAccounts" />
-            </el-col>
-            <el-col :span="6">
-              <el-statistic title="总发文数" :value="searchResultData.totalPosts" />
-            </el-col>
-            <el-col :span="6">
-              <el-statistic title="总拒绝文章" :value="searchResultData.totalRejectPosts" />
+            <el-col :span="8">
+              <el-statistic title="禁用账号数" :value="searchResultData.disabledAccounts" />
             </el-col>
           </el-row>
         </div>
@@ -140,21 +123,12 @@
               <div class="account-header">
                 <span class="account-title">账号 {{ index + 1 }}: {{ account.accountNickname }}</span>
                 <div class="account-actions">
-                  <!-- 账号状态操作 -->
-                  <el-tag :type="account.status === 1 ? 'success' : 'danger'" style="margin-right: 10px;">
-                    {{ account.status === 1 ? '正常' : '禁用' }}
-                  </el-tag>
-                  
-                  <!-- 审核状态 -->
-                  <el-tag 
-                    :type="account.auditStatus === 1 ? 'success' : account.auditStatus === 2 ? 'danger' : 'warning'" 
-                    style="margin-right: 10px;"
-                  >
-                    {{ account.auditStatus === 1 ? '已通过' : account.auditStatus === 2 ? '已拒绝' : '待审核' }}
-                  </el-tag>
-                  
-                  <!-- 操作按钮 -->
-                  <el-button-group>
+                  <!-- 账号状态 -->
+                  <div style="display: flex; align-items: center; margin-right: 15px;">
+                    <span style="margin-right: 8px;">账号状态：</span>
+                    <el-tag :type="account.status === 1 ? 'success' : 'danger'" style="margin-right: 8px;">
+                      {{ account.status === 1 ? '正常' : '禁用' }}
+                    </el-tag>
                     <el-button 
                       v-if="account.status === 1" 
                       size="small" 
@@ -171,7 +145,17 @@
                     >
                       启用账号
                     </el-button>
-                    
+                  </div>
+                  
+                  <!-- 审核状态 -->
+                  <div style="display: flex; align-items: center; margin-right: 15px;">
+                    <span style="margin-right: 8px;">审核状态：</span>
+                    <el-tag 
+                      :type="account.auditStatus === 1 ? 'success' : account.auditStatus === 2 ? 'danger' : 'warning'" 
+                      style="margin-right: 8px;"
+                    >
+                      {{ account.auditStatus === 1 ? '已通过' : account.auditStatus === 2 ? '已拒绝' : '待审核' }}
+                    </el-tag>
                     <el-button 
                       v-if="account.auditStatus === 0" 
                       size="small" 
@@ -188,7 +172,17 @@
                     >
                       拒绝审核
                     </el-button>
-                  </el-button-group>
+                  </div>
+                  
+                  <!-- 删除账号按钮 -->
+                  <el-button 
+                    size="small" 
+                    type="danger"
+                    @click="handleDeleteAccount(searchResultData, account)"
+                    :loading="account.deleting"
+                  >
+                    删除账号
+                  </el-button>
                 </div>
               </div>
             </template>
@@ -198,8 +192,12 @@
               <el-descriptions-item label="账号ID">{{ account.accountId }}</el-descriptions-item>
               <el-descriptions-item label="原始账号ID">{{ account.originalAccountId }}</el-descriptions-item>
               <el-descriptions-item label="手机号">{{ account.phoneNumber }}</el-descriptions-item>
-              <el-descriptions-item label="平台">{{ getPlatformName(account.platform) }}</el-descriptions-item>
-              <el-descriptions-item label="赛道">{{ getTrackTypeName(account.trackType) }}</el-descriptions-item>
+              <el-descriptions-item label="平台">
+                <span>{{ getPlatformIcon(account.platform) }} {{ getPlatformName(account.platform) }}</span>
+              </el-descriptions-item>
+              <el-descriptions-item label="赛道">
+                <span>{{ getTrackTypeIcon(account.trackType) }} {{ getTrackTypeName(account.trackType) }}</span>
+              </el-descriptions-item>
               <el-descriptions-item label="创建时间">{{ formatTime(account.createTimestamp, 'YYYY-MM-DD HH:mm:ss') }}</el-descriptions-item>
               <el-descriptions-item label="已发布文章">{{ (account.posts && account.posts.length) || 0 }}</el-descriptions-item>
               <el-descriptions-item label="已拒绝文章">{{ (account.rejectPosts && account.rejectPosts.length) || 0 }}</el-descriptions-item>
@@ -331,8 +329,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, Picture } from '@element-plus/icons-vue'
 import { adminCloudFunctions } from '@/utils/cloudbase'
 import { formatTime } from '@/utils/timeUtils'
-import { getPlatformName } from '@/utils/platformUtils'
-import { getTrackTypeName } from '@/utils/trackTypeUtils'
+import { getPlatformName, getPlatformIcon } from '@/utils/platformUtils'
+import { getTrackTypeName, getTrackTypeIcon } from '@/utils/trackTypeUtils'
 import { viewImage } from '@/utils/imageUtils'
 
 // Props
@@ -363,7 +361,7 @@ const searchResultData = ref(null)
 
 // 搜索表单
 const searchForm = reactive({
-  type: 'nickname',
+  type: 'userId',
   keyword: ''
 })
 
@@ -408,7 +406,7 @@ const handleSearch = async () => {
 // 重置搜索
 const handleReset = () => {
   searchForm.keyword = ''
-  searchForm.type = 'nickname'
+  searchForm.type = 'userId'
   searchResultData.value = null
   hasSearched.value = false
 }
@@ -629,6 +627,83 @@ const handleReject = async (userData, accountData) => {
     if (error !== 'cancel') {
       console.error('审核拒绝失败:', error)
       ElMessage.error('审核拒绝失败')
+    }
+  }
+}
+
+// 删除账号
+const handleDeleteAccount = async (userData, accountData) => {
+  try {
+    // 二次确认删除操作
+    await ElMessageBox.confirm(
+      `确认删除账号 "${accountData.accountNickname}" (${accountData.accountId})？\n\n⚠️ 警告：此操作不可逆，将永久删除该账号及其所有相关数据（文章、收益、任务等）！`, 
+      '危险操作确认', 
+      {
+        type: 'error',
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消',
+        confirmButtonClass: 'el-button--danger',
+        dangerouslyUseHTMLString: false
+      }
+    )
+    
+    // 设置删除状态
+    accountData.deleting = true
+    
+    const result = await adminCloudFunctions.deleteAccount(userData.userId, accountData.accountId)
+    
+    if (result?.result?.success) {
+      ElMessage.success('账号删除成功')
+      
+      // 从账号列表中移除该账号
+      const accountIndex = searchResultData.value.accounts.findIndex(
+        account => account.accountId === accountData.accountId
+      )
+      if (accountIndex !== -1) {
+        searchResultData.value.accounts.splice(accountIndex, 1)
+      }
+      
+      // 更新统计数据
+      searchResultData.value.totalAccounts--
+      
+      // 根据删除的账号状态更新对应的统计数据
+      if (accountData.status === 1) {
+        searchResultData.value.activeAccounts--
+      } else {
+        searchResultData.value.disabledAccounts--
+      }
+      
+      // 根据删除的账号审核状态更新对应的统计数据
+      if (accountData.auditStatus === 0) {
+        searchResultData.value.pendingAuditAccounts--
+      } else if (accountData.auditStatus === 1) {
+        searchResultData.value.approvedAccounts--
+      } else if (accountData.auditStatus === 2) {
+        searchResultData.value.rejectedAccounts--
+      }
+      
+      // 更新发文和拒绝文章统计
+      if (accountData.posts && accountData.posts.length > 0) {
+        searchResultData.value.totalPosts -= accountData.posts.length
+      }
+      if (accountData.rejectPosts && accountData.rejectPosts.length > 0) {
+        searchResultData.value.totalRejectPosts -= accountData.rejectPosts.length
+      }
+      
+      // 通知父组件刷新数据
+      emit('refresh-data')
+    } else {
+      ElMessage.error(result?.result?.message || '账号删除失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除账号失败:', error)
+      ElMessage.error('删除账号失败')
+    }
+  } finally {
+    // 清除删除状态
+    if (accountData.deleting) {
+      accountData.deleting = false
     }
   }
 }

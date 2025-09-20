@@ -157,7 +157,7 @@
       <!-- 资料页截图 -->
       <view class="form-item">
         <view class="form-label">
-          <text class="label-text">资料页截图</text>
+          <text class="label-text">{{selectedPlatform ? selectedPlatform.name + '资料页截图' : '资料页截图'}}</text>
           <text class="required">*</text>
         </view>
         <view class="upload-section">
