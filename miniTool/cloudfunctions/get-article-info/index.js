@@ -59,10 +59,14 @@ exports.main = async (event, context) => {
     }
 
     // 查询文章信息
-    const articleResult = await db
-      .collection("article-mgr")
-      .where(queryCondition)
-      .get();
+    let query = db.collection("article-mgr").where(queryCondition);
+    
+    // 如果是类型过滤查询，按上传时间倒序排列并限制返回最多20条数据
+    if (queryType === "typeFilter") {
+      query = query.orderBy("uploadTime", "desc").limit(20);
+    }
+    
+    const articleResult = await query.get();
 
     const articles = articleResult.data || [];
     console.log(`查询到 ${articles.length} 篇文章`);
