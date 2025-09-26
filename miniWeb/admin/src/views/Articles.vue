@@ -13,6 +13,13 @@
           <span>数据纵览</span>
           <div class="header-actions">
             <el-button 
+              type="info" 
+              :icon="Search" 
+              @click="handleSearchArticle"
+            >
+              搜索文章
+            </el-button>
+            <el-button 
               type="success" 
               :icon="Upload" 
               @click="handleUploadArticle"
@@ -516,6 +523,11 @@
       style="display: none"
       @change="handleFileSelect"
     />
+
+    <!-- 文章搜索面板 -->
+    <ArticleSearchPanel 
+      v-model="showSearchPanel"
+    />
   </div>
 </template>
 
@@ -523,7 +535,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  Document, Clock, Check, Warning, Upload, Refresh,
+  Document, Clock, Check, Warning, Upload, Refresh, Search,
   FolderOpened, Close, Loading, Tickets, RefreshRight
 } from '@element-plus/icons-vue'
 import { adminCloudFunctions } from '@/utils/cloudbase'
@@ -539,6 +551,7 @@ import {
   getTrackTypeOptions 
 } from '@/utils/trackTypeUtils'
 import { formatTime, updatePageTime } from '@/utils/timeUtils'
+import ArticleSearchPanel from '@/components/ArticleSearchPanel.vue'
 
 // 响应式数据
 const loading = ref(false)
@@ -552,6 +565,9 @@ const articleStats = ref({
 })
 const needRevisionArticles = ref([])
 const selectedArticles = ref([])
+
+// 搜索面板状态
+const showSearchPanel = ref(false)
 
 // 分页相关数据
 const currentPage = ref(1)
@@ -1263,6 +1279,13 @@ const uploadConfig = ref({
 
 // 文件选择器引用
 const fileInput = ref(null)
+
+// 搜索文章 - 打开搜索面板
+const handleSearchArticle = () => {
+  showSearchPanel.value = true
+}
+
+
 
 // 上传文章 - 打开上传面板
 const handleUploadArticle = () => {

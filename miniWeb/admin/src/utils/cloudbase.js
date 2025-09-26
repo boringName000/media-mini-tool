@@ -299,7 +299,10 @@ export const adminCloudFunctions = {
   
   // ===== 文章管理 =====
   // 获取文章信息
-  getArticleInfo: () => callAdminCloudFunction('admin-article-info', {}),
+  getArticleInfo: (params = {}) => callAdminCloudFunction('admin-article-info', params),
+  
+  // 查询文章信息（根据ID或标题）
+  getArticleInfoByQuery: (params) => callAdminCloudFunction('admin-get-article-info', params),
   
   // 添加文章
   addArticle: (params) => callAdminCloudFunction('admin-add-article', params),
