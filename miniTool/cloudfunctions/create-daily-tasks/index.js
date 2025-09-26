@@ -200,15 +200,11 @@ async function processAccountDailyTasks(account, userId, accountIndex) {
           tasksCreated = newDailyTasks.length;
           tasksRemoved = dailyTasks.length;
         } else {
-          // 如果没完成，更新任务时间
-          console.log(`账号 ${account.accountId} 任务未完成，更新任务时间`);
-
-          newDailyTasks = dailyTasks.map((task) => ({
-            ...task,
-            taskTime: new Date(), // 更新任务时间
-            isCompleted: false,
-          }));
-          tasksUpdated = 1;
+          // 如果没完成，不做任何变更（无论是否过期）
+          const statusMsg = hasExpiredTasks ? "任务已过期且未完成" : "任务未完成但未过期";
+          console.log(`账号 ${account.accountId} ${statusMsg}，不做任何变更`);
+          newDailyTasks = dailyTasks; // 保持原有任务不变
+          tasksUpdated = 0;
         }
       }
     } else {
